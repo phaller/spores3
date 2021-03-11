@@ -187,4 +187,27 @@ class DuplicableTests {
     assert(res2 == dblock(5))
   }
 
+  @Test
+  def testDuplicateDBlockAsParam(): Unit = {
+
+    def fun(num: Int, body: DBlock[Int, C]): C = {
+      val duplicatedBody = body.duplicate()
+      duplicatedBody(num)
+    }
+
+    val x = new C
+    // x is a mutable instance:
+    x.f = 7
+
+    val block = Block(x) {
+      (y: Int) => env
+    }
+
+    val dblock = Block.makeDBlock(block)
+    val res = fun(5, dblock)
+
+    assert(res.f == x.f)
+    assert(res ne x)
+  }
+
 }
