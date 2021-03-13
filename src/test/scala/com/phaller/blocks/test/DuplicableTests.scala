@@ -6,7 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import blocks.Block.{thunk, env}
+import blocks.Block.{thunk, env, dblock}
 
 
 private class C {
@@ -156,35 +156,31 @@ class DuplicableTests {
     // x is a mutable instance:
     x.f = 7
 
-    val block = Block(x) {
+    val db = dblock(x) {
       (y: Int) => env
     }
 
-    val dblock = Block.makeDBlock(block)
-
-    val dblock2 = dblock.duplicate()
+    val dblock2 = db.duplicate()
 
     val res2 = dblock2(5)
 
-    assert(dblock2 ne dblock)
+    assert(dblock2 ne db)
     assert(res2.f == x.f)
     assert(res2 ne x)
   }
 
   @Test
   def testDuplicateDBlockWithoutEnv(): Unit = {
-    val block = Block {
+    val db = dblock {
       (y: Int) => y + 1
     }
 
-    val dblock = Block.makeDBlock(block)
-
-    val dblock2 = dblock.duplicate()
+    val dblock2 = db.duplicate()
 
     val res2 = dblock2(5)
 
-    assert(dblock2 ne dblock)
-    assert(res2 == dblock(5))
+    assert(dblock2 ne db)
+    assert(res2 == db(5))
   }
 
   @Test
@@ -199,12 +195,11 @@ class DuplicableTests {
     // x is a mutable instance:
     x.f = 7
 
-    val block = Block(x) {
+    val db = dblock(x) {
       (y: Int) => env
     }
 
-    val dblock = Block.makeDBlock(block)
-    val res = fun(5, dblock)
+    val res = fun(5, db)
 
     assert(res.f == x.f)
     assert(res ne x)
