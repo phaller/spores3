@@ -22,6 +22,7 @@ lazy val blocks = crossProject(JVMPlatform, JSPlatform)
 
 lazy val blocksUpickle = crossProject(JVMPlatform, JSPlatform)
   .in(file("blocks-upickle"))
+  .dependsOn(blocks)
   .settings(
     name := "blocks-upickle",
     version := "0.1.0-SNAPSHOT",

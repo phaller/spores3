@@ -32,6 +32,17 @@ object Block {
 
   opaque type EnvAsParam[T] = T
 
+  class Creator[E, T, R](body: T => EnvAsParam[E] ?=> R) {
+    def apply(env: E): Block[T, R] { type Env = E } = {
+      new Block[T, R] {
+        type Env = E
+        def apply(x: T): R = body(x)(using env)
+        private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R = body(x)
+        private[blocks] val envir = env
+      }
+    }
+  }
+
   given [E: Duplicable, A, B]: Duplicable[Block[A, B] { type Env = E }] =
     new Duplicable[Block[A, B] { type Env = E }] {
       def duplicate(fun: Block[A, B] { type Env = E }) = {
