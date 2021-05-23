@@ -61,7 +61,7 @@ class PickleTests {
   type BlockT = Block[Int, Int] { type Env = Int }
 
   @Test
-  def testPickleBlock(): Unit = {
+  def testBlockReadWriter(): Unit = {
     val name = "com.phaller.blocks.pickle.test.MyBlock2"
     val env: Int = 12
 
@@ -87,7 +87,7 @@ class PickleTests {
   }
 
   @Test
-  def testPickleCBlock(): Unit = {
+  def testCBlockReadWriter(): Unit = {
     given blockReadWriter: ReadWriter[CBlock[Int, Int, Int]] =
       readwriter[ujson.Value].bimap[CBlock[Int, Int, Int]](
         cblock => ujson.Arr(cblock.creatorName, cblock.block.envir),
@@ -112,7 +112,7 @@ class PickleTests {
   }
 
   @Test
-  def testPickleCBlockMoreGeneral(): Unit = {
+  def testGenericCBlockReadWriter(): Unit = {
     given blockReadWriter[T, R]: ReadWriter[CBlock[Int, T, R]] =
       readwriter[ujson.Value].bimap[CBlock[Int, T, R]](
         cblock => ujson.Arr(cblock.creatorName, cblock.block.envir),
@@ -137,7 +137,7 @@ class PickleTests {
   }
 
   @Test
-  def testPickleCBlockEvenMoreGeneral(): Unit = {
+  def testFullyGenericCBlockReadWriter(): Unit = {
     given blockReadWriter[E, T, R](using envReadWriter: ReadWriter[E]): ReadWriter[CBlock[E, T, R]] =
       readwriter[ujson.Value].bimap[CBlock[E, T, R]](
         cblock => {
