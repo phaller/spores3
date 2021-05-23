@@ -28,19 +28,53 @@ trait DBlock[T, R] extends Block[T, R] {
     }
 }
 
+object CBlock {
+
+  class CBlockBuilder[E](env: E) {
+    def apply[T, R](fqn: String): CBlock[E, T, R] = {
+      val creator = Creator[E, T, R](fqn)
+      val block = creator(env)
+      new CBlock(fqn, block)
+    }
+  }
+
+  def apply[E](env: E): CBlockBuilder[E] =
+    CBlockBuilder(env)
+
+}
+
+class CBlock[E, T, R](
+  private[blocks] val creatorName: String,
+  private[blocks] val block: Block[T, R] { type Env = E }
+) extends Block[T, R] { // must be in same source file as sealed trait Block
+
+  type Env = E
+
+  def apply(x: T): R =
+    block(x)
+
+  private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R =
+    block.applyInternal(x)
+
+  private[blocks] val envir: Env =
+    block.envir
+}
+
 object Block {
 
   opaque type EnvAsParam[T] = T
 
   class Creator[E, T, R](body: T => EnvAsParam[E] ?=> R) {
-    def apply(env: E): Block[T, R] { type Env = E } = {
+    def apply(env: E): Block[T, R] { type Env = E } =
       new Block[T, R] {
         type Env = E
-        def apply(x: T): R = body(x)(using env)
-        private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R = body(x)
-        private[blocks] val envir = env
+        def apply(x: T): R =
+          body(x)(using env)
+        private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
+          body(x)
+        private[blocks] val envir =
+          env
       }
-    }
   }
 
   given [E: Duplicable, A, B]: Duplicable[Block[A, B] { type Env = E }] =
