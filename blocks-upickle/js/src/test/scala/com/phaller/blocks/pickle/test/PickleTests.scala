@@ -18,7 +18,7 @@ object A {
 }
 
 @EnableReflectiveInstantiation
-object MyBlock2 extends Block.Creator[Int, Int, Int](
+object MyBlock extends Block.Creator[Int, Int, Int](
   (x: Int) => Block.env + x + 1
 )
 
@@ -34,19 +34,19 @@ class PickleTests {
     assert(modClass2.nonEmpty)
     assert(loaded != null)
 
-    val modClass3 = Reflect.lookupLoadableModuleClass("com.phaller.blocks.pickle.test.MyBlock2$")
+    val modClass3 = Reflect.lookupLoadableModuleClass("com.phaller.blocks.pickle.test.MyBlock$")
     assert(modClass3.nonEmpty)
-    val loadedMyBlock2 = modClass3.get.loadModule().asInstanceOf[Block.Creator[Int, Int, Int]]
-    assert(loadedMyBlock2 != null)
+    val loadedMyBlock = modClass3.get.loadModule().asInstanceOf[Block.Creator[Int, Int, Int]]
+    assert(loadedMyBlock != null)
 
-    val s = loadedMyBlock2(12)
+    val s = loadedMyBlock(12)
     val res = s(3)
     assert(res == 16)
   }
 
   @Test
   def testCreator(): Unit = {
-    val c = Creator[Int, Int, Int]("com.phaller.blocks.pickle.test.MyBlock2")
+    val c = Creator[Int, Int, Int]("com.phaller.blocks.pickle.test.MyBlock")
     val s = c(12)
     val res = s(3)
     assert(res == 16)
@@ -62,7 +62,7 @@ class PickleTests {
 
   @Test
   def testBlockReadWriter(): Unit = {
-    val name = "com.phaller.blocks.pickle.test.MyBlock2"
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
     val env: Int = 12
 
     given blockReadWriter: ReadWriter[BlockT] =
@@ -78,12 +78,12 @@ class PickleTests {
       )
 
     // create a block
-    val block: BlockT = MyBlock2(12)
+    val block: BlockT = MyBlock(12)
 
     // pickle block
     val res = write(block)
 
-    assert(res == """["com.phaller.blocks.pickle.test.MyBlock2",12]""")
+    assert(res == """["com.phaller.blocks.pickle.test.MyBlock",12]""")
   }
 
   @Test
@@ -101,14 +101,14 @@ class PickleTests {
       )
 
     // name of creator
-    val name = "com.phaller.blocks.pickle.test.MyBlock2"
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
 
     // create a CBlock
     val x = CBlock(12)[Int, Int](name)
 
     val res = write(x)
 
-    assert(res == """["com.phaller.blocks.pickle.test.MyBlock2",12]""")
+    assert(res == """["com.phaller.blocks.pickle.test.MyBlock",12]""")
   }
 
   @Test
@@ -126,14 +126,14 @@ class PickleTests {
       )
 
     // name of creator
-    val name = "com.phaller.blocks.pickle.test.MyBlock2"
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
 
     // create a CBlock
     val x = CBlock(12)[Int, Int](name)
 
     val res = write(x)
 
-    assert(res == """["com.phaller.blocks.pickle.test.MyBlock2",12]""")
+    assert(res == """["com.phaller.blocks.pickle.test.MyBlock",12]""")
   }
 
   @Test
@@ -154,7 +154,7 @@ class PickleTests {
       )
 
     // FQN of creator
-    val name = "com.phaller.blocks.pickle.test.MyBlock2"
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
 
     // create a CBlock
     val x = CBlock(12)[Int, Int](name)
@@ -162,7 +162,7 @@ class PickleTests {
     // pickle CBlock
     val res = write(x)
 
-    assert(res == """["com.phaller.blocks.pickle.test.MyBlock2","12"]""")
+    assert(res == """["com.phaller.blocks.pickle.test.MyBlock","12"]""")
 
     val y = read[CBlock[Int, Int, Int]](res)
     val res2 = y(3)
