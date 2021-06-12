@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "3.0.0-RC1"
+ThisBuild / scalaVersion := "3.0.0"
 
 lazy val root = project
   .in(file("."))
@@ -26,7 +26,7 @@ lazy val blocksUpickle = crossProject(JVMPlatform, JSPlatform)
   .settings(
     name := "blocks-upickle",
     version := "0.1.0-SNAPSHOT",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.3.9",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.4.0",
   )
   .jvmSettings(
     libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
