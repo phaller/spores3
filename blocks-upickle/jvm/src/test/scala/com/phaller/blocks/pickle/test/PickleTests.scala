@@ -4,12 +4,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Block, Creator, CBlock}
+import com.phaller.blocks.Block
 
 import upickle.default._
 
 
-object MyBlock extends Block.Creator[Int, Int, Int](
+object MyBlock extends Block.Builder[Int, Int, Int](
   (x: Int) => Block.env + x + 1
 )
 

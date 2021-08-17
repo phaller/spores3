@@ -71,7 +71,7 @@ object Block {
 
   opaque type EnvAsParam[T] = T
 
-  class Creator[E, T, R](body: T => EnvAsParam[E] ?=> R) {
+  class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R) {
     def apply(env: E): Block[T, R] { type Env = E } =
       new Block[T, R] {
         type Env = E

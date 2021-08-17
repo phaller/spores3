@@ -18,7 +18,7 @@ object A {
 }
 
 @EnableReflectiveInstantiation
-object MyBlock extends Block.Creator[Int, Int, Int](
+object MyBlock extends Block.Builder[Int, Int, Int](
   (x: Int) => Block.env + x + 1
 )
 
@@ -36,7 +36,7 @@ class PickleTests {
 
     val modClass3 = Reflect.lookupLoadableModuleClass("com.phaller.blocks.pickle.test.MyBlock$")
     assert(modClass3.nonEmpty)
-    val loadedMyBlock = modClass3.get.loadModule().asInstanceOf[Block.Creator[Int, Int, Int]]
+    val loadedMyBlock = modClass3.get.loadModule().asInstanceOf[Block.Builder[Int, Int, Int]]
     assert(loadedMyBlock != null)
 
     val s = loadedMyBlock(12)

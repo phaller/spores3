@@ -7,10 +7,10 @@ import scala.scalajs.reflect.Reflect
 object Creator {
 
   @JSExport("apply")
-  def apply[E, T, R](name: String): Block.Creator[E, T, R] = {
+  def apply[E, T, R](name: String): Block.Builder[E, T, R] = {
     val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
     if (creatorClassOpt.nonEmpty)
-      creatorClassOpt.get.loadModule().asInstanceOf[Block.Creator[E, T, R]]
+      creatorClassOpt.get.loadModule().asInstanceOf[Block.Builder[E, T, R]]
     else
       null
   }
