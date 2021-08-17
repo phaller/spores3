@@ -4,7 +4,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Block, Creator, CBlock}
+import com.phaller.blocks.{Block, Creator, CBlock, BlockData}
+import com.phaller.blocks.pickle.given
 
 import upickle.default._
 
@@ -125,16 +126,50 @@ class SharedPickleTests {
     val name = "com.phaller.blocks.pickle.test.MyBlock"
 
     // create a CBlock
-    val x = CBlock(12)[Int, Int](name)
+    val block = CBlock(12)[Int, Int](name)
 
     // pickle CBlock
-    val res = write(x)
+    val res = write(block)
 
     assert(res == """["com.phaller.blocks.pickle.test.MyBlock","12"]""")
 
-    val y = read[CBlock[Int, Int, Int]](res)
-    val res2 = y(3)
+    val unpickledBlock = read[CBlock[Int, Int, Int]](res)
+    val res2 = unpickledBlock(3)
     assert(res2 == 16)
+  }
+
+  @Test
+  def testBlockDataReadWriter(): Unit = {
+    val x = 12 // environment
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
+    val data = BlockData(name, x)
+    // pickle block data
+    val pickledData = write(data)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock","12"]""")
+    val unpickledData = read[BlockData[Int]](pickledData)
+    assert(unpickledData == data) // structural equality
+  }
+
+  @Test
+  def testBlockDataToBlock(): Unit = {
+    val x = 12 // environment
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
+    val data = BlockData(name, x)
+    val block = data.toBlock[Int, Int]
+    assert(block(3) == 16)
+  }
+
+  @Test
+  def testBlockDataReadWriterToBlock(): Unit = {
+    val x = 12 // environment
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
+    val data = BlockData(name, x)
+    // pickle block data
+    val pickledData = write(data)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock","12"]""")
+    val unpickledData = read[BlockData[Int]](pickledData)
+    val unpickledBlock = unpickledData.toBlock[Int, Int]
+    assert(unpickledBlock(3) == 16)
   }
 
 }

@@ -28,6 +28,13 @@ trait DBlock[T, R] extends Block[T, R] {
     }
 }
 
+case class BlockData[E](fqn: String, env: E) {
+  def toBlock[T, R]: Block[T, R] { type Env = E } = {
+    val creator = Creator[E, T, R](fqn)
+    creator(env)
+  }
+}
+
 object CBlock {
 
   class CBlockBuilder[E](env: E) {
