@@ -4,14 +4,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.Block
-
 import upickle.default._
 
-
-object MyBlock extends Block.Builder[Int, Int, Int](
-  (x: Int) => Block.env + x + 1
-)
 
 @RunWith(classOf[JUnit4])
 class PickleTests {
