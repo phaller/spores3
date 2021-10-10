@@ -39,10 +39,4 @@ class PickleTests {
     assert(res == 16)
   }
 
-  @Test
-  def testUpickle(): Unit = {
-    val res = write(Seq(1, 2, 3))
-    assert(res == "[1,2,3]")
-  }
-
 }
