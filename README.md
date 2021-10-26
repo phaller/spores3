@@ -25,11 +25,17 @@ First, the definition of the block:
     )
 ```
 
-Here, `MyBlock` is actually not a concrete block but a block
-**builder**. The reason is that the environment of the block is left
-unspecified. The body of the block refers to the block's environment
-using `Block.env`. By providing a concrete environment, an actual
-block can be created as follows:
+Here, `MyBlock` is actually not a concrete block but a **block
+builder**. The reason is that the environment of the block is left
+unspecified. Note the three type arguments in `Block.Builder[Int, Int, Int]`.
+The corresponding function type `Int => Int` would only have two type
+arguments.  The type of a block builder requires a third type argument
+indicating the **type of the block's environment**. The builder type's
+first type argument specifies the environment type.
+
+The body of the block refers to the block's environment using
+`Block.env`. By providing a concrete environment, an actual block can
+be created as follows:
 
 ```scala
     val x = 12
