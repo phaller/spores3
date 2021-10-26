@@ -10,7 +10,14 @@ integration with [uPickle](https://com-lihaoyi.github.io/upickle/) is
 provided.
 
 Let's have a look at an example that shows how to pickle a block using
-uPickle. First, the definition of the block:
+uPickle. The shown code snippets assume the following imports:
+
+```scala
+    import com.phaller.blocks.{Block, BlockData}
+    import com.phaller.blocks.pickle.given
+```
+
+First, the definition of the block:
 
 ```scala
     object MyBlock extends Block.Builder[Int, Int, Int](
