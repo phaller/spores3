@@ -14,12 +14,6 @@ import upickle.default._
 class SharedPickleTests {
 
   @Test
-  def test1(): Unit = {
-    val res = write(Seq(1, 2, 3))
-    assert(res == "[1,2,3]")
-  }
-
-  @Test
   def testCreator(): Unit = {
     val c = Creator[Int, Int, Int]("com.phaller.blocks.pickle.test.MyBlock")
     val s = c(12)
