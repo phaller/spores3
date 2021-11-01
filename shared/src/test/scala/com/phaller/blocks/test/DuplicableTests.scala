@@ -128,6 +128,83 @@ class DuplicableTests {
   }
 
   @Test
+  def testDuplicateBlockWithEnv(): Unit = {
+    val x = new C
+    x.f = 4
+
+    val b = Block(x) {
+      (y: Int) => env.f + y
+    }
+
+    val b2 = dup(b)
+    val res = b2(3)
+    assert(res == 7)
+  }
+
+  @Test
+  def testDuplicateBlockWithEnvGeneric(): Unit = {
+    def duplicateThenApply[T, R, B <: Block[T, R] : Duplicable](block: B, arg: T): R = {
+      val dup = summon[Duplicable[B]]
+      val duplicated = dup.duplicate(block)
+      duplicated(arg)
+    }
+
+    val x = new C
+    x.f = 4
+
+    val b = Block(x) {
+      (y: Int) => env.f + y
+    }
+
+    val res = duplicateThenApply(b, 3)
+    assert(res == 7)
+  }
+
+  @Test
+  def testPassingBlock(): Unit = {
+    def m2(block: Block[Int, Int], arg: Int): Int = {
+      block(arg)
+    }
+
+    def m1(block: Block[Int, Int]): Int = {
+      m2(block, 10) + 20
+    }
+
+    val x = new C
+    x.f = 4
+
+    val b = Block(x) {
+      (y: Int) => env.f + y
+    }
+
+    val res = m1(b)
+    assert(res == 34)
+  }
+
+  @Test
+  def testPassingBlockAndDuplicate(): Unit = {
+    def m2[B <: Block[Int, Int] : Duplicable](block: B, arg: Int): Int = {
+      val dup = summon[Duplicable[B]]
+      val duplicated = dup.duplicate(block)
+      duplicated(arg)
+    }
+
+    def m1[B <: Block[Int, Int] : Duplicable](block: B): Int = {
+      m2(block, 10) + 20
+    }
+
+    val x = new C
+    x.f = 4
+
+    val b = Block(x) {
+      (y: Int) => env.f + y
+    }
+
+    val res = m1(b)
+    assert(res == 34)
+  }
+
+  @Test
   def testDuplicateThenApply(): Unit = {
     def duplicateThenApply[S <: Thunk[C] : Duplicable](s: S): C = {
       val dup = summon[Duplicable[S]]
