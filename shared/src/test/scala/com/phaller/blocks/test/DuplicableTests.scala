@@ -208,12 +208,12 @@ class DuplicableTests {
 
   @Test
   def testPassingBlockAndDuplicateHelperClass(): Unit = {
-    def m2[E](d: DBlock2[Int, Int], arg: Int): Int = {
+    def m2[E](d: DBlock[Int, Int], arg: Int): Int = {
       val duplicated = d.duplicate()
       duplicated(arg)
     }
 
-    def m1(block: DBlock2[Int, Int]): Int = {
+    def m1(block: DBlock[Int, Int]): Int = {
       m2(block, 10) + 20
     }
 
@@ -224,7 +224,7 @@ class DuplicableTests {
       (y: Int) => env.f + y
     }
 
-    val res = m1(DBlock2(b))
+    val res = m1(DBlock(b))
     assert(res == 34)
   }
 
@@ -257,7 +257,7 @@ class DuplicableTests {
     // x is a mutable instance:
     x.f = 7
 
-    val db = DBlock2(Block(x) {
+    val db = DBlock(Block(x) {
       (y: Int) => env
     })
 
@@ -272,7 +272,7 @@ class DuplicableTests {
 
   @Test
   def testDuplicateDBlockWithoutEnv(): Unit = {
-    val db = DBlock2(Block {
+    val db = DBlock(Block {
       (y: Int) => y + 1
     })
 
@@ -287,7 +287,7 @@ class DuplicableTests {
   @Test
   def testDuplicateDBlockAsParam(): Unit = {
 
-    def fun(num: Int, body: DBlock2[Int, C]): C = {
+    def fun(num: Int, body: DBlock[Int, C]): C = {
       val duplicatedBody = body.duplicate()
       duplicatedBody(num)
     }
@@ -296,7 +296,7 @@ class DuplicableTests {
     // x is a mutable instance:
     x.f = 7
 
-    val db = DBlock2(Block(x) {
+    val db = DBlock(Block(x) {
       (y: Int) => env
     })
 

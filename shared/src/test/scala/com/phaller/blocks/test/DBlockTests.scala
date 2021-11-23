@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Block, DBlock2}
+import com.phaller.blocks.{Block, DBlock}
 import Block.{env, thunk}
 
 
@@ -18,7 +18,7 @@ class DBlockTests {
       env + 1
     }
 
-    val db = DBlock2(b)
+    val db = DBlock(b)
     val b2 = db.duplicable.duplicate(db.block)
 
     val res = b2()
@@ -36,7 +36,7 @@ class DBlockTests {
       env
     }
 
-    val db = DBlock2(b)
+    val db = DBlock(b)
     val b2 = db.duplicable.duplicate(db.block)
 
     val envVal = b2()
@@ -50,7 +50,7 @@ class DBlockTests {
     val b = Block {
       (x: Int) => x + 2
     }
-    val db = DBlock2(b)
+    val db = DBlock(b)
     val b2 = db.duplicable.duplicate(db.block)
     val res = b2(3)
     assert(res == 5)
@@ -65,7 +65,7 @@ class DBlockTests {
       (y: Int) => env.f + y
     }
 
-    val db = DBlock2(b)
+    val db = DBlock(b)
     val b2 = db.duplicable.duplicate(db.block)
     val res = b2(3)
     assert(res == 7)
