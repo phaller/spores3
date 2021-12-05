@@ -11,7 +11,7 @@ import upickle.default._
 
 
 @RunWith(classOf[JUnit4])
-class SharedPickleTests {
+class PickleTests {
 
   @Test
   def testCreator(): Unit = {
