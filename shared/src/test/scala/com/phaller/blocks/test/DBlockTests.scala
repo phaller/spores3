@@ -24,8 +24,7 @@ class DBlockTests {
     val res = b2()
     assert(res == 6)
 
-    // comparing environments does not type-check:
-    //assert(t.envir == b2.envir)
+    // note that comparing environments of b and b2 would not type-check!
   }
 
   @Test
