@@ -17,38 +17,6 @@ case class BlockData[E](fqn: String, env: E) {
   }
 }
 
-object CBlock {
-
-  class CBlockBuilder[E](env: E) {
-    def apply[T, R](fqn: String): CBlock[E, T, R] = {
-      val creator = Creator[E, T, R](fqn)
-      val block = creator(env)
-      new CBlock(fqn, block)
-    }
-  }
-
-  def apply[E](env: E): CBlockBuilder[E] =
-    CBlockBuilder(env)
-
-}
-
-class CBlock[E, T, R](
-  private[blocks] val creatorName: String,
-  private[blocks] val block: Block[T, R] { type Env = E }
-) extends Block[T, R] { // must be in same source file as sealed trait Block
-
-  type Env = E
-
-  def apply(x: T): R =
-    block(x)
-
-  private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R =
-    block.applyInternal(x)
-
-  private[blocks] val envir: Env =
-    block.envir
-}
-
 object Block {
 
   extension [R](b: Block[Unit, R])
