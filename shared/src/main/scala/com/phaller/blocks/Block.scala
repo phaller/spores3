@@ -10,27 +10,32 @@ sealed trait Block[T, R] extends (T => R) {
   private[blocks] def envir: Env
 }
 
-sealed trait Thunk[T] extends Block[Unit, T] {
-  def apply(): T
-  def apply(x: Unit): T = apply()
-}
-
-trait DBlock[T, R] extends Block[T, R] {
-  self =>
-
-  private[blocks] def envDuplicable: Duplicable[Env]
-
-  def duplicate(): DBlock[T, R] { type Env = self.Env }
-
-  def duplicable: Duplicable[DBlock[T, R] { type Env = self.Env }] =
-    new Duplicable[DBlock[T, R] { type Env = self.Env }] {
-      def duplicate(value: DBlock[T, R] { type Env = self.Env }) = value.duplicate()
-    }
+case class BlockData[E](fqn: String, env: E) {
+  def toBlock[T, R]: Block[T, R] { type Env = E } = {
+    val creator = Creator[E, T, R](fqn)
+    creator(env)
+  }
 }
 
 object Block {
 
+  extension [R](b: Block[Unit, R])
+    def apply(): R = b.apply(())
+
   opaque type EnvAsParam[T] = T
+
+  class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R) {
+    def apply(env: E): Block[T, R] { type Env = E } =
+      new Block[T, R] {
+        type Env = E
+        def apply(x: T): R =
+          body(x)(using env)
+        private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
+          body(x)
+        private[blocks] val envir =
+          env
+      }
+  }
 
   given [E: Duplicable, A, B]: Duplicable[Block[A, B] { type Env = E }] =
     new Duplicable[Block[A, B] { type Env = E }] {
@@ -59,21 +64,6 @@ object Block {
             fun.applyInternal(x)
           private[blocks] def envir =
             throw new Exception("block does not have an environment")
-        }
-      }
-    }
-
-  given [E: Duplicable, R]: Duplicable[Thunk[R] { type Env = E }] =
-    new Duplicable[Thunk[R] { type Env = E }] {
-      def duplicate(fun: Thunk[R] { type Env = E }) = {
-        val env = summon[Duplicable[E]].duplicate(fun.envir)
-        new Thunk[R] {
-          type Env = E
-          def apply(): R =
-            fun.applyInternal(())(using env)
-          private[blocks] def applyInternal(x: Unit)(using EnvAsParam[Env]): R =
-            fun.applyInternal(x)
-          private[blocks] val envir = env
         }
       }
     }
@@ -117,60 +107,13 @@ object Block {
    * - `body` must not capture anything
    * - `body` is only allowed to access its parameter and `Block.env`
    */
-  def thunk[T, U](env: T)(body: EnvAsParam[T] ?=> U): Thunk[U] { type Env = T } =
-    new Thunk[U] {
+  def thunk[T, U](env: T)(body: EnvAsParam[T] ?=> U): Block[Unit, U] { type Env = T } =
+    new Block[Unit, U] {
       type Env = T
-      def apply(): U = body(using env)
+      def apply(x: Unit): U = body(using env)
       private[blocks] def applyInternal(x: Unit)(using EnvAsParam[T]): U =
         body
       private[blocks] val envir = env
-    }
-
-  def dblock[E: Duplicable, T, R](env: E)(body: T => EnvAsParam[E] ?=> R): DBlock[T, R] =
-    new DBlock[T, R] { self =>
-      type Env = E
-      def apply(x: T): R = body(x)(using env)
-      private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
-        body(x)
-      private[blocks] val envir = env
-      private[blocks] val envDuplicable: Duplicable[Env] = summon[Duplicable[E]]
-      def duplicate() = {
-        val denv = envDuplicable.duplicate(envir)
-        new DBlock[T, R] {
-          type Env = E
-          def apply(x: T): R = body(x)(using denv)
-          private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
-            body(x)
-          private[blocks] val envir = denv
-          private[blocks] val envDuplicable: Duplicable[Env] = self.envDuplicable
-          def duplicate() = self.duplicate()
-        }
-      }
-    }
-
-  def dblock[T, R](body: T => R): DBlock[T, R] =
-    new DBlock[T, R] { self =>
-      type Env = Nothing
-      def apply(x: T): R = body(x)
-      private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
-        body(x)
-      private[blocks] def envir =
-        throw new Exception("block does not have an environment")
-      private[blocks] def envDuplicable: Duplicable[Env] =
-        throw new Exception("block does not have an environment")
-      def duplicate() = {
-        new DBlock[T, R] {
-          type Env = Nothing
-          def apply(x: T): R = body(x)
-          private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
-            body(x)
-          private[blocks] def envir =
-            throw new Exception("block does not have an environment")
-          private[blocks] def envDuplicable: Duplicable[Env] =
-            throw new Exception("block does not have an environment")
-          def duplicate() = self.duplicate()
-        }
-      }
     }
 
 }
