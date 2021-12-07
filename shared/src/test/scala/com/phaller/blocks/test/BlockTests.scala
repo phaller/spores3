@@ -41,6 +41,16 @@ class BlockTests {
   }
 
   @Test
+  def testWithEnvWithType(): Unit = {
+    val y = 5
+    val s: Block[Int, Int] { type Env = Int } = Block(y) {
+      (x: Int) => x + env
+    }
+    val res = s(11)
+    assert(res == 16)
+  }
+
+  @Test
   def testThunk(): Unit = {
     val x = 5
     val t = thunk(x) {
