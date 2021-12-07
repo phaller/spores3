@@ -28,6 +28,20 @@ class DBlockTests {
   }
 
   @Test
+  def testDuplicateThunk2(): Unit = {
+    val x = 5
+    val b = thunk(x) {
+      env + 1
+    }
+
+    val db = DBlock(b)
+    val b2 = db.duplicate()
+
+    val res = b2()
+    assert(res == 6)
+  }
+
+  @Test
   def testDuplicatedThunkAccessesNewEnv(): Unit = {
     val x = new C
 
