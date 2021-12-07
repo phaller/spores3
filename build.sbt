@@ -26,7 +26,7 @@ lazy val blocksUpickle = crossProject(JVMPlatform, JSPlatform)
   .settings(
     name := "blocks-upickle",
     version := "0.1.0-SNAPSHOT",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.4.0",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.4.2",
   )
   .jvmSettings(
     libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
