@@ -24,13 +24,13 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: Build and test blocksJVM
       shell: bash
-      run: sbt "project blocksJVM ; clean ; test"
+      run: sbt "project blocksJVM ; clean ; +test"
     - name: Build and test blocksJS
       shell: bash
-      run: sbt "project blocksJS ; clean ; test"
+      run: sbt "project blocksJS ; clean ; +test"
     - name: Build and test blocksUpickleJVM
       shell: bash
-      run: sbt "project blocksUpickleJVM ; clean ; test"
+      run: sbt "project blocksUpickleJVM ; clean ; +test"
     - name: Build and test blocksUpickleJS
       shell: bash
-      run: sbt "project blocksUpickleJS ; clean ; test"
+      run: sbt "project blocksUpickleJS ; clean ; +test"
