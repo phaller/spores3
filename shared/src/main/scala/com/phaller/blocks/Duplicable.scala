@@ -5,6 +5,9 @@ trait Duplicable[T]:
 
 object Duplicable {
 
+  def duplicate[T](x: T)(using dup: Duplicable[T]): T =
+    dup.duplicate(x)
+
   given Duplicable[Char] with
     def duplicate(value: Char): Char = value
 

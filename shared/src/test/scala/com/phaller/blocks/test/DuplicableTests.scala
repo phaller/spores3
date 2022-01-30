@@ -7,6 +7,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import blocks.Block.{thunk, env}
+import blocks.Duplicable.duplicate
 
 
 class C {
@@ -26,9 +27,6 @@ object C {
 @RunWith(classOf[JUnit4])
 class DuplicableTests {
 
-  def dup[T: Duplicable](x: T): T =
-    summon[Duplicable[T]].duplicate(x)
-
   @Test
   def testDuplicateInt(): Unit = {
     val x = 5
@@ -43,7 +41,7 @@ class DuplicableTests {
       env + 1
     }
 
-    val b2 = dup(b)
+    val b2 = duplicate(b)
 
     val res = b2()
     assert(res == 6)
@@ -60,7 +58,7 @@ class DuplicableTests {
       env.f + 1
     }
 
-    val b2 = dup(b)
+    val b2 = duplicate(b)
 
     val res = b2()
     assert(res == 5)
@@ -77,7 +75,7 @@ class DuplicableTests {
       env
     }
 
-    val b2 = dup(b)
+    val b2 = duplicate(b)
 
     val envVal = b2()
 
@@ -93,7 +91,7 @@ class DuplicableTests {
       env
     }
 
-    val b2 = dup(b)
+    val b2 = duplicate(b)
 
     val envVal = b2(())
 
@@ -110,7 +108,7 @@ class DuplicableTests {
       env
     }
 
-    val b2 = dup(b)
+    val b2 = duplicate(b)
 
     val envVal = b2()
 
@@ -124,7 +122,7 @@ class DuplicableTests {
     val s = Block {
       (x: Int) => x + 2
     }
-    val s2 = dup(s)
+    val s2 = duplicate(s)
     val res = s2(3)
     assert(res == 5)
   }
@@ -138,7 +136,7 @@ class DuplicableTests {
       (y: Int) => env.f + y
     }
 
-    val b2 = dup(b)
+    val b2 = duplicate(b)
     val res = b2(3)
     assert(res == 7)
   }
