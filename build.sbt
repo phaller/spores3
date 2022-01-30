@@ -8,8 +8,7 @@ lazy val root = project
   .in(file("."))
   .aggregate(blocks.jvm, blocks.js)
   .settings(
-    publish := {},
-    publishLocal := {},
+    publish / skip := true,
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
   )
 
@@ -30,6 +29,7 @@ lazy val sample = project
   .settings(
     name := "blocks-sample",
     version := "0.1.0-SNAPSHOT",
+    publish / skip := true,
   )
 
 lazy val blocksUpickle = crossProject(JVMPlatform, JSPlatform)
