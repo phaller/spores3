@@ -24,6 +24,14 @@ lazy val blocks = crossProject(JVMPlatform, JSPlatform)
   )
   .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
 
+lazy val sample = project
+  .in(file("sample"))
+  .dependsOn(blocks.jvm)
+  .settings(
+    name := "blocks-sample",
+    version := "0.1.0-SNAPSHOT",
+  )
+
 lazy val blocksUpickle = crossProject(JVMPlatform, JSPlatform)
   .in(file("blocks-upickle"))
   .dependsOn(blocks)
