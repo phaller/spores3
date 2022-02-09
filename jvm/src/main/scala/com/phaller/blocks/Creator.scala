@@ -6,4 +6,9 @@ object Creator {
     val creatorField = creatorClass.getDeclaredField("MODULE$")
     creatorField.get(null).asInstanceOf[Block.Builder[E, T, R]]
   }
+  def applyNoEnv[E, T, R](name: String): Block.BuilderNoEnv[E, T, R] = {
+    val creatorClass = Class.forName(name + "$")
+    val creatorField = creatorClass.getDeclaredField("MODULE$")
+    creatorField.get(null).asInstanceOf[Block.BuilderNoEnv[E, T, R]]
+  }
 }

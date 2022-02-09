@@ -15,4 +15,13 @@ object Creator {
       null
   }
 
+  @JSExport("applyNoEnv")
+  def applyNoEnv[E, T, R](name: String): Block.BuilderNoEnv[E, T, R] = {
+    val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
+    if (creatorClassOpt.nonEmpty)
+      creatorClassOpt.get.loadModule().asInstanceOf[Block.BuilderNoEnv[E, T, R]]
+    else
+      null
+  }
+
 }

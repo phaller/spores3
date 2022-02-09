@@ -53,10 +53,10 @@ class PickleTests {
   def testBlockDataReadWriter(): Unit = {
     val x = 12 // environment
     val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, x)
+    val data = BlockData(name, Some(x))
     // pickle block data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock","12"]""")
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
     val unpickledData = read[BlockData[Int]](pickledData)
     assert(unpickledData == data) // structural equality
   }
@@ -65,22 +65,42 @@ class PickleTests {
   def testBlockDataToBlock(): Unit = {
     val x = 12 // environment
     val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, x)
+    val data = BlockData(name, Some(x))
     val block = data.toBlock[Int, Int]
     assert(block(3) == 16)
+  }
+
+  @Test
+  def testBlockDataToBlockWithoutEnv(): Unit = {
+    val name = "com.phaller.blocks.pickle.test.BlockWithoutEnv"
+    val data = BlockData(name, None)
+    val block = data.toBlock[Int, Int]
+    assert(block(3) == 4)
   }
 
   @Test
   def testBlockDataReadWriterToBlock(): Unit = {
     val x = 12 // environment
     val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, x)
+    val data = BlockData(name, Some(x))
     // pickle block data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock","12"]""")
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
     val unpickledData = read[BlockData[Int]](pickledData)
     val unpickledBlock = unpickledData.toBlock[Int, Int]
     assert(unpickledBlock(3) == 16)
+  }
+
+  @Test
+  def testBlockDataReadWriterToBlockWithoutEnv(): Unit = {
+    val name = "com.phaller.blocks.pickle.test.BlockWithoutEnv"
+    val data = BlockData(name, None)
+    // pickle block data
+    val pickledData = write(data)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
+    val unpickledData = read[BlockData[Nothing]](pickledData)
+    val unpickledBlock = unpickledData.toBlock[Int, Int]
+    assert(unpickledBlock(3) == 4)
   }
 
 }
