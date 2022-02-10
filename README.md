@@ -62,7 +62,7 @@ created as follows:
 
 ```scala
     val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, x) // `x` is the environment, as before
+    val data = BlockData(name, Some(x)) // `x` is the environment, as before
 ```
 
 Using the `given` instance in package "com.phaller.blocks.pickle", the
