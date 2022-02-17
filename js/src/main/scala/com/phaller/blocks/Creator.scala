@@ -16,10 +16,19 @@ object Creator {
   }
 
   @JSExport("applyNoEnv")
-  def applyNoEnv[E, T, R](name: String): Block.BuilderNoEnv[E, T, R] = {
+  def applyNoEnv[T, R](name: String): Builder[T, R] = {
     val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
     if (creatorClassOpt.nonEmpty)
-      creatorClassOpt.get.loadModule().asInstanceOf[Block.BuilderNoEnv[E, T, R]]
+      creatorClassOpt.get.loadModule().asInstanceOf[Builder[T, R]]
+    else
+      null
+  }
+
+  @JSExport("serbuilder")
+  def serbuilder[T, R](name: String): SerBuilder[T, R] = {
+    val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
+    if (creatorClassOpt.nonEmpty)
+      creatorClassOpt.get.loadModule().asInstanceOf[SerBuilder[T, R]]
     else
       null
   }

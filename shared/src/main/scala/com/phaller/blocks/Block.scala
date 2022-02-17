@@ -1,5 +1,7 @@
 package com.phaller.blocks
 
+import upickle.default._
+
 
 sealed trait Block[T, R] extends (T => R) {
 
@@ -8,19 +10,31 @@ sealed trait Block[T, R] extends (T => R) {
   def apply(x: T): R
 
   private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R
+
   private[blocks] def envir: Env
+
 }
 
-case class BlockData[E](fqn: String, envOpt: Option[E] = None) {
-  def toBlock[T, R]: Block[T, R] { type Env = E } = {
-    if (envOpt.isEmpty) {
-      val builder = Creator.applyNoEnv[E, T, R](fqn)
-      builder()
-    } else {
-      val builder = Creator[E, T, R](fqn)
-      builder(envOpt.get)
+class Builder[T, R](body: T => R) extends SerBuilder[T, R] {
+
+  def createBlock(envOpt: Option[String]): Block[T, R] =
+    apply() // envOpt is empty
+
+  def apply[E](): Block[T, R] { type Env = E } =
+    new Block[T, R] {
+      type Env = E
+      def apply(x: T): R =
+        body(x)
+      private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R =
+        body(x)
+      private[blocks] def envir =
+        throw new Exception("block does not have an environment")
     }
-  }
+
+}
+
+trait SerBuilder[T, R] {
+  def createBlock(envOpt: Option[String]): Block[T, R]
 }
 
 object Block {
@@ -30,20 +44,15 @@ object Block {
 
   opaque type EnvAsParam[T] = T
 
-  class BuilderNoEnv[E, T, R](body: T => R) {
-    def apply(): Block[T, R] { type Env = E } =
-      new Block[T, R] {
-        type Env = E
-        def apply(x: T): R =
-          body(x)
-        private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
-          body(x)
-        private[blocks] def envir =
-          throw new Exception("block does not have an environment")
-      }
-  }
+  class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R)(using envRW: ReadWriter[E]) extends SerBuilder[T, R] {
 
-  class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R) {
+    def createBlock(envOpt: Option[String]): Block[T, R] = {
+      // actually creates a Block[T, R] { type Env = E }
+      // envOpt is non-empty
+      val env = read[E](envOpt.get)
+      apply(env)
+    }
+
     def apply(env: E): Block[T, R] { type Env = E } =
       new Block[T, R] {
         type Env = E
@@ -54,6 +63,7 @@ object Block {
         private[blocks] val envir =
           env
       }
+
   }
 
   given [E: Duplicable, A, B]: Duplicable[Block[A, B] { type Env = E }] =

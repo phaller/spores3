@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Block, Creator, BlockData}
+import com.phaller.blocks.{Block, Creator, BlockData, SerBlockData}
 import com.phaller.blocks.pickle.given
 
 import upickle.default._
@@ -99,6 +99,31 @@ class PickleTests {
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
     val unpickledData = read[BlockData[Nothing]](pickledData)
+    val unpickledBlock = unpickledData.toBlock[Int, Int]
+    assert(unpickledBlock(3) == 4)
+  }
+
+  @Test
+  def testSerBlockDataReadWriterToBlock(): Unit = {
+    val x = 12 // environment
+    val name = "com.phaller.blocks.pickle.test.MyBlock"
+    val data = BlockData(name, Some(x))
+    // pickle block data
+    val pickledData = write(data)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
+    val unpickledData = read[SerBlockData](pickledData)
+    val unpickledBlock = unpickledData.toBlock[Int, Int]
+    assert(unpickledBlock(3) == 16)
+  }
+
+  @Test
+  def testSerBlockDataReadWriterToBlockWithoutEnv(): Unit = {
+    val name = "com.phaller.blocks.pickle.test.BlockWithoutEnv"
+    val data = BlockData(name, None)
+    // pickle block data
+    val pickledData = write(data)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
+    val unpickledData = read[SerBlockData](pickledData)
     val unpickledBlock = unpickledData.toBlock[Int, Int]
     assert(unpickledBlock(3) == 4)
   }

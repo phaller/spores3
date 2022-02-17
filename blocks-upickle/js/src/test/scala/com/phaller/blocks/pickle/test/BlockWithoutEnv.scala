@@ -2,10 +2,10 @@ package com.phaller.blocks.pickle.test
 
 import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
 
-import com.phaller.blocks.Block
+import com.phaller.blocks.Builder
 
 
 @EnableReflectiveInstantiation
-object BlockWithoutEnv extends Block.BuilderNoEnv[Nothing, Int, Int](
+object BlockWithoutEnv extends Builder[Int, Int](
   (x: Int) => x + 1
 )

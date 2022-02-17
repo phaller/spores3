@@ -1,8 +1,8 @@
 package com.phaller.blocks.pickle.test
 
-import com.phaller.blocks.Block
+import com.phaller.blocks.Builder
 
 
-object BlockWithoutEnv extends Block.BuilderNoEnv[Nothing, Int, Int](
+object BlockWithoutEnv extends Builder[Int, Int](
   (x: Int) => x + 1
 )

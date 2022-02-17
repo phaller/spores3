@@ -17,6 +17,7 @@ lazy val blocks = crossProject(JVMPlatform, JSPlatform)
   .settings(
     name := "blocks",
     version := "0.1.0-SNAPSHOT",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.4.2",
   )
   .jvmSettings(
     libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
@@ -25,7 +26,7 @@ lazy val blocks = crossProject(JVMPlatform, JSPlatform)
 
 lazy val sample = project
   .in(file("sample"))
-  .dependsOn(blocks.jvm)
+  .dependsOn(blocks.jvm, blocksUpickle.jvm)
   .settings(
     name := "blocks-sample",
     version := "0.1.0-SNAPSHOT",
