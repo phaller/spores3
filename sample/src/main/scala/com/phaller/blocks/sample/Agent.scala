@@ -34,28 +34,28 @@ object AgentMain {
     val agent = Agent(lst)
 
     // send serializable block to agent
-    val data = BlockData("com.phaller.blocks.sample.AppendThree")
+    val data = BlockData(AppendThree, None)
     agent.sendOff(data)
 
     val resFut = agent.getAsync()
-    val res = Await.result(resFut, Duration(10, "sec"))
+    val d = Duration(10, "sec")
+    val res = Await.result(resFut, d)
     println(res)
 
     // send block that appends its environment, a string
     val example = "four"
-    val appendString = BlockData("com.phaller.blocks.sample.AppendString", Some(example))
+    val appendString = BlockData(AppendString, Some(example))
     agent.sendOff(appendString)
 
-    val res2 = Await.result(agent.getAsync(), Duration(10, "sec"))
+    val res2 = Await.result(agent.getAsync(), d)
     println(res2)
 
     // send block that appends its environment, an integer
-    val appendInt = BlockData("com.phaller.blocks.sample.AppendInt", Some(5))
+    val appendInt = BlockData(AppendInt, Some(5))
     agent.sendOff(appendInt)
 
-    val res3 = Await.result(agent.getAsync(), Duration(10, "sec"))
+    val res3 = Await.result(agent.getAsync(), d)
     println(res3)
-
   }
 
 }
@@ -68,7 +68,7 @@ case class ApplyBlock[T](serialized: String) extends Message[T]
 
 /**
   * An agent maintaining a value of type `T` which must be
-  * serializable using a given of type `ReadWriter[T]`.
+  * serializable using a `ReadWriter[T]`.
   */
 class Agent[T : ReadWriter] (init: T) { self =>
   import java.util.concurrent.ConcurrentLinkedQueue

@@ -52,28 +52,26 @@ class PickleTests {
   @Test
   def testBlockDataReadWriter(): Unit = {
     val x = 12 // environment
-    val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, Some(x))
+    val data = BlockData(MyBlock, Some(x))
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
     val unpickledData = read[BlockData[Int]](pickledData)
-    assert(unpickledData == data) // structural equality
+    assert(unpickledData.fqn == data.fqn)
+    assert(unpickledData.envOpt == data.envOpt)
   }
 
   @Test
   def testBlockDataToBlock(): Unit = {
     val x = 12 // environment
-    val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, Some(x))
+    val data = BlockData(MyBlock, Some(x))
     val block = data.toBlock[Int, Int]
     assert(block(3) == 16)
   }
 
   @Test
   def testBlockDataToBlockWithoutEnv(): Unit = {
-    val name = "com.phaller.blocks.pickle.test.BlockWithoutEnv"
-    val data = BlockData(name, None)
+    val data = BlockData(BlockWithoutEnv, None)
     val block = data.toBlock[Int, Int]
     assert(block(3) == 4)
   }
@@ -81,8 +79,7 @@ class PickleTests {
   @Test
   def testBlockDataReadWriterToBlock(): Unit = {
     val x = 12 // environment
-    val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, Some(x))
+    val data = BlockData(MyBlock, Some(x))
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
@@ -93,8 +90,7 @@ class PickleTests {
 
   @Test
   def testBlockDataReadWriterToBlockWithoutEnv(): Unit = {
-    val name = "com.phaller.blocks.pickle.test.BlockWithoutEnv"
-    val data = BlockData(name, None)
+    val data = BlockData(BlockWithoutEnv, None)
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
@@ -106,8 +102,7 @@ class PickleTests {
   @Test
   def testSerBlockDataReadWriterToBlock(): Unit = {
     val x = 12 // environment
-    val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, Some(x))
+    val data = BlockData(MyBlock, Some(x))
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
@@ -118,8 +113,7 @@ class PickleTests {
 
   @Test
   def testSerBlockDataReadWriterToBlockWithoutEnv(): Unit = {
-    val name = "com.phaller.blocks.pickle.test.BlockWithoutEnv"
-    val data = BlockData(name, None)
+    val data = BlockData(BlockWithoutEnv, None)
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")

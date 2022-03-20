@@ -15,7 +15,7 @@ sealed trait Block[T, R] extends (T => R) {
 
 }
 
-class Builder[T, R](body: T => R) extends SerBuilder[T, R] {
+class Builder[T, R](body: T => R) extends TypedBuilder[Nothing, T, R] {
 
   def createBlock(envOpt: Option[String]): Block[T, R] =
     apply() // envOpt is empty
@@ -33,6 +33,8 @@ class Builder[T, R](body: T => R) extends SerBuilder[T, R] {
 
 }
 
+trait TypedBuilder[E, T, R] extends SerBuilder[T, R]
+
 trait SerBuilder[T, R] {
   def createBlock(envOpt: Option[String]): Block[T, R]
 }
@@ -44,7 +46,7 @@ object Block {
 
   opaque type EnvAsParam[T] = T
 
-  class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R)(using envRW: ReadWriter[E]) extends SerBuilder[T, R] {
+  class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R)(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
 
     def createBlock(envOpt: Option[String]): Block[T, R] = {
       // actually creates a Block[T, R] { type Env = E }

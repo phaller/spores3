@@ -8,7 +8,7 @@ import upickle.default._
 given blockDataReadWriter: ReadWriter[BlockData[Nothing]] =
   readwriter[ujson.Value].bimap[BlockData[Nothing]](
     blockData => ujson.Arr(blockData.fqn, 0),
-    json => BlockData(json(0).str, None)
+    json => new BlockData(json(0).str, None)
   )
 
 given serBlockDataReadWriter: ReadWriter[SerBlockData] =
@@ -43,6 +43,6 @@ given blockDataWithEnvReadWriter[E](using ReadWriter[E]): ReadWriter[BlockData[E
       val fqn = json(0).str
       val hasEnvNum = json(1).num
       val envOpt = if (hasEnvNum == 1) Some(read[E](json(2).str)) else None
-      BlockData(fqn, envOpt)
+      new BlockData(fqn, envOpt)
     }
   )

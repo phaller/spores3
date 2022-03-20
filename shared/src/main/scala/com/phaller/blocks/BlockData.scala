@@ -1,7 +1,23 @@
 package com.phaller.blocks
 
+import scala.quoted.*
 
-case class BlockData[E](fqn: String, envOpt: Option[E] = None) {
+
+object BlockData {
+
+  inline def apply[E](inline builder: TypedBuilder[E, _, _], inline envOpt: Option[E]): BlockData[E] = ${ applyCode('builder, 'envOpt) }
+
+  def applyCode[E](builderExpr: Expr[TypedBuilder[E, _, _]], envOptExpr: Expr[Option[E]])(using Type[E], Quotes): Expr[BlockData[E]] = {
+    import quotes.reflect.*
+    val tree: Term = builderExpr.asTerm
+    // TODO: check that tree is just an identifier referring to an object
+    val fn = Expr(tree.show)
+    '{ new BlockData[E]($fn, $envOptExpr) }
+  }
+
+}
+
+class BlockData[E] private[blocks] (val fqn: String, val envOpt: Option[E]) {
 
   def toBlock[T, R]: Block[T, R] { type Env = E } = {
     if (envOpt.isEmpty) {
