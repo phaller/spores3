@@ -17,7 +17,7 @@ object BlockData {
 
 }
 
-class BlockData[E] private[blocks] (val fqn: String, val envOpt: Option[E]) {
+class BlockData[E](val fqn: String, val envOpt: Option[E]) {
 
   def toBlock[T, R]: Block[T, R] { type Env = E } = {
     if (envOpt.isEmpty) {
