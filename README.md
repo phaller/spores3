@@ -27,8 +27,8 @@ First, the definition of the block:
     )
 ```
 
-Here, `MyBlock` is actually not a concrete block but a **block
-builder**. The reason is that the environment of the block is left
+Here, `MyBlock` is actually not a concrete block but a block
+**builder**. The reason is that the environment of the block is left
 unspecified. Note the three type arguments in `Block.Builder[Int, Int, Int]`.
 The corresponding function type `Int => Int` would only have two type
 arguments.  The type of a block builder requires a third type argument
@@ -50,24 +50,20 @@ Applying the block yields the expected result:
     assert(block(3) == 16)
 ```
 
-Instead of serializing the instance on the heap that `block` points
-to, the idea is to instead serialize a `BlockData` object which
-contains all the data and information that's necessary to re-create
-the corresponding block with its environment, possibly on a different
-machine. To enable re-creating a block, the `BlockData` object
-includes the fully-qualified name (FQN) of the block builder defined
-above.
+Instead of serializing the instance on the heap that `block` points to,
+the idea is to instead serialize a `BlockData` object which contains all
+the data and information that's necessary to re-create the corresponding
+block with its environment, possibly on a different machine. For
+example, the `BlockData` object includes the fully-qualified name of the
+block builder defined above.
 
-Assuming the FQN of `MyBlock` is
-"com.phaller.blocks.pickle.test.MyBlock", a `BlockData` object is
-created as follows:
+A `BlockData` object is created as follows:
 
 ```scala
-    val name = "com.phaller.blocks.pickle.test.MyBlock"
-    val data = BlockData(name, Some(x)) // `x` is the environment, as before
+    val data = BlockData(MyBlock, Some(x)) // `x` is the environment, as before
 ```
 
-Using the `given` instance in package "com.phaller.blocks.pickle", the
+Using the `given` instance in package `com.phaller.blocks.pickle`, the
 `BlockData` object can be pickled and unpickled as usual:
 
 ```scala
