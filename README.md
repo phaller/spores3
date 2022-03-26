@@ -1,5 +1,7 @@
 # Blocks
 
+[![Build Status](https://github.com/phaller/blocks/actions/workflows/build-test.yml/badge.svg)](https://github.com/phaller/blocks/actions)
+
 ## Pickling of blocks
 
 Blocks provide a specialized form of closures which are safe and
