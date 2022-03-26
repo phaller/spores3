@@ -1,13 +1,20 @@
-val Scala30 = "3.0.2"
-val Scala31 = "3.1.0"
+lazy val Scala30 = "3.0.2"
+lazy val Scala31 = "3.1.1"
+lazy val supportedScalaVersions = List(Scala31, Scala30)
+lazy val upickleVersion = "1.5.0"
+lazy val junitInterfaceVersion = "0.11"
 
-ThisBuild / crossScalaVersions := Seq(Scala31, Scala30)
-ThisBuild / scalaVersion := (ThisBuild / crossScalaVersions).value.last
+ThisBuild / organization := "com.phaller"
+ThisBuild / version      := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion := supportedScalaVersions.head
 
 lazy val root = project
   .in(file("."))
   .aggregate(blocks.jvm, blocks.js)
   .settings(
+    // following instructions on cross building at:
+    // https://www.scala-sbt.org/1.x/docs/Cross-Build.html
+    crossScalaVersions := Nil,
     publish / skip := true,
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
   )
@@ -16,11 +23,11 @@ lazy val blocks = crossProject(JVMPlatform, JSPlatform)
   .in(file("."))
   .settings(
     name := "blocks",
-    version := "0.1.0-SNAPSHOT",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.4.2",
+    crossScalaVersions := supportedScalaVersions,
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
   )
   .jvmSettings(
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+    libraryDependencies += "com.novocode" % "junit-interface" % junitInterfaceVersion % "test"
   )
   .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
 
@@ -29,7 +36,7 @@ lazy val sample = project
   .dependsOn(blocks.jvm, blocksUpickle.jvm)
   .settings(
     name := "blocks-sample",
-    version := "0.1.0-SNAPSHOT",
+    crossScalaVersions := supportedScalaVersions,
     publish / skip := true,
   )
 
@@ -38,11 +45,11 @@ lazy val blocksUpickle = crossProject(JVMPlatform, JSPlatform)
   .dependsOn(blocks)
   .settings(
     name := "blocks-upickle",
-    version := "0.1.0-SNAPSHOT",
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % "1.4.2",
+    crossScalaVersions := supportedScalaVersions,
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
   )
   .jvmSettings(
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test"
+    libraryDependencies += "com.novocode" % "junit-interface" % junitInterfaceVersion % "test"
   )
   .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
   .jsSettings(
