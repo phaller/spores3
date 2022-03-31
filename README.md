@@ -24,9 +24,9 @@ Creating a simple block is similar to creating a regular anonymous
 function:
 
 ```scala
-val b = Block { (x: Int) => x + 2 }
+val b = Block((x: Int) => x + 2)
 // or, using the shorter syntax:
-val b2 = Block((x: Int) => x + 2)
+val b2 = &((x: Int) => x + 2)
 ```
 
 One of the main differences to anonymous functions is visible in the

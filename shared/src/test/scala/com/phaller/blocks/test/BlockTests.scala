@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import blocks.Block
-import blocks.Block.{env, thunk}
+import blocks.Block.{env, thunk, &}
 
 
 @RunWith(classOf[JUnit4])
@@ -14,10 +14,20 @@ class BlockTests {
 
   @Test
   def testWithoutEnv(): Unit = {
-    val s = Block {
-      (x: Int) => x + 2
-    }
-    val res = s(3)
+    val b = Block { (x: Int) => x + 2 }
+    val res = b(3)
+    assert(res == 5)
+  }
+
+  @Test
+  def testWithoutEnv2(): Unit = {
+    def fun(block: Block[Int, Int] { type Env = Nothing }): Unit = {}
+
+    val b = Block((x: Int) => x + 2)
+
+    fun(b)
+
+    val res = b(3)
     assert(res == 5)
   }
 
@@ -27,6 +37,18 @@ class BlockTests {
       (x: Int) => x + 2
     }
     val res = s(3)
+    assert(res == 5)
+  }
+
+  @Test
+  def testWithoutEnvSymbolic(): Unit = {
+    def fun(block: Block[Int, Int] { type Env = Nothing }): Unit = {}
+
+    val b = &((x: Int) => x + 2)
+
+    fun(b)
+
+    val res = b(3)
     assert(res == 5)
   }
 
@@ -57,6 +79,38 @@ class BlockTests {
     }
     val res = s(10)
     assert(res == 15)
+  }
+
+  @Test
+  def testWithEnv2(): Unit = {
+    val s = "anonymous function"
+    val b: Block[Int, Int] { type Env = String } = Block(s) {
+      (x: Int) => x + env.length
+    }
+    val res = b(10)
+    assert(res == 28)
+  }
+
+  @Test
+  def testWithEnvSymbolic(): Unit = {
+    val s = "anonymous function"
+    val b: Block[Int, Int] { type Env = String } =
+      &(s) { (x: Int) => x + env.length }
+    val res = b(10)
+    assert(res == 28)
+  }
+
+  @Test
+  def testWithEnvTuple(): Unit = {
+    val s = "anonymous function"
+    val i = 5
+
+    val b: Block[Int, Int] { type Env = (String, Int) } = Block((s, i)) {
+      (x: Int) => x + env._1.length - env._2
+    }
+
+    val res = b(10)
+    assert(res == 23)
   }
 
   @Test

@@ -1,5 +1,7 @@
 package com.phaller.blocks
 
+import scala.annotation.targetName
+
 import upickle.default._
 
 
@@ -117,6 +119,10 @@ object Block {
       private[blocks] val envir = env
     }
 
+  @targetName("and")
+  def &[T, A, B](env: T)(body: A => EnvAsParam[T] ?=> B): Block[A, B] { type Env = T } =
+    apply[T, A, B](env)(body)
+
   /* Requirements:
    * - `body` must be a function literal
    * - `body` must not capture anything
@@ -130,6 +136,10 @@ object Block {
       private[blocks] def envir =
         throw new Exception("block does not have an environment")
     }
+
+  @targetName("and")
+  def &[T, R](body: T => R): Block[T, R] { type Env = Nothing } =
+    apply[T, R](body)
 
   /* Requirements:
    * - `body` must be a function literal
