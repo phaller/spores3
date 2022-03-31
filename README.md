@@ -18,6 +18,62 @@ Blocks provide abstractions for closures (or lambda expressions or anonymous fun
 
 [Spores](https://scalacenter.github.io/spores/spores.html) provided some of the same properties. Blocks can be seen as a new take on spores that builds on several new features of Scala 3, in particular, context functions and opaque types. By leveraging these features, blocks have a simpler, more robust implementation (with only about 10 lines of macro code). In addition, blocks use a new approach for type-class-based serialization.
 
+## Overview
+
+Creating a simple block is similar to creating a regular anonymous
+function:
+
+```scala
+val b = Block { (x: Int) => x + 2 }
+// or, using the shorter syntax:
+val b2 = Block((x: Int) => x + 2)
+```
+
+One of the main differences to anonymous functions is visible in the
+type of the above two blocks:
+
+```scala
+Block[Int, Int] { type Env = Nothing }
+```
+
+In contrast to regular function types, block types have a type member
+`Env` indicating the type of the environment. Since the above two
+blocks don't have an environment (their bodies only access the
+parameter) the environment type is `Nothing`.
+
+Let's create a block with an environment. Instead of simply using a
+variable within the body of a block which becomes part of the
+environment, the environment of a block needs to be passed explicitly
+as an argument:
+
+```scala
+val s = "anonymous function"
+
+val b = Block(s) {
+  (x: Int) => x + env.length
+}
+```
+
+Within a block, the environment is accessed using the `env` member of
+the `Block` object. In the above example, `env` has type
+`String`. Consequently, the type of the block is `Block[Int, Int] {
+type Env = String }`.
+
+Note that the environment of a block is always passed as a **single**
+argument; environments with several values/objects require the use of
+tuples, for example:
+
+```scala
+val s = "anonymous function"
+val i = 5
+
+val b = Block((s, i)) {
+  (x: Int) => x + env._1.length - env._2
+}
+```
+
+The corresponding block type is `Block[Int, Int] { type Env = (String,
+Int) }`.
 
 ## Pickling of blocks
 
