@@ -2,6 +2,23 @@
 
 [![Build Status](https://github.com/phaller/blocks/actions/workflows/build-test.yml/badge.svg)](https://github.com/phaller/blocks/actions)
 
+## Introduction
+
+Blocks provide abstractions for closures (or lambda expressions or anonymous functions) whose environment is made explicit. The environment of a closure is defined by the variables captured by the closure. The goal is to make closures more flexible and safer by avoiding some of the issues of closures when used in the context of concurrent or distributed programming.
+
+**Flexibility.** Blocks are more flexible than closures. For example:
+- blocks can be enforced to not capture any variables (using type checking)
+- blocks can be serialized robustly using any serialization library, including type-class-based serialization (for example, using [uPickle](https://com-lihaoyi.github.io/upickle/))
+- blocks can be duplicated such that their environment is deeply cloned
+
+**Safety.** Blocks are safer for concurrency and distribution. For example,
+- blocks can be enforced to only capture variables that are thread-safe (e.g., Future[T]) or immutable (using type classes)
+- blocks can be enforced at compile time to be serializable, not restricted to Java or Kryo serialization (for example, the compiler can check whether there is a uPickle ReadWriter)
+- blocks can capture their environment by deep-copy, cloning possibly mutable objects in the environment before spawning a concurrent task
+
+[Spores](https://scalacenter.github.io/spores/spores.html) provided some of the same properties. Blocks can be seen as a new take on spores that builds on several new features of Scala 3, in particular, context functions and opaque types. By leveraging these features, blocks have a simpler, more robust implementation (with only about 10 lines of macro code). In addition, blocks use a new approach for type-class-based serialization.
+
+
 ## Pickling of blocks
 
 Blocks provide a specialized form of closures which are safe and
