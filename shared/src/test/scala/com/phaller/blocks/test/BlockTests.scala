@@ -101,6 +101,17 @@ class BlockTests {
   }
 
   @Test
+  def testWithEnvSymbolic2(): Unit = {
+    val s = "anonymous function"
+
+    def fun(a: Block[Int, Int]) = a(10)
+
+    val res = fun(&(s) { _ + env.length })
+
+    assert(res == 28)
+  }
+
+  @Test
   def testWithEnvTuple(): Unit = {
     val s = "anonymous function"
     val i = 5

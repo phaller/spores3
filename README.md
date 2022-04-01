@@ -7,7 +7,7 @@
 Blocks provide abstractions for closures (or lambda expressions or anonymous functions) whose environment is made explicit. The environment of a closure is defined by the variables captured by the closure. The goal is to make closures more flexible and safer by avoiding some of the issues of closures when used in the context of concurrent or distributed programming.
 
 **Flexibility and safety.** Blocks are more flexible than closures, and safer for concurrency and distribution.<sup>*)</sup> For example:
-- The environment of a block can be constrained using type classes. For example, the environment type of a block can be enforced to be thread-safe (e.g., `Future[T]`) or immutable (using type classes).
+- The environment of a block can be constrained using type classes. For example, the environment type of a block can be enforced to be thread-safe (e.g., `Future[T]`) or immutable.
 - Blocks can be serialized simply and robustly using type-class-based serialization libraries, such as [uPickle](https://com-lihaoyi.github.io/upickle/). To increase safety, blocks can be enforced at compile time to be serializable. For example, the compiler can check whether there is a uPickle `ReadWriter` for the block's environment.
 - Blocks can be duplicated such that their environment is deeply copied, cloning possibly mutable objects. This enables safer concurrency, for example, by duplicating blocks before spawning them as concurrent tasks.
 
@@ -46,9 +46,17 @@ as an argument:
 ```scala
 val s = "anonymous function"
 
-val b = Block(s) {
+val b = Block(s) {  // `s` is the environment of the block
   (x: Int) => x + env.length
 }
+
+// or, using the shorter syntax:
+val b2 = &(s) { (x: Int) => x + env.length }
+
+def fun(a: Block[Int, Int]) = a(10)
+
+// inferred parameter type due to expected type:
+fun(&(s) { _ + env.length })
 ```
 
 Within a block, the environment is accessed using the `env` member of
