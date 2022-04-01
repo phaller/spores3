@@ -6,17 +6,14 @@
 
 Blocks provide abstractions for closures (or lambda expressions or anonymous functions) whose environment is made explicit. The environment of a closure is defined by the variables captured by the closure. The goal is to make closures more flexible and safer by avoiding some of the issues of closures when used in the context of concurrent or distributed programming.
 
-**Flexibility.** Blocks are more flexible than closures. For example:
-- blocks can be enforced to not capture any variables (using type checking)
-- blocks can be serialized robustly using any serialization library, including type-class-based serialization (for example, using [uPickle](https://com-lihaoyi.github.io/upickle/))
-- blocks can be duplicated such that their environment is deeply cloned
-
-**Safety.** Blocks are safer for concurrency and distribution. For example,
-- blocks can be enforced to only capture variables that are thread-safe (e.g., Future[T]) or immutable (using type classes)
-- blocks can be enforced at compile time to be serializable, not restricted to Java or Kryo serialization (for example, the compiler can check whether there is a uPickle ReadWriter)
-- blocks can capture their environment by deep-copy, cloning possibly mutable objects in the environment before spawning a concurrent task
+**Flexibility and safety.** Blocks are more flexible than closures, and safer for concurrency and distribution.<sup>*)</sup> For example:
+- The environment of a block can be constrained using type classes. For example, the environment type of a block can be enforced to be thread-safe (e.g., `Future[T]`) or immutable (using type classes).
+- Blocks can be serialized simply and robustly using type-class-based serialization libraries, such as [uPickle](https://com-lihaoyi.github.io/upickle/). To increase safety, blocks can be enforced at compile time to be serializable. For example, the compiler can check whether there is a uPickle `ReadWriter` for the block's environment.
+- Blocks can be duplicated such that their environment is deeply copied, cloning possibly mutable objects. This enables safer concurrency, for example, by duplicating blocks before spawning them as concurrent tasks.
 
 [Spores](https://scalacenter.github.io/spores/spores.html) provided some of the same properties. Blocks can be seen as a new take on spores that builds on several new features of Scala 3, in particular, context functions and opaque types. By leveraging these features, blocks have a simpler, more robust implementation (with only about 10 lines of macro code). In addition, blocks use a new approach for type-class-based serialization.
+
+<sup>*)</sup> For additional safety guarantees, blocks will likely be able to leverage capturing types provided by the experimental [capture checking](https://dotty.epfl.ch/docs/reference/experimental/cc.html) extension of Scala's type system.
 
 ## Overview
 
