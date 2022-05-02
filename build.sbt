@@ -8,6 +8,13 @@ ThisBuild / organization := "com.phaller"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := supportedScalaVersions.head
 
+ThisBuild / credentials += Credentials(
+  "GnuPG Key ID",
+  "gpg",
+  "D83E7D99A038AF99DEDC841C73187B9E148329E6",
+  "ignored"
+)
+
 lazy val root = project
   .in(file("."))
   .aggregate(blocks.jvm, blocks.js)
