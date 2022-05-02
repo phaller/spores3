@@ -5,6 +5,36 @@ lazy val upickleVersion = "1.5.0"
 lazy val junitInterfaceVersion = "0.11"
 
 ThisBuild / organization := "com.phaller"
+ThisBuild / organizationName := "Philipp Haller"
+ThisBuild / organizationHomepage := Some(url("https://www.phaller.com/"))
+
+ThisBuild / scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/phaller/blocks"),
+    "scm:git@github.com:phaller/blocks.git"
+  )
+)
+ThisBuild / developers := List(
+  Developer(
+    id    = "phaller",
+    name  = "Philipp Haller",
+    email = "hallerp@gmail.com",
+    url   = url("https://github.com/phaller")
+  )
+)
+
+ThisBuild / description := "Blocks provide abstractions for making closures in Scala safer and more flexible"
+ThisBuild / licenses := List("Apache-2.0" -> new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
+ThisBuild / homepage := Some(url("https://github.com/phaller/blocks"))
+
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := {
+  val nexus = "https://s01.oss.sonatype.org/"
+  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+ThisBuild / publishMavenStyle := true
+
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := supportedScalaVersions.head
 
