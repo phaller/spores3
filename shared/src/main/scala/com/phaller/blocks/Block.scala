@@ -35,9 +35,9 @@ class Builder[T, R](body: T => R) extends TypedBuilder[Nothing, T, R] {
 
 }
 
-trait TypedBuilder[E, T, R] extends SerBuilder[T, R]
+trait TypedBuilder[E, T, R] extends PackedBuilder[T, R]
 
-trait SerBuilder[T, R] {
+trait PackedBuilder[T, R] {
   def createBlock(envOpt: Option[String]): Block[T, R]
 }
 

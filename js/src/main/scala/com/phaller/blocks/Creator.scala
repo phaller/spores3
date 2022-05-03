@@ -24,11 +24,11 @@ object Creator {
       null
   }
 
-  @JSExport("serbuilder")
-  def serbuilder[T, R](name: String): SerBuilder[T, R] = {
+  @JSExport("packedBuilder")
+  def packedBuilder[T, R](name: String): PackedBuilder[T, R] = {
     val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
     if (creatorClassOpt.nonEmpty)
-      creatorClassOpt.get.loadModule().asInstanceOf[SerBuilder[T, R]]
+      creatorClassOpt.get.loadModule().asInstanceOf[PackedBuilder[T, R]]
     else
       null
   }

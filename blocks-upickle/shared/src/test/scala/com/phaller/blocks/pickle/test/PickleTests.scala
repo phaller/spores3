@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Block, Creator, BlockData, SerBlockData}
+import com.phaller.blocks.{Block, Creator, BlockData, PackedBlockData}
 import com.phaller.blocks.pickle.given
 
 import upickle.default._
@@ -100,24 +100,24 @@ class PickleTests {
   }
 
   @Test
-  def testSerBlockDataReadWriterToBlock(): Unit = {
+  def testPackedBlockDataReadWriterToBlock(): Unit = {
     val x = 12 // environment
     val data = BlockData(MyBlock, Some(x))
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
-    val unpickledData = read[SerBlockData](pickledData)
+    val unpickledData = read[PackedBlockData](pickledData)
     val unpickledBlock = unpickledData.toBlock[Int, Int]
     assert(unpickledBlock(3) == 16)
   }
 
   @Test
-  def testSerBlockDataReadWriterToBlockWithoutEnv(): Unit = {
+  def testPackedBlockDataReadWriterToBlockWithoutEnv(): Unit = {
     val data = BlockData(BlockWithoutEnv, None)
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
-    val unpickledData = read[SerBlockData](pickledData)
+    val unpickledData = read[PackedBlockData](pickledData)
     val unpickledBlock = unpickledData.toBlock[Int, Int]
     assert(unpickledBlock(3) == 4)
   }

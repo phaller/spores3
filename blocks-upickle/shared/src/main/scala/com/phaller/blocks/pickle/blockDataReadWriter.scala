@@ -1,6 +1,6 @@
 package com.phaller.blocks.pickle
 
-import com.phaller.blocks.{BlockData, SerBlockData}
+import com.phaller.blocks.{BlockData, PackedBlockData}
 
 import upickle.default._
 
@@ -11,8 +11,8 @@ given blockDataReadWriter: ReadWriter[BlockData[Nothing]] =
     json => new BlockData(json(0).str, None)
   )
 
-given serBlockDataReadWriter: ReadWriter[SerBlockData] =
-  readwriter[ujson.Value].bimap[SerBlockData](
+given packedBlockDataReadWriter: ReadWriter[PackedBlockData] =
+  readwriter[ujson.Value].bimap[PackedBlockData](
     blockData => {
       val hasEnvNum = if (blockData.envOpt.nonEmpty) 1 else 0
       if (hasEnvNum == 1)
@@ -24,7 +24,7 @@ given serBlockDataReadWriter: ReadWriter[SerBlockData] =
       val fqn = json(0).str
       val hasEnvNum = json(1).num
       val envOpt = if (hasEnvNum == 1) Some(json(2).str) else None
-      SerBlockData(fqn, envOpt)
+      PackedBlockData(fqn, envOpt)
     }
   )
 

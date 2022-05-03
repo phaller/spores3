@@ -31,10 +31,10 @@ class BlockData[E](val fqn: String, val envOpt: Option[E]) {
 
 }
 
-case class SerBlockData(fqn: String, envOpt: Option[String] = None) {
+case class PackedBlockData(fqn: String, envOpt: Option[String] = None) {
 
   def toBlock[T, R]: Block[T, R] = {
-    val builder = Creator.serbuilder[T, R](fqn)
+    val builder = Creator.packedBuilder[T, R](fqn)
     builder.createBlock(envOpt)
   }
 

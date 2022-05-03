@@ -142,21 +142,25 @@ A `BlockData` object is created as follows:
 ```
 
 Using the `given` instance in package `com.phaller.blocks.pickle`, the
-`BlockData` object can be pickled and unpickled as usual:
+`BlockData` object can be pickled and unpickled:
 
 ```scala
     val pickledData = write(data)
-    val unpickledData = read[BlockData[Int]](pickledData)
+    val unpickledData = read[PackedBlockData](pickledData)
     assert(unpickledData == data)
 ```
 
 (The `read` and `write` methods have been imported from
-`upickle.default`.) Note that when unpickling `pickledData` the type
-of the environment needs to be provided (type `Int` in
-`BlockData[Int]`).
+`upickle.default`.) Note that when unpickling `pickledData` the target
+type `PackedBlockData` is specified. This way, **the type of the
+environment does not need to be provided**. A less convenient
+alternative would be to unpickle to type `BlockData[Int]` where `Int`
+is the type of the environment. This is not recommended, however, not
+least because the code unpickling the block usually is not aware of
+the environment type.
 
-With a (possibly unpickled) `BlockData` object in our hands we can
-easily make a block with its environment properly initialized:
+With a `PackedBlockData` object in our hands we can easily make a
+block with its environment properly initialized:
 
 ```scala
     val unpickledBlock = unpickledData.toBlock[Int, Int]

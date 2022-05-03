@@ -14,10 +14,10 @@ object Creator {
     creatorField.get(null).asInstanceOf[Builder[T, R]]
   }
 
-  def serbuilder[T, R](name: String): SerBuilder[T, R] = {
+  def packedBuilder[T, R](name: String): PackedBuilder[T, R] = {
     val creatorClass = Class.forName(name + "$")
     val creatorField = creatorClass.getDeclaredField("MODULE$")
-    creatorField.get(null).asInstanceOf[SerBuilder[T, R]]
+    creatorField.get(null).asInstanceOf[PackedBuilder[T, R]]
   }
 
 }
