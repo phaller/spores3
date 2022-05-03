@@ -93,7 +93,7 @@ Let's have a look at an example that shows how to pickle a block using
 uPickle. The shown code snippets assume the following imports:
 
 ```scala
-    import com.phaller.blocks.{Block, BlockData}
+    import com.phaller.blocks.{Block, BlockData, PackedBlockData}
     import com.phaller.blocks.pickle.given
 ```
 
@@ -147,7 +147,6 @@ Using the `given` instance in package `com.phaller.blocks.pickle`, the
 ```scala
     val pickledData = write(data)
     val unpickledData = read[PackedBlockData](pickledData)
-    assert(unpickledData == data)
 ```
 
 (The `read` and `write` methods have been imported from
@@ -156,7 +155,7 @@ type `PackedBlockData` is specified. This way, **the type of the
 environment does not need to be provided**. A less convenient
 alternative would be to unpickle to type `BlockData[Int]` where `Int`
 is the type of the environment. This is not recommended, however, not
-least because the code unpickling the block usually is not aware of
+least because the code unpickling the block is usually not aware of
 the environment type.
 
 With a `PackedBlockData` object in our hands we can easily make a
