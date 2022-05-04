@@ -5,10 +5,13 @@ import com.phaller.blocks.{BlockData, PackedBlockData}
 import upickle.default._
 
 
-given blockDataReadWriter: ReadWriter[BlockData[Nothing]] =
-  readwriter[ujson.Value].bimap[BlockData[Nothing]](
+given blockDataReadWriter[T, R]: ReadWriter[BlockData[T, R] { type Env = Nothing }] =
+  readwriter[ujson.Value].bimap[BlockData[T, R] { type Env = Nothing }](
     blockData => ujson.Arr(blockData.fqn, 0),
-    json => new BlockData(json(0).str, None)
+    json => new BlockData[T, R](json(0).str) {
+      type Env = Nothing
+      def envOpt = None
+    }
   )
 
 given packedBlockDataReadWriter: ReadWriter[PackedBlockData] =
@@ -28,8 +31,8 @@ given packedBlockDataReadWriter: ReadWriter[PackedBlockData] =
     }
   )
 
-given blockDataWithEnvReadWriter[E](using ReadWriter[E]): ReadWriter[BlockData[E]] =
-  readwriter[ujson.Value].bimap[BlockData[E]](
+given blockDataWithEnvReadWriter[N, T, R](using ReadWriter[N]): ReadWriter[BlockData[T, R] { type Env = N }] =
+  readwriter[ujson.Value].bimap[BlockData[T, R] { type Env = N }](
     blockData => {
       val hasEnvNum = if (blockData.envOpt.nonEmpty) 1 else 0
       if (hasEnvNum == 1) {
@@ -42,7 +45,10 @@ given blockDataWithEnvReadWriter[E](using ReadWriter[E]): ReadWriter[BlockData[E
     json => {
       val fqn = json(0).str
       val hasEnvNum = json(1).num
-      val envOpt = if (hasEnvNum == 1) Some(read[E](json(2).str)) else None
-      new BlockData(fqn, envOpt)
+      val maybeEnv = if (hasEnvNum == 1) Some(read[N](json(2).str)) else None
+      new BlockData[T, R](fqn) {
+        type Env = N
+        def envOpt = maybeEnv
+      }
     }
   )

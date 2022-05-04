@@ -56,7 +56,7 @@ class PickleTests {
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
-    val unpickledData = read[BlockData[Int]](pickledData)
+    val unpickledData = read[BlockData[Int, Int] { type Env = Int }](pickledData)
     assert(unpickledData.fqn == data.fqn)
     assert(unpickledData.envOpt == data.envOpt)
   }
@@ -65,14 +65,14 @@ class PickleTests {
   def testBlockDataToBlock(): Unit = {
     val x = 12 // environment
     val data = BlockData(MyBlock, Some(x))
-    val block = data.toBlock[Int, Int]
+    val block = data.toBlock
     assert(block(3) == 16)
   }
 
   @Test
   def testBlockDataToBlockWithoutEnv(): Unit = {
     val data = BlockData(BlockWithoutEnv, None)
-    val block = data.toBlock[Int, Int]
+    val block = data.toBlock
     assert(block(3) == 4)
   }
 
@@ -83,8 +83,8 @@ class PickleTests {
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
-    val unpickledData = read[BlockData[Int]](pickledData)
-    val unpickledBlock = unpickledData.toBlock[Int, Int]
+    val unpickledData = read[BlockData[Int, Int] { type Env = Int }](pickledData)
+    val unpickledBlock = unpickledData.toBlock
     assert(unpickledBlock(3) == 16)
   }
 
@@ -94,8 +94,8 @@ class PickleTests {
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
-    val unpickledData = read[BlockData[Nothing]](pickledData)
-    val unpickledBlock = unpickledData.toBlock[Int, Int]
+    val unpickledData = read[BlockData[Int, Int] { type Env = Nothing }](pickledData)
+    val unpickledBlock = unpickledData.toBlock
     assert(unpickledBlock(3) == 4)
   }
 

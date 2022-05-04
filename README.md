@@ -153,10 +153,9 @@ Using the `given` instance in package `com.phaller.blocks.pickle`, the
 `upickle.default`.) Note that when unpickling `pickledData` the target
 type `PackedBlockData` is specified. This way, **the type of the
 environment does not need to be provided**. A less convenient
-alternative would be to unpickle to type `BlockData[Int]` where `Int`
-is the type of the environment. This is not recommended, however, not
-least because the code unpickling the block is usually not aware of
-the environment type.
+alternative would be to unpickle to type `BlockData[Int, Int] { type
+Env = Int }`. This is not recommended, however, because the code
+unpickling the block is usually not aware of the environment type.
 
 With a `PackedBlockData` object in our hands we can easily make a
 block with its environment properly initialized:

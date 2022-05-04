@@ -5,26 +5,33 @@ import scala.quoted.*
 
 object BlockData {
 
-  inline def apply[E](inline builder: TypedBuilder[E, _, _], inline envOpt: Option[E]): BlockData[E] = ${ applyCode('builder, 'envOpt) }
+  inline def apply[N, T, R](inline builder: TypedBuilder[N, T, R], inline envOpt: Option[N]): BlockData[T, R] { type Env = N } = ${ applyCode('builder, 'envOpt) }
 
-  def applyCode[E](builderExpr: Expr[TypedBuilder[E, _, _]], envOptExpr: Expr[Option[E]])(using Type[E], Quotes): Expr[BlockData[E]] = {
+  def applyCode[N, T, R](builderExpr: Expr[TypedBuilder[N, T, R]], envOptExpr: Expr[Option[N]])(using Type[N], Type[T], Type[R], Quotes): Expr[BlockData[T, R] { type Env = N }] = {
     import quotes.reflect.*
     val tree: Term = builderExpr.asTerm
     // TODO: check that tree is just an identifier referring to an object
     val fn = Expr(tree.show)
-    '{ new BlockData[E]($fn, $envOptExpr) }
+    '{ new BlockData[T, R]($fn) {
+      type Env = N
+      def envOpt = $envOptExpr
+    } }
   }
 
 }
 
-class BlockData[E](val fqn: String, val envOpt: Option[E]) {
+abstract class BlockData[T, R](val fqn: String) { self =>
 
-  def toBlock[T, R]: Block[T, R] { type Env = E } = {
+  type Env
+
+  def envOpt: Option[Env]
+
+  def toBlock: Block[T, R] { type Env = self.Env } = {
     if (envOpt.isEmpty) {
       val builder = Creator.applyNoEnv[T, R](fqn)
-      builder[E]()
+      builder[Env]()
     } else {
-      val builder = Creator[E, T, R](fqn)
+      val builder = Creator[Env, T, R](fqn)
       builder(envOpt.get)
     }
   }

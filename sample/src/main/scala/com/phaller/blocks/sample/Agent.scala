@@ -7,7 +7,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.ExecutionContext
 
-import com.phaller.blocks.{Block, Builder, BlockData, SerBlockData}
+import com.phaller.blocks.{Block, Builder, BlockData, PackedBlockData}
 import com.phaller.blocks.Block.env
 import com.phaller.blocks.pickle.given
 
@@ -79,7 +79,7 @@ class Agent[T : ReadWriter] (init: T) { self =>
 
   private val state: AtomicReference[T] = new AtomicReference(init)
 
-  def sendOff[E](blockData: BlockData[E])(using ReadWriter[BlockData[E]]): Unit = {
+  def sendOff[N](blockData: BlockData[T, T] { type E = N })(using ReadWriter[BlockData[T, T] { type E = N }]): Unit = {
     // serialize
     val pickledData = write(blockData)
 
@@ -93,7 +93,7 @@ class Agent[T : ReadWriter] (init: T) { self =>
           mailbox.poll() match {
             case ApplyBlock(serialized) =>
               // deserialize
-              val unpickledData = read[SerBlockData](serialized)
+              val unpickledData = read[PackedBlockData](serialized)
               val unpickledBlock = unpickledData.toBlock[T, T]
 
               // update state by applying the unpickled block
