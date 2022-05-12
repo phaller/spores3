@@ -9,8 +9,17 @@ object BlockData {
 
   def applyCode[N, T, R](builderExpr: Expr[TypedBuilder[N, T, R]], envOptExpr: Expr[Option[N]])(using Type[N], Type[T], Type[R], Quotes): Expr[BlockData[T, R] { type Env = N }] = {
     import quotes.reflect.*
+
+    def allOwnersOK(owner: Symbol): Boolean =
+      owner.isNoSymbol || ((owner.flags.is(Flags.Module) || owner.flags.is(Flags.Package)) && allOwnersOK(owner.owner))
+
     val tree: Term = builderExpr.asTerm
-    // TODO: check that tree is just an identifier referring to an object
+    val builderTpe = tree.tpe
+    val owner = builderTpe.typeSymbol.maybeOwner
+    if (!allOwnersOK(owner)) {
+      report.error("An owner of the provided builder is neither an object nor a package.")
+    }
+
     val fn = Expr(tree.show)
     '{ new BlockData[T, R]($fn) {
       type Env = N
