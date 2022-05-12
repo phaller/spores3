@@ -5,7 +5,7 @@ import scala.annotation.targetName
 import upickle.default._
 
 
-sealed trait Block[T, R] extends (T => R) {
+sealed trait Block[-T, +R] extends (T => R) {
 
   type Env
 
