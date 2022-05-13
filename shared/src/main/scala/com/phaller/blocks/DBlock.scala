@@ -11,21 +11,21 @@ object DBlock {
 
 }
 
-trait DBlock[T, R] {
-  type TheEnv
-  def block: Block[T, R] { type Env = TheEnv }
-  def duplicable: Duplicable[Block[T, R] { type Env = TheEnv }]
-  def duplicate(): Block[T, R] { type Env = TheEnv } =
+trait DBlock[T, R] { self =>
+  type Env
+  def block: Block[T, R] { type Env = self.Env }
+  def duplicable: Duplicable[Block[T, R] { type Env = self.Env }]
+  def duplicate(): Block[T, R] { type Env = self.Env } =
     duplicable.duplicate(block)
 }
 
-class DBlockWithEnv[T, R](val b: Block[T, R])(using Duplicable[b.Env]) extends DBlock[T, R] {
-  type TheEnv = b.Env
+private class DBlockWithEnv[T, R](val b: Block[T, R])(using Duplicable[b.Env]) extends DBlock[T, R] {
+  type Env = b.Env
   val block = b
-  val duplicable = summon[Duplicable[Block[T, R] { type Env = TheEnv }]]
+  val duplicable = summon[Duplicable[Block[T, R] { type Env = b.Env }]]
 }
 
-class DBlockWithoutEnv[T, R](val block: Block[T, R] { type Env = Nothing }) extends DBlock[T, R] {
-  type TheEnv = Nothing
-  val duplicable = summon[Duplicable[Block[T, R] { type Env = TheEnv }]]
+private class DBlockWithoutEnv[T, R](val block: Block[T, R] { type Env = Nothing }) extends DBlock[T, R] {
+  type Env = Nothing
+  val duplicable = summon[Duplicable[Block[T, R] { type Env = Nothing }]]
 }
