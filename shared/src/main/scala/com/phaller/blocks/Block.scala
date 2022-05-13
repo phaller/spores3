@@ -5,10 +5,33 @@ import scala.annotation.targetName
 import upickle.default.*
 
 
+/**
+  * The type of a *block*, a special kind of closure with an explicit
+  * environment. The environment of a block is a single, internal
+  * value or reference whose type is indicated by the `Block` trait's
+  * `Env` type member.
+  *
+  * Blocks are created in one of two ways: either using the factory
+  * methods of the `Block` companion object, or using a *block
+  * builder*. Block builders are top-level objects extending either
+  * [[Builder]] or [[Block.Builder]].
+  *
+  * Like a regular function type, the type of blocks is contravariant
+  * in its parameter type and covariant in its result type.
+  *
+  * @tparam T the parameter type
+  * @tparam R the result type
+  */
 sealed trait Block[-T, +R] extends (T => R) {
 
+  /** The type of the block's environment.
+    */
   type Env
 
+  /** Applies the block to the given argument.
+    *
+    * @param x the argument of the block application
+    */
   def apply(x: T): R
 
   private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R
@@ -41,11 +64,22 @@ trait PackedBuilder[T, R] {
   def createBlock(envOpt: Option[String]): Block[T, R]
 }
 
+/** The `Block` companion object provides factory methods and the
+  * [[Block.Builder]] class for creating blocks, as well as the `env`
+  * member used to access the environment of a block from within the
+  * block's body.
+  */
 object Block {
 
+  /** Applies a block with parameter type `Unit`.
+    */
   extension [R](block: Block[Unit, R])
     def apply(): R = block.apply(())
 
+  /** The type under which the environment of a block is accessible.
+    *
+    * Only used internally (hence opaque).
+    */
   opaque type EnvAsParam[T] = T
 
   class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R)(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
@@ -103,30 +137,46 @@ object Block {
 
   /** The environment of a block is accessed using `env` from within
     * the body of the block.
+    *
+    * @tparam E the type of the environment of the current block
+    * @return the environment of the current block
     */
-  def env[T](using ep: EnvAsParam[T]): T = ep
+  def env[E](using ep: EnvAsParam[E]): E = ep
 
-  /* Requirements:
-   * - `body` must be a function literal
-   * - `body` must not capture anything
-   */
-  def apply[T, A, B](env: T)(body: A => EnvAsParam[T] ?=> B): Block[A, B] { type Env = T } =
-    new Block[A, B] {
-      type Env = T
-      def apply(x: A): B = body(x)(using env)
-      private[blocks] def applyInternal(x: A)(using EnvAsParam[T]): B =
+  /** Creates a block given an environment value/reference and a
+    * function.  The given function must not capture anything; the
+    * `env` member must be used to access the block's environment.  In
+    * order to create a block with environment, the given function
+    * must be a *function literal*.
+    *
+    * @tparam E the type of the block's environment
+    * @tparam T the block's parameter type
+    * @tparam R the block's result type
+    * @param env  the block's environment
+    * @param body the block's body
+    * @return a block initialized with the given environment and body
+    */
+  def apply[E, T, R](env: E)(body: T => EnvAsParam[E] ?=> R): Block[T, R] { type Env = E } =
+    new Block[T, R] {
+      type Env = E
+      def apply(x: T): R = body(x)(using env)
+      private[blocks] def applyInternal(x: T)(using EnvAsParam[E]): R =
         body(x)
       private[blocks] val envir = env
     }
 
   @targetName("and")
-  def &[T, A, B](env: T)(body: A => EnvAsParam[T] ?=> B): Block[A, B] { type Env = T } =
-    apply[T, A, B](env)(body)
+  def &[E, T, R](env: E)(body: T => EnvAsParam[E] ?=> R): Block[T, R] { type Env = E } =
+    apply[E, T, R](env)(body)
 
-  /* Requirements:
-   * - `body` must be a function literal
-   * - `body` must not capture anything
-   */
+  /** Creates a block without an environment. The given body (function)
+    * must not capture anything.
+    *
+    * @tparam T the block's parameter type
+    * @tparam R the block's result type
+    * @param body the block's body
+    * @return a block with the given body
+    */
   def apply[T, R](body: T => R): Block[T, R] { type Env = Nothing } =
     new Block[T, R] {
       type Env = Nothing
