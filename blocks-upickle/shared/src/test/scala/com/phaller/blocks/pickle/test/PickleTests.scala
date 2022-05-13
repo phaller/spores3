@@ -71,7 +71,7 @@ class PickleTests {
 
   @Test
   def testBlockDataToBlockWithoutEnv(): Unit = {
-    val data = BlockData(BlockWithoutEnv, None)
+    val data = BlockData(BlockWithoutEnv)
     val block = data.toBlock
     assert(block(3) == 4)
   }
@@ -90,7 +90,7 @@ class PickleTests {
 
   @Test
   def testBlockDataReadWriterToBlockWithoutEnv(): Unit = {
-    val data = BlockData(BlockWithoutEnv, None)
+    val data = BlockData(BlockWithoutEnv)
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
@@ -113,7 +113,7 @@ class PickleTests {
 
   @Test
   def testPackedBlockDataReadWriterToBlockWithoutEnv(): Unit = {
-    val data = BlockData(BlockWithoutEnv, None)
+    val data = BlockData(BlockWithoutEnv)
     // pickle block data
     val pickledData = write(data)
     assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")

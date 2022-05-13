@@ -42,7 +42,7 @@ sealed trait Block[-T, +R] extends (T => R) {
 
 class Builder[T, R](body: T => R) extends TypedBuilder[Nothing, T, R] {
 
-  def createBlock(envOpt: Option[String]): Block[T, R] =
+  private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] =
     apply() // envOpt is empty
 
   def apply[E](): Block[T, R] { type Env = E } =
@@ -61,7 +61,7 @@ class Builder[T, R](body: T => R) extends TypedBuilder[Nothing, T, R] {
 trait TypedBuilder[E, T, R] extends PackedBuilder[T, R]
 
 trait PackedBuilder[T, R] {
-  def createBlock(envOpt: Option[String]): Block[T, R]
+  private[blocks] def createBlock(envOpt: Option[String]): Block[T, R]
 }
 
 /** The `Block` companion object provides factory methods and the
@@ -84,7 +84,7 @@ object Block {
 
   class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R)(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
 
-    def createBlock(envOpt: Option[String]): Block[T, R] = {
+    private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] = {
       // actually creates a Block[T, R] { type Env = E }
       // envOpt is non-empty
       val env = read[E](envOpt.get)

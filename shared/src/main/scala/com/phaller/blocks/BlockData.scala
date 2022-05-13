@@ -3,11 +3,25 @@ package com.phaller.blocks
 import scala.quoted.*
 
 
+/** Enables creating [[BlockData]] objects.
+  */
 object BlockData {
 
-  inline def apply[N, T, R](inline builder: TypedBuilder[N, T, R], inline envOpt: Option[N]): BlockData[T, R] { type Env = N } = ${ applyCode('builder, 'envOpt) }
+  /** Creates a `BlockData` instance which serves as a serializable form
+    * of a block. The method requires a *block builder* which is a
+    * top-level object extending either [[Builder]] or
+    * [[Block.Builder]].  Both of these implement the [[TypedBuilder]]
+    * trait.
+    *
+    * @tparam N the type of the block's environment
+    * @tparam T the block's parameter type
+    * @tparam R the block's result type
+    * @param builder the block builder defining the block's body
+    * @param envOpt the block's optional environment
+    */
+  inline def apply[N, T, R](inline builder: TypedBuilder[N, T, R], inline envOpt: Option[N] = None): BlockData[T, R] { type Env = N } = ${ applyCode('builder, 'envOpt) }
 
-  def applyCode[N, T, R](builderExpr: Expr[TypedBuilder[N, T, R]], envOptExpr: Expr[Option[N]])(using Type[N], Type[T], Type[R], Quotes): Expr[BlockData[T, R] { type Env = N }] = {
+  private def applyCode[N, T, R](builderExpr: Expr[TypedBuilder[N, T, R]], envOptExpr: Expr[Option[N]])(using Type[N], Type[T], Type[R], Quotes): Expr[BlockData[T, R] { type Env = N }] = {
     import quotes.reflect.*
 
     def allOwnersOK(owner: Symbol): Boolean =
