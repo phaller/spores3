@@ -122,4 +122,15 @@ class PickleTests {
     assert(unpickledBlock(3) == 4)
   }
 
+  @Test
+  def testPickleAppendString(): Unit = {
+    val appendData = BlockData(AppendString, Some("three"))
+    val serialized = write(appendData)
+    assert(serialized == """["com.phaller.blocks.pickle.test.AppendString",1,"\"three\""]""")
+    val deserData = read[PackedBlockData](serialized)
+    val deserBlock = deserData.toBlock[List[String], List[String]]
+    val l3 = List("four")
+    assert(deserBlock(l3) == List("four", "three"))
+  }
+
 }
