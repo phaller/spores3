@@ -7,7 +7,7 @@ import org.junit.runners.JUnit4
 import com.phaller.blocks.{Block, Creator, BlockData, PackedBlockData}
 import com.phaller.blocks.pickle.given
 
-import upickle.default._
+import upickle.default.*
 
 
 @RunWith(classOf[JUnit4])

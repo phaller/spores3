@@ -1,5 +1,6 @@
 package com.phaller.blocks
 
+
 trait Duplicable[T]:
   def duplicate(value: T): T
 

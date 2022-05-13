@@ -1,5 +1,6 @@
 package com.phaller.blocks
 
+
 object Creator {
 
   def apply[E, T, R](name: String): Block.Builder[E, T, R] = {

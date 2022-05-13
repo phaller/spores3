@@ -2,7 +2,7 @@ package com.phaller.blocks.pickle
 
 import com.phaller.blocks.{BlockData, PackedBlockData}
 
-import upickle.default._
+import upickle.default.*
 
 
 given blockDataReadWriter[T, R]: ReadWriter[BlockData[T, R] { type Env = Nothing }] =

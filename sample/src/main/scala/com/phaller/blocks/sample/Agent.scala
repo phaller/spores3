@@ -7,6 +7,9 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.ExecutionContext
 
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+
 import com.phaller.blocks.{Block, Builder, BlockData, PackedBlockData}
 import com.phaller.blocks.Block.env
 import com.phaller.blocks.pickle.given
@@ -71,8 +74,6 @@ case class ApplyBlock[T](serialized: String) extends Message[T]
   * serializable using a `ReadWriter[T]`.
   */
 class Agent[T : ReadWriter] (init: T) { self =>
-  import java.util.concurrent.ConcurrentLinkedQueue
-  import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
   private val mailbox = new ConcurrentLinkedQueue[Message[T]]()
   private val idle = new AtomicBoolean(true)

@@ -1,7 +1,8 @@
 package com.phaller.blocks
 
-import scala.scalajs.js.annotation._
+import scala.scalajs.js.annotation.{JSExportTopLevel, JSExport}
 import scala.scalajs.reflect.Reflect
+
 
 @JSExportTopLevel("Creator")
 object Creator {

@@ -2,7 +2,7 @@ package com.phaller.blocks
 
 import scala.annotation.targetName
 
-import upickle.default._
+import upickle.default.*
 
 
 sealed trait Block[-T, +R] extends (T => R) {
