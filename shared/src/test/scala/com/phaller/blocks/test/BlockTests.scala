@@ -81,6 +81,23 @@ class BlockTests {
     assert(res == 15)
   }
 
+  /*
+[error] -- Error: BlockTests.scala:89:28
+[error] 89 |      (x: Int) => x + env + z
+[error]    |                            ^
+[error]    |Invalid capture of variable `z`. Use `Block.env` to refer to the block's environment.
+   */
+  /*@Test
+  def testWithEnvInvalidCapture(): Unit = {
+    val y = 5
+    val z = 6
+    val s = Block(y) {
+      (x: Int) => x + env + z
+    }
+    val res = s(10)
+    assert(res == 21)
+  }*/
+
   @Test
   def testWithEnv2(): Unit = {
     val s = "anonymous function"
@@ -91,16 +108,16 @@ class BlockTests {
     assert(res == 28)
   }
 
-  @Test
+  /*@Test
   def testWithEnvSymbolic(): Unit = {
     val s = "anonymous function"
     val b: Block[Int, Int] { type Env = String } =
       &(s) { (x: Int) => x + env.length }
     val res = b(10)
     assert(res == 28)
-  }
+  }*/
 
-  @Test
+  /*@Test
   def testWithEnvSymbolic2(): Unit = {
     val s = "anonymous function"
 
@@ -109,7 +126,7 @@ class BlockTests {
     val res = fun(&(s) { _ + env.length })
 
     assert(res == 28)
-  }
+  }*/
 
   @Test
   def testWithEnvTuple(): Unit = {
@@ -173,10 +190,10 @@ class BlockTests {
     val z = 5
     val w = 6
 
-    val s = Block(w) {
+    val s = Block((w, z)) {
       (x: Int) =>
-        val s2 = Block(z) { (y: Int) => env + y - 1 }
-        s2(x) + 2 - env
+        val s2 = Block(env._2) { (y: Int) => env + y - 1 }
+        s2(x) + 2 - env._1
     }
 
     val res = s(3)

@@ -80,7 +80,7 @@ class Agent[T : ReadWriter] (init: T) { self =>
 
   private val state: AtomicReference[T] = new AtomicReference(init)
 
-  def sendOff[N](blockData: BlockData[T, T] { type E = N })(using ReadWriter[BlockData[T, T] { type E = N }]): Unit = {
+  def sendOff[N](blockData: BlockData[T, T] { type Env = N })(using ReadWriter[BlockData[T, T] { type Env = N }]): Unit = {
     // serialize
     val pickledData = write(blockData)
 

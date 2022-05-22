@@ -4,6 +4,8 @@ import scala.annotation.targetName
 
 import upickle.default.*
 
+import scala.quoted.*
+
 
 /**
   * The type of a *block*, a special kind of closure with an explicit
@@ -156,18 +158,81 @@ object Block {
     * @param body the block's body
     * @return a block initialized with the given environment and body
     */
-  def apply[E, T, R](env: E)(body: T => EnvAsParam[E] ?=> R): Block[T, R] { type Env = E } =
-    new Block[T, R] {
-      type Env = E
-      def apply(x: T): R = body(x)(using env)
-      private[blocks] def applyInternal(x: T)(using EnvAsParam[E]): R =
-        body(x)
-      private[blocks] val envir = env
+  inline def apply[E, T, R](inline env: E)(inline body: T => EnvAsParam[E] ?=> R): Block[T, R] { type Env = E } =
+    ${ applyCode('env)('body) }
+
+  private def applyCode[E, T, R](envExpr: Expr[E])(bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
+    import quotes.reflect.{Block => BlockTree, *}
+
+    val tree: Term = bodyExpr.asTerm
+    tree match {
+      case Inlined(None, List(), // [0]
+        TypeApply(Select(BlockTree(List(), BlockTree( // [4]
+          List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), cl @ Closure(_, _)
+        )), asInst), _)
+      ) =>
+        /* collect all identifier uses.
+           check that they don't have an owner outside the anon fun.
+           uses of top-level objects are OK.
+         */
+
+        def symIsToplevelObject(sym: Symbol): Boolean =
+          sym.flags.is(Flags.Module) && sym.owner.flags.is(Flags.Package)
+
+        def ownerChainContains(sym: Symbol, transitiveOwner: Symbol): Boolean =
+          if (sym.maybeOwner.isNoSymbol) false
+          else ((sym.owner == transitiveOwner) || ownerChainContains(sym.owner, transitiveOwner))
+
+        val acc = new TreeAccumulator[List[Ident]] {
+          def foldTree(ids: List[Ident], tree: Tree)(owner: Symbol): List[Ident] = tree match {
+            case id @ Ident(_) => id :: ids
+            case _ => foldOverTree(ids, tree)(owner)
+          }
+        }
+        val foundIds = acc.foldTree(List(), anonfunBody)(defdef.symbol)
+        val foundSyms = foundIds.map(id => id.symbol)
+        val names = foundSyms.map(sym => sym.name)
+        val ownerNames = foundSyms.map(sym => sym.owner.name)
+
+        val allOwnersOK = foundSyms.forall(sym =>
+          ownerChainContains(sym, defdef.symbol) ||
+          symIsToplevelObject(sym) || ((!sym.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner)) || ((!sym.maybeOwner.isNoSymbol) && (!sym.owner.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner.owner))) // example: `ExecutionContext.Implicits.global`
+
+        // report error if not all owners OK
+        if (!allOwnersOK) {
+          foundIds.foreach { id =>
+            val sym = id.symbol
+            val isOwnedByToplevelObject =
+              symIsToplevelObject(sym) || ((!sym.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner)) || ((!sym.maybeOwner.isNoSymbol) && (!sym.owner.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner.owner))
+
+            val isOwnedByBlock = ownerChainContains(sym, defdef.symbol)
+            if (!isOwnedByToplevelObject) {
+              // might find illegal capturing
+              if (!isOwnedByBlock)
+                report.error(s"Invalid capture of variable `${id.name}`. Use `Block.env` to refer to the block's environment.", id.pos)
+            }
+          }
+        }
+
+      case _ =>
+        val str = tree.show(using Printer.TreeStructure)
+        report.error(s"Argument must be a function literal, but found: $str", tree.pos)
     }
 
-  @targetName("and")
+    '{
+      new Block[T, R] {
+        type Env = E
+        def apply(x: T): R = $bodyExpr(x)(using $envExpr)
+        private[blocks] def applyInternal(x: T)(using EnvAsParam[E]): R =
+          $bodyExpr(x)
+        private[blocks] val envir = $envExpr
+      }
+    }
+  }
+
+  /*@targetName("and")
   def &[E, T, R](env: E)(body: T => EnvAsParam[E] ?=> R): Block[T, R] { type Env = E } =
-    apply[E, T, R](env)(body)
+    apply[E, T, R](env)(body)*/
 
   /** Creates a block without an environment. The given body (function)
     * must not capture anything.
