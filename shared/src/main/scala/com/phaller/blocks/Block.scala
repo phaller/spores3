@@ -297,10 +297,6 @@ object Block {
     }
   }
 
-  /*@targetName("and")
-  def &[E, T, R](env: E)(body: T => EnvAsParam[E] ?=> R): Block[T, R] { type Env = E } =
-    apply[E, T, R](env)(body)*/
-
   /** Creates a block without an environment. The given body (function)
     * must not capture anything.
     *
@@ -324,10 +320,6 @@ object Block {
       }
     }
   }
-
-  /*@targetName("and")
-  def &[T, R](body: T => R): Block[T, R] { type Env = Nothing } =
-    apply[T, R](body)*/
 
   /* Requirements:
    * - `body` must be a function literal

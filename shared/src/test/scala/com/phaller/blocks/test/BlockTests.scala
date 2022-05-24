@@ -40,18 +40,6 @@ class BlockTests {
     assert(res == 5)
   }
 
-  /*@Test
-  def testWithoutEnvSymbolic(): Unit = {
-    def fun(block: Block[Int, Int] { type Env = Nothing }): Unit = {}
-
-    val b = &((x: Int) => x + 2)
-
-    fun(b)
-
-    val res = b(3)
-    assert(res == 5)
-  }*/
-
   /* the following does not compile:
 [error] -- [E007] Type Mismatch Error: [...]/BlockTests.scala:37:61 
 [error] 37 |    val s: Block[Int, Int] { type Env = Nothing } = Block(y) {
@@ -107,26 +95,6 @@ class BlockTests {
     val res = b(10)
     assert(res == 28)
   }
-
-  /*@Test
-  def testWithEnvSymbolic(): Unit = {
-    val s = "anonymous function"
-    val b: Block[Int, Int] { type Env = String } =
-      &(s) { (x: Int) => x + env.length }
-    val res = b(10)
-    assert(res == 28)
-  }*/
-
-  /*@Test
-  def testWithEnvSymbolic2(): Unit = {
-    val s = "anonymous function"
-
-    def fun(a: Block[Int, Int]) = a(10)
-
-    val res = fun(&(s) { _ + env.length })
-
-    assert(res == 28)
-  }*/
 
   @Test
   def testWithEnvTuple(): Unit = {
