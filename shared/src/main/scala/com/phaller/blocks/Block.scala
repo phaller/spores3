@@ -258,7 +258,7 @@ object Block {
 
       case _ =>
         val str = tree.show(using Printer.TreeStructure)
-        report.error(s"Argument must be a function literal, but found: $str", tree.pos)
+        report.error(s"Argument must be a function literal", tree.pos)
     }
   }
 
