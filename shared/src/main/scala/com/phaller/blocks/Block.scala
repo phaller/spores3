@@ -99,21 +99,21 @@ object Block {
     */
   opaque type EnvAsParam[T] = T
 
-  sealed class CheckedFunction[E, T, R] private[blocks] (val body: T => EnvAsParam[E] ?=> R)
+  sealed class CheckedClosure[E, T, R] private[blocks] (val body: T => EnvAsParam[E] ?=> R)
 
   private[blocks] def createChecked[E, T, R](body: T => EnvAsParam[E] ?=> R) =
-    new CheckedFunction[E, T, R](body)
+    new CheckedClosure[E, T, R](body)
 
-  inline def checked[E, T, R](inline body: T => EnvAsParam[E] ?=> R): CheckedFunction[E, T, R] =
-    ${ checkedFunctionCode('body) }
+  inline def checked[E, T, R](inline body: T => EnvAsParam[E] ?=> R): CheckedClosure[E, T, R] =
+    ${ checkedClosureCode('body) }
 
-  def checkedFunctionCode[E, T, R](bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedFunction[E, T, R]] = {
+  def checkedClosureCode[E, T, R](bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
     checkBodyExpr(bodyExpr)
 
     '{ createChecked[E, T, R]($bodyExpr) }
   }
 
-  class Builder[E, T, R](checkedFun: CheckedFunction[E, T, R])(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
+  class Builder[E, T, R](checkedFun: CheckedClosure[E, T, R])(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
 
     private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] = {
       // actually creates a Block[T, R] { type Env = E }
