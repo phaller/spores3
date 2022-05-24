@@ -6,14 +6,17 @@
 
 Blocks provide abstractions for closures (or lambda expressions or anonymous functions) whose environment is made explicit. The environment of a closure is defined by the variables captured by the closure. The goal is to make closures more flexible and safer by avoiding some of the issues of closures when used in the context of concurrent or distributed programming.
 
-**Flexibility and safety.** Blocks are more flexible than closures, and safer for concurrency and distribution.<sup>*)</sup> For example:
+**Flexibility and safety.** Blocks are more flexible than closures, and safer for concurrency and distribution. For example:
 - The environment of a block can be constrained using type classes. For example, the environment type of a block can be enforced to be thread-safe (e.g., `Future[T]`) or immutable.
 - Blocks can be serialized simply and robustly using type-class-based serialization libraries, such as [uPickle](https://com-lihaoyi.github.io/upickle/). To increase safety, blocks can be enforced at compile time to be serializable. For example, the compiler can check whether there is a uPickle `ReadWriter` for the block's environment.
 - Blocks can be duplicated such that their environment is deeply copied, cloning possibly mutable objects. This enables safer concurrency, for example, by duplicating blocks before spawning them as concurrent tasks.
 
-[Spores](https://scalacenter.github.io/spores/spores.html) provided some of the same properties. Blocks can be seen as a new take on spores that builds on several new features of Scala 3, in particular, context functions and opaque types. By leveraging these features, blocks have a simpler, more robust implementation (with only about 10 lines of macro code). In addition, blocks use a new approach for type-class-based serialization.
-
-<sup>*)</sup> For additional safety guarantees, blocks will likely be able to leverage capturing types provided by the experimental [capture checking](https://dotty.epfl.ch/docs/reference/experimental/cc.html) extension of Scala's type system.
+[Spores](https://scalacenter.github.io/spores/spores.html) provided
+some of the same properties. Blocks can be seen as a new take on
+spores that builds on several new features of Scala 3, in particular,
+context functions and opaque types. By leveraging these features,
+blocks have a simpler, more robust implementation. In addition, blocks
+use a new approach for type-class-based serialization.
 
 ## Overview
 
@@ -164,3 +167,27 @@ block with its environment properly initialized:
     val unpickledBlock = unpickledData.toBlock[Int, Int]
     assert(unpickledBlock(3) == 16)
 ```
+
+## Future
+
+### Blocks and Capture Checking
+
+The experimental [capture
+checking](https://dotty.epfl.ch/docs/reference/experimental/cc.html)
+extension of Scala's type system introduces capturing types which
+enable tracking and checking **capabilities**. A capability is a
+variable or parameter with a **capturing type** which includes a
+capture set. The capture set of (the type of) a capability `c`
+consists of those capabilities that `c` gets its authority from.
+
+The above-linked reference documentation shows an example of a logger
+that requires and retains a `FileSystem` capability `fs`, and thus has
+capturing type `{fs} Logger`. (Here, `{fs}` is the capture set.)
+
+Among others, capture checking introduces **pure functions** of type
+`A -> B` which cannot capture any capabilities. However, a pure
+function might still capture a variable that's not a capability. The
+body of a block is even more restricted, however: it cannot capture
+**any variable**; the environment can only be accessed using
+`Block.env`. That's why the capture checking of blocks is required
+even when using the capture checking extension.
