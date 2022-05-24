@@ -45,15 +45,16 @@ sealed trait Block[-T, +R] extends (T => R) {
 
 sealed class CheckedFunction[T, R] private[blocks] (val body: T => R)
 
+private[blocks] def createChecked[T, R](body: T => R) =
+  new CheckedFunction[T, R](body)
+
 inline def checked[T, R](inline body: T => R): CheckedFunction[T, R] =
   ${ checkedFunctionCode('body) }
 
 def checkedFunctionCode[T, R](bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
   Block.checkBodyExpr(bodyExpr)
 
-  '{
-    new CheckedFunction[T, R]($bodyExpr)
-  }
+  '{ createChecked[T, R]($bodyExpr) }
 }
 
 class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Nothing, T, R] {
@@ -100,15 +101,16 @@ object Block {
 
   sealed class CheckedFunction[E, T, R] private[blocks] (val body: T => EnvAsParam[E] ?=> R)
 
+  private[blocks] def createChecked[E, T, R](body: T => EnvAsParam[E] ?=> R) =
+    new CheckedFunction[E, T, R](body)
+
   inline def checked[E, T, R](inline body: T => EnvAsParam[E] ?=> R): CheckedFunction[E, T, R] =
     ${ checkedFunctionCode('body) }
 
   def checkedFunctionCode[E, T, R](bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedFunction[E, T, R]] = {
     checkBodyExpr(bodyExpr)
 
-    '{
-      new CheckedFunction[E, T, R]($bodyExpr)
-    }
+    '{ createChecked[E, T, R]($bodyExpr) }
   }
 
   class Builder[E, T, R](checkedFun: CheckedFunction[E, T, R])(using ReadWriter[E]) extends TypedBuilder[E, T, R] {

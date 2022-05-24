@@ -201,6 +201,25 @@ class BlockTests {
   }
 
   @Test
+  def testLocalClasses(): Unit = {
+    val x = 5
+
+    val b = Block(x) { (y: Int) =>
+      class Local2 { def m() = y }
+      class Local(p: Int)(using loc: Local2) {
+        val fld = env + p
+      }
+
+      given l2: Local2 = new Local2
+      val l = new Local(y + 1)
+      l.fld
+    }
+
+    val res = b(3)
+    assert(res == 9)
+  }
+
+  @Test
   def testThreadSafe(): Unit = {
     given ThreadSafe[Int] = new ThreadSafe[Int] {}
 
