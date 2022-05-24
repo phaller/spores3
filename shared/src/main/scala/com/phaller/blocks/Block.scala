@@ -48,8 +48,16 @@ sealed class CheckedFunction[T, R] private[blocks] (val body: T => R)
 private[blocks] def createChecked[T, R](body: T => R) =
   new CheckedFunction[T, R](body)
 
-inline def checked[T, R](inline body: T => R): CheckedFunction[T, R] =
-  ${ checkedFunctionCode('body) }
+/** Checks that the argument function is a function literal that does
+  * not capture any variable of an enclosing scope.
+  *
+  * @param  fun  the function
+  * @tparam T    the function's parameter type
+  * @tparam R    the function's result type
+  * @return a `CheckedFunction` instance compatible with a block builder
+  */
+inline def checked[T, R](inline fun: T => R): CheckedFunction[T, R] =
+  ${ checkedFunctionCode('fun) }
 
 def checkedFunctionCode[T, R](bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
   Block.checkBodyExpr(bodyExpr)
@@ -104,8 +112,19 @@ object Block {
   private[blocks] def createChecked[E, T, R](body: T => EnvAsParam[E] ?=> R) =
     new CheckedClosure[E, T, R](body)
 
-  inline def checked[E, T, R](inline body: T => EnvAsParam[E] ?=> R): CheckedClosure[E, T, R] =
-    ${ checkedClosureCode('body) }
+  /** Checks that the argument function is a function literal that does
+    * not capture any variable of an enclosing scope. Returns a
+    * `CheckedClosure` instance for creating a block with non-empty
+    * environment of type `E`.
+    *
+    * @param  fun  the function
+    * @tparam E    the environment type of the corresponding block
+    * @tparam T    the function's parameter type
+    * @tparam R    the function's result type
+    * @return a `CheckedClosure` instance compatible with a block builder
+    */
+  inline def checked[E, T, R](inline fun: T => EnvAsParam[E] ?=> R): CheckedClosure[E, T, R] =
+    ${ checkedClosureCode('fun) }
 
   def checkedClosureCode[E, T, R](bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
     checkBodyExpr(bodyExpr)
