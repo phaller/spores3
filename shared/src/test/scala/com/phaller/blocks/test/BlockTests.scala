@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import blocks.Block
-import blocks.Block.{env, thunk, &}
+import blocks.Block.{env, thunk}
 
 
 @RunWith(classOf[JUnit4])
@@ -40,7 +40,7 @@ class BlockTests {
     assert(res == 5)
   }
 
-  @Test
+  /*@Test
   def testWithoutEnvSymbolic(): Unit = {
     def fun(block: Block[Int, Int] { type Env = Nothing }): Unit = {}
 
@@ -50,7 +50,7 @@ class BlockTests {
 
     val res = b(3)
     assert(res == 5)
-  }
+  }*/
 
   /* the following does not compile:
 [error] -- [E007] Type Mismatch Error: [...]/BlockTests.scala:37:61 
@@ -176,9 +176,9 @@ class BlockTests {
   def testNestedWithEnv1(): Unit = {
     val z = 5
 
-    val s = Block {
+    val s = Block(z) {
       (x: Int) =>
-        val s2 = Block(z) { (y: Int) => env + y - 1 }
+        val s2 = Block(env) { (y: Int) => env + y - 1 }
         s2(x) + 2
     }
     val res = s(3)
