@@ -43,7 +43,20 @@ sealed trait Block[-T, +R] extends (T => R) {
 
 }
 
-class Builder[T, R](body: T => R) extends TypedBuilder[Nothing, T, R] {
+sealed class CheckedFunction[T, R] private[blocks] (val body: T => R)
+
+inline def checked[T, R](inline body: T => R): CheckedFunction[T, R] =
+  ${ checkedFunctionCode('body) }
+
+def checkedFunctionCode[T, R](bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
+  Block.checkBodyExpr(bodyExpr)
+
+  '{
+    new CheckedFunction[T, R]($bodyExpr)
+  }
+}
+
+class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Nothing, T, R] {
 
   private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] =
     apply() // envOpt is empty
@@ -52,9 +65,9 @@ class Builder[T, R](body: T => R) extends TypedBuilder[Nothing, T, R] {
     new Block[T, R] {
       type Env = E
       def apply(x: T): R =
-        body(x)
+        checkedFun.body(x)
       override private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R =
-        body(x)
+        checkedFun.body(x)
       private[blocks] def envir =
         throw new Exception("block does not have an environment")
     }
@@ -85,7 +98,20 @@ object Block {
     */
   opaque type EnvAsParam[T] = T
 
-  class Builder[E, T, R](body: T => EnvAsParam[E] ?=> R)(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
+  sealed class CheckedFunction[E, T, R] private[blocks] (val body: T => EnvAsParam[E] ?=> R)
+
+  inline def checked[E, T, R](inline body: T => EnvAsParam[E] ?=> R): CheckedFunction[E, T, R] =
+    ${ checkedFunctionCode('body) }
+
+  def checkedFunctionCode[E, T, R](bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedFunction[E, T, R]] = {
+    checkBodyExpr(bodyExpr)
+
+    '{
+      new CheckedFunction[E, T, R]($bodyExpr)
+    }
+  }
+
+  class Builder[E, T, R](checkedFun: CheckedFunction[E, T, R])(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
 
     private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] = {
       // actually creates a Block[T, R] { type Env = E }
@@ -98,9 +124,9 @@ object Block {
       new Block[T, R] {
         type Env = E
         def apply(x: T): R =
-          body(x)(using env)
+          checkedFun.body(x)(using env)
         override private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
-          body(x)
+          checkedFun.body(x)
         private[blocks] val envir =
           env
       }
@@ -216,6 +242,13 @@ object Block {
         TypeApply(Select(BlockTree(List(), BlockTree(
           List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)
         )), asInst), _)
+      ) =>
+        checkCaptures(defdef.symbol, anonfunBody)
+
+      case Inlined(None, List(),
+        TypeApply(Select(BlockTree(
+          List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)
+        ), asInst), _)
       ) =>
         checkCaptures(defdef.symbol, anonfunBody)
 
