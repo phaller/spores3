@@ -6,5 +6,5 @@ import com.phaller.blocks.Block.checked
 
 object AppendString extends
     Block.Builder[String, List[String], List[String]](
-  checked(strings => env => strings ::: List(env))
+  checked(env => strings => strings ::: List(env))
 )

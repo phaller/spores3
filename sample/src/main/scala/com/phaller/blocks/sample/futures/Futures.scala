@@ -24,9 +24,9 @@ object Futures:
 
       // captured variables are passed explicitly to
       // `apply` method of `Block` object
-      fut1.flatMap(Block(fut2) { res1 => future2 =>
+      fut1.flatMap(Block(fut2) { future2 => res1 =>
         future2.map(Block(res1) {
-          res2 => env => env + res2
+          env => res2 => env + res2
         })
       })
 

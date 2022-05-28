@@ -21,7 +21,7 @@ class TrieMapTest {
 
   @Test
   def test(): Unit = {
-    val b = Block[CustomerMap, List[Customer], Float](customerData) { cs => data =>
+    val b = Block[CustomerMap, List[Customer], Float](customerData) { data => cs =>
       val infos = cs.flatMap { c =>
         data.get(c.customerNo) match {
           case Some(info) => List(info)

@@ -20,11 +20,11 @@ object AppendThree extends Builder[List[String], List[String]](
 )
 
 object AppendString extends Block.Builder[String, List[String], List[String]](
-  Block.checked(strings => env => strings ::: List(env))
+  Block.checked(env => strings => strings ::: List(env))
 )
 
 object AppendInt extends Block.Builder[Int, List[String], List[String]](
-  Block.checked(strings => env => strings ::: List("" + env))
+  Block.checked(env => strings => strings ::: List("" + env))
 )
 
 object AgentMain {

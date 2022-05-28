@@ -99,9 +99,9 @@ object Block {
   extension [R](block: Block[Unit, R])
     def apply(): R = block.apply(())
 
-  sealed class CheckedClosure[E, T, R] private[blocks] (val body: T => E => R)
+  sealed class CheckedClosure[E, T, R] private[blocks] (val body: E => T => R)
 
-  private[blocks] def createChecked[E, T, R](fun: T => E => R) =
+  private[blocks] def createChecked[E, T, R](fun: E => T => R) =
     new CheckedClosure[E, T, R](fun)
 
   /** Checks that the argument function is a function literal that does
@@ -115,10 +115,10 @@ object Block {
     * @tparam R    the function's result type
     * @return a `CheckedClosure` instance compatible with a block builder
     */
-  inline def checked[E, T, R](inline fun: T => E => R): CheckedClosure[E, T, R] =
+  inline def checked[E, T, R](inline fun: E => T => R): CheckedClosure[E, T, R] =
     ${ checkedClosureCode('fun) }
 
-  def checkedClosureCode[E, T, R](funExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
+  def checkedClosureCode[E, T, R](funExpr: Expr[E => T => R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
     checkBodyExpr(funExpr)
 
     '{ createChecked[E, T, R]($funExpr) }
@@ -137,9 +137,9 @@ object Block {
       new Block[T, R] {
         type Env = E
         def apply(x: T): R =
-          checkedFun.body(x)(env)
+          checkedFun.body(env)(x)
         override private[blocks] def applyInternal(x: T)(y: Env): R =
-          checkedFun.body(x)(y)
+          checkedFun.body(y)(x)
         private[blocks] val envir =
           env
       }
@@ -190,7 +190,7 @@ object Block {
     * @param body the block's body
     * @return a block initialized with the given environment and body
     */
-  inline def apply[E, T, R](inline env: E)(inline body: T => E => R): Block[T, R] { type Env = E } =
+  inline def apply[E, T, R](inline env: E)(inline body: E => T => R): Block[T, R] { type Env = E } =
     ${ applyCode('env, 'body) }
 
   def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
@@ -242,7 +242,7 @@ object Block {
           if (!isOwnedByToplevelObject) {
             // might find illegal capturing
             if (!isOwnedByBlock)
-              report.error(s"Invalid capture of variable `${id.name}`. Use `Block.env` to refer to the block's environment.", id.pos)
+              report.error(s"Invalid capture of variable `${id.name}`. Use first parameter of block's body to refer to the block's environment.", id.pos)
           }
         }
       }
@@ -278,15 +278,15 @@ object Block {
     }
   }
 
-  private def applyCode[E, T, R](envExpr: Expr[E], bodyExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
+  private def applyCode[E, T, R](envExpr: Expr[E], bodyExpr: Expr[E => T => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
     checkBodyExpr(bodyExpr)
 
     '{
       new Block[T, R] {
         type Env = E
-        def apply(x: T): R = $bodyExpr(x)($envExpr)
+        def apply(x: T): R = $bodyExpr($envExpr)(x)
         override private[blocks] def applyInternal(x: T)(env: E): R =
-          $bodyExpr(x)(env)
+          $bodyExpr(env)(x)
         private[blocks] val envir = $envExpr
       }
     }

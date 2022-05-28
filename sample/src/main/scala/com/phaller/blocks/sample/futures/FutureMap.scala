@@ -34,7 +34,7 @@ object FutureMap {
     }
 
   def averageAge(customers: List[Customer]): Future[Float] = {
-    val block = Block[CustomerMap, List[Customer], Float](customerData) { cs => data =>
+    val block = Block[CustomerMap, List[Customer], Float](customerData) { data => cs =>
       val infos = cs.flatMap { c =>
         data.get(c.customerNo) match
           case Some(info) => List(info)

@@ -75,7 +75,7 @@ class DBlockTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env => env.f + y
+      env => (y: Int) => env.f + y
     }
 
     val db = DBlock(b)

@@ -63,24 +63,24 @@ class BlockTests {
   def testWithEnv(): Unit = {
     val y = 5
     val s = Block(y) {
-      (x: Int) => env => x + env
+      env => (x: Int) => x + env
     }
     val res = s(10)
     assert(res == 15)
   }
 
   /*
-[error] -- Error: BlockTests.scala:89:28
-[error] 89 |      (x: Int) => x + env + z
-[error]    |                            ^
-[error]    |Invalid capture of variable `z`. Use `Block.env` to refer to the block's environment.
+[error] -- Error: [...]/BlockTests.scala:83:35
+[error] 83 |      env => (x: Int) => x + env + z
+[error]    |                                   ^
+[error]    |Invalid capture of variable `z`. Use first parameter of block's body to refer to the block's environment.
    */
   /*@Test
   def testWithEnvInvalidCapture(): Unit = {
     val y = 5
     val z = 6
     val s = Block(y) {
-      (x: Int) => env => x + env + z
+      env => (x: Int) => x + env + z
     }
     val res = s(10)
     assert(res == 21)
@@ -90,7 +90,7 @@ class BlockTests {
   def testWithEnv2(): Unit = {
     val s = "anonymous function"
     val b: Block[Int, Int] { type Env = String } = Block(s) {
-      (x: Int) => env => x + env.length
+      env => (x: Int) => x + env.length
     }
     val res = b(10)
     assert(res == 28)
@@ -102,7 +102,20 @@ class BlockTests {
     val i = 5
 
     val b: Block[Int, Int] { type Env = (String, Int) } = Block((s, i)) {
-      (x: Int) => { case (l, r) => x + l.length - r }
+      case (l, r) => (x: Int) => x + l.length - r
+    }
+
+    val res = b(10)
+    assert(res == 23)
+  }
+
+  @Test
+  def testWithEnvParamUntupling(): Unit = {
+    val s = "anonymous function"
+    val i = 5
+
+    val b = Block((s, i)) {
+      (l, r) => (x: Int) => x + l.length - r
     }
 
     val res = b(10)
@@ -113,7 +126,7 @@ class BlockTests {
   def testWithEnvWithType(): Unit = {
     val y = 5
     val s: Block[Int, Int] { type Env = Int } = Block(y) {
-      (x: Int) => env => x + env
+      env => (x: Int) => x + env
     }
     val res = s(11)
     assert(res == 16)
@@ -145,8 +158,8 @@ class BlockTests {
     val z = 5
 
     val s = Block(z) {
-      (x: Int) => env =>
-        val s2 = Block(env) { (y: Int) => env => env + y - 1 }
+      env => (x: Int) =>
+        val s2 = Block(env) { env => (y: Int) => env + y - 1 }
         s2(x) + 2
     }
     val res = s(3)
@@ -159,10 +172,9 @@ class BlockTests {
     val w = 6
 
     val s = Block((w, z)) {
-      (x: Int) => { case (l, r) =>
-        val s2 = Block(r) { (y: Int) => env => env + y - 1 }
+      case (l, r) => (x: Int) =>
+        val s2 = Block(r) { env => (y: Int) => env + y - 1 }
         s2(x) + 2 - l
-      }
     }
 
     val res = s(3)
@@ -173,7 +185,7 @@ class BlockTests {
   def testLocalClasses(): Unit = {
     val x = 5
 
-    val b = Block(x) { (y: Int) => env =>
+    val b = Block(x) { env => (y: Int) =>
       class Local2 { def m() = y }
       class Local(p: Int)(using loc: Local2) {
         val fld = env + p
@@ -197,7 +209,7 @@ class BlockTests {
 
     val y = 5
     val s = Block(y) {
-      (x: Int) => env => x + env
+      env => (x: Int) => x + env
     }
 
     val res = fun(s, 10)

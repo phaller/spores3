@@ -133,7 +133,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env => env.f + y
+      env => (y: Int) => env.f + y
     }
 
     val b2 = duplicate(b)
@@ -153,7 +153,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env => env.f + y
+      env => (y: Int) => env.f + y
     }
 
     val res = duplicateThenApply(b, 3)
@@ -174,7 +174,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env => env.f + y
+      env => (y: Int) => env.f + y
     }
 
     val res = m1(b)
@@ -197,7 +197,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env => env.f + y
+      env => (y: Int) => env.f + y
     }
 
     val res = m1(b)
@@ -219,7 +219,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env => env.f + y
+      env => (y: Int) => env.f + y
     }
 
     val res = m1(DBlock(b))
@@ -256,7 +256,7 @@ class DuplicableTests {
     x.f = 7
 
     val db = DBlock(Block(x) {
-      (y: Int) => env => env
+      env => (y: Int) => env
     })
 
     val dblock2 = db.duplicate()
@@ -295,7 +295,7 @@ class DuplicableTests {
     x.f = 7
 
     val db = DBlock(Block(x) {
-      (y: Int) => env => env
+      env => (y: Int) => env
     })
 
     val res = fun(5, db)
