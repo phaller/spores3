@@ -148,15 +148,15 @@ object Block {
 
   given [E: Duplicable, A, B]: Duplicable[Block[A, B] { type Env = E }] =
     new Duplicable[Block[A, B] { type Env = E }] {
-      def duplicate(fun: Block[A, B] { type Env = E }) = {
-        val env = summon[Duplicable[E]].duplicate(fun.envir)
+      def duplicate(block: Block[A, B] { type Env = E }) = {
+        val duplicatedEnv = summon[Duplicable[E]].duplicate(block.envir)
         new Block[A, B] {
           type Env = E
           def apply(x: A): B =
-            fun.applyInternal(x)(env)
+            block.applyInternal(x)(duplicatedEnv)
           override private[blocks] def applyInternal(x: A)(y: Env): B =
-            fun.applyInternal(x)(y)
-          private[blocks] val envir = env
+            block.applyInternal(x)(y)
+          private[blocks] val envir = duplicatedEnv
         }
       }
     }
@@ -164,13 +164,13 @@ object Block {
   // how to duplicate a block without environment
   given [A, B]: Duplicable[Block[A, B] { type Env = Nothing }] =
     new Duplicable[Block[A, B] { type Env = Nothing }] {
-      def duplicate(fun: Block[A, B] { type Env = Nothing }) = {
+      def duplicate(block: Block[A, B] { type Env = Nothing }) = {
         new Block[A, B] {
           type Env = Nothing
           def apply(x: A): B =
-            fun.apply(x) // ignore environment
+            block.apply(x) // ignore environment
           override private[blocks] def applyInternal(x: A)(y: Nothing): B =
-            fun.applyInternal(x)(y)
+            block.applyInternal(x)(y)
           private[blocks] def envir =
             throw new Exception("block does not have an environment")
         }
