@@ -43,6 +43,7 @@ object AgentMain {
     val resFut = agent.getAsync()
     val d = Duration(10, "sec")
     val res = Await.result(resFut, d)
+    assert(res == List("one", "two", "three"))
     println(res)
 
     // send block that appends its environment, a string
@@ -51,6 +52,7 @@ object AgentMain {
     agent.sendOff(appendString)
 
     val res2 = Await.result(agent.getAsync(), d)
+    assert(res2 == List("one", "two", "three", "four"))
     println(res2)
 
     // send block that appends its environment, an integer
@@ -58,6 +60,7 @@ object AgentMain {
     agent.sendOff(appendInt)
 
     val res3 = Await.result(agent.getAsync(), d)
+    assert(res3 == List("one", "two", "three", "four", "5"))
     println(res3)
   }
 

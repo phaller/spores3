@@ -24,13 +24,14 @@ object Futures:
 
       // captured variables are passed explicitly to
       // `apply` method of `Block` object
-      fut1.flatMap(Block(fut2) { x => env =>
-        env.map(Block(x) {
-          y => env => env + y
+      fut1.flatMap(Block(fut2) { res1 => future2 =>
+        future2.map(Block(res1) {
+          res2 => env => env + res2
         })
       })
 
   def main(args: Array[String]): Unit =
     // computes 8th Fibonacci number = 21
     val res = Await.result(fib(8), Duration(10, "sec"))
+    assert(res == 21)
     println(res)
