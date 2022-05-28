@@ -191,7 +191,7 @@ object Block {
     * @return a block initialized with the given environment and body
     */
   inline def apply[E, T, R](inline env: E)(inline body: T => E => R): Block[T, R] { type Env = E } =
-    ${ applyCode('env)('body) }
+    ${ applyCode('env, 'body) }
 
   def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
     import quotes.reflect.{Block => BlockTree, *}
@@ -278,7 +278,7 @@ object Block {
     }
   }
 
-  private def applyCode[E, T, R](envExpr: Expr[E])(bodyExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
+  private def applyCode[E, T, R](envExpr: Expr[E], bodyExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
     checkBodyExpr(bodyExpr)
 
     '{
@@ -316,17 +316,30 @@ object Block {
     }
   }
 
-  /* Requirements:
-   * - `body` must be a function literal
-   * - `body` must not capture anything
-   */
-  def thunk[T, U](env: T)(body: T => U): Block[Unit, U] { type Env = T } =
-    new Block[Unit, U] {
-      type Env = T
-      def apply(x: Unit): U = body(env)
-      override private[blocks] def applyInternal(x: Unit)(env: T): U =
-        body(env)
-      private[blocks] val envir = env
+  /** Creates a thunk block. The given body must be a function literal
+    * that does not capture anything.
+    *
+    * @tparam T the type of the block's environment
+    * @tparam R the block's result type
+    * @param env  the block's environment
+    * @param body the block's body
+    * @return a block initialized with the given environment and body
+    */
+  inline def thunk[T, R](inline env: T)(inline body: T => R): Block[Unit, R] { type Env = T } =
+    ${ thunkCode('env, 'body) }
+
+  private def thunkCode[T, R](envExpr: Expr[T], bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[Block[Unit, R] { type Env = T }] = {
+    checkBodyExpr(bodyExpr)
+
+    '{
+      new Block[Unit, R] {
+        type Env = T
+        def apply(x: Unit): R = $bodyExpr($envExpr)
+        override private[blocks] def applyInternal(x: Unit)(env: T): R =
+          $bodyExpr(env)
+        private[blocks] val envir = $envExpr
+      }
     }
+  }
 
 }
