@@ -1,5 +1,5 @@
 lazy val Scala30 = "3.0.2"
-lazy val Scala31 = "3.1.1"
+lazy val Scala31 = "3.1.2"
 lazy val supportedScalaVersions = List(Scala31, Scala30)
 lazy val upickleVersion = "2.0.0"
 lazy val junitInterfaceVersion = "0.11"

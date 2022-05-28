@@ -5,7 +5,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import com.phaller.blocks.{Block, DBlock}
-import Block.{env, thunk}
+import Block.thunk
 
 
 @RunWith(classOf[JUnit4])
@@ -14,7 +14,7 @@ class DBlockTests {
   @Test
   def testDuplicateThunk(): Unit = {
     val x = 5
-    val b = thunk(x) {
+    val b = thunk(x) { env =>
       env + 1
     }
 
@@ -30,7 +30,7 @@ class DBlockTests {
   @Test
   def testDuplicateThunk2(): Unit = {
     val x = 5
-    val b = thunk(x) {
+    val b = thunk(x) { env =>
       env + 1
     }
 
@@ -45,7 +45,7 @@ class DBlockTests {
   def testDuplicatedThunkAccessesNewEnv(): Unit = {
     val x = new C
 
-    val b = thunk(x) {
+    val b = thunk(x) { env =>
       env
     }
 
@@ -54,7 +54,7 @@ class DBlockTests {
 
     val envVal = b2()
 
-    assert(envVal ne x)
+    assert(envVal != x)
   }
 
   @Test
@@ -75,7 +75,7 @@ class DBlockTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env.f + y
+      (y: Int) => env => env.f + y
     }
 
     val db = DBlock(b)

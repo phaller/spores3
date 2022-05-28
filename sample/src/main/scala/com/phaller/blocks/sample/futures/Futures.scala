@@ -5,7 +5,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.phaller.blocks.Block
-import com.phaller.blocks.Block.env
 
 
 object Futures:
@@ -25,9 +24,9 @@ object Futures:
 
       // captured variables are passed explicitly to
       // `apply` method of `Block` object
-      fut1.flatMap(Block(fut2) { x =>
+      fut1.flatMap(Block(fut2) { x => env =>
         env.map(Block(x) {
-          y => env + y
+          y => env => env + y
         })
       })
 

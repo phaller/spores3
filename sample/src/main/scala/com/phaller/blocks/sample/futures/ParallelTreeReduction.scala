@@ -7,7 +7,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.phaller.blocks.Block
-import com.phaller.blocks.Block.env
 import com.phaller.blocks.Block.thunk
 import com.phaller.blocks.Duplicable
 import com.phaller.blocks.Duplicable.duplicate
@@ -101,11 +100,11 @@ object ParallelTreeReduction {
 
     case Branch(left, data, right) =>
 
-      val leftBlock = thunk(left) {
+      val leftBlock = thunk(left) { env =>
         parReduce(env)
       }
 
-      val rightBlock = thunk(right) {
+      val rightBlock = thunk(right) { env =>
         parReduce(env)
       }
 

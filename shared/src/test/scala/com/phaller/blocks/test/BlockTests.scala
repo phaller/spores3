@@ -6,7 +6,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import blocks.Block
-import blocks.Block.{env, thunk}
+import blocks.Block.thunk
 
 
 @RunWith(classOf[JUnit4])
@@ -63,7 +63,7 @@ class BlockTests {
   def testWithEnv(): Unit = {
     val y = 5
     val s = Block(y) {
-      (x: Int) => x + env
+      (x: Int) => env => x + env
     }
     val res = s(10)
     assert(res == 15)
@@ -80,7 +80,7 @@ class BlockTests {
     val y = 5
     val z = 6
     val s = Block(y) {
-      (x: Int) => x + env + z
+      (x: Int) => env => x + env + z
     }
     val res = s(10)
     assert(res == 21)
@@ -90,7 +90,7 @@ class BlockTests {
   def testWithEnv2(): Unit = {
     val s = "anonymous function"
     val b: Block[Int, Int] { type Env = String } = Block(s) {
-      (x: Int) => x + env.length
+      (x: Int) => env => x + env.length
     }
     val res = b(10)
     assert(res == 28)
@@ -102,7 +102,7 @@ class BlockTests {
     val i = 5
 
     val b: Block[Int, Int] { type Env = (String, Int) } = Block((s, i)) {
-      (x: Int) => x + env._1.length - env._2
+      (x: Int) => { case (l, r) => x + l.length - r }
     }
 
     val res = b(10)
@@ -113,7 +113,7 @@ class BlockTests {
   def testWithEnvWithType(): Unit = {
     val y = 5
     val s: Block[Int, Int] { type Env = Int } = Block(y) {
-      (x: Int) => x + env
+      (x: Int) => env => x + env
     }
     val res = s(11)
     assert(res == 16)
@@ -122,7 +122,7 @@ class BlockTests {
   @Test
   def testThunk(): Unit = {
     val x = 5
-    val t = thunk(x) {
+    val t = thunk(x) { env =>
       env + 7
     }
     val res = t()
@@ -145,8 +145,8 @@ class BlockTests {
     val z = 5
 
     val s = Block(z) {
-      (x: Int) =>
-        val s2 = Block(env) { (y: Int) => env + y - 1 }
+      (x: Int) => env =>
+        val s2 = Block(env) { (y: Int) => env => env + y - 1 }
         s2(x) + 2
     }
     val res = s(3)
@@ -159,9 +159,10 @@ class BlockTests {
     val w = 6
 
     val s = Block((w, z)) {
-      (x: Int) =>
-        val s2 = Block(env._2) { (y: Int) => env + y - 1 }
-        s2(x) + 2 - env._1
+      (x: Int) => { case (l, r) =>
+        val s2 = Block(r) { (y: Int) => env => env + y - 1 }
+        s2(x) + 2 - l
+      }
     }
 
     val res = s(3)
@@ -172,7 +173,7 @@ class BlockTests {
   def testLocalClasses(): Unit = {
     val x = 5
 
-    val b = Block(x) { (y: Int) =>
+    val b = Block(x) { (y: Int) => env =>
       class Local2 { def m() = y }
       class Local(p: Int)(using loc: Local2) {
         val fld = env + p
@@ -196,7 +197,7 @@ class BlockTests {
 
     val y = 5
     val s = Block(y) {
-      (x: Int) => x + env
+      (x: Int) => env => x + env
     }
 
     val res = fun(s, 10)

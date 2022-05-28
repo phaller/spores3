@@ -11,21 +11,20 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import com.phaller.blocks.{Block, Builder, BlockData, PackedBlockData}
-import com.phaller.blocks.Block.env
 import com.phaller.blocks.checked
 import com.phaller.blocks.pickle.given
 
 
 object AppendThree extends Builder[List[String], List[String]](
-  checked((strings: List[String]) => strings ::: List("three"))
+  checked(strings => strings ::: List("three"))
 )
 
 object AppendString extends Block.Builder[String, List[String], List[String]](
-  Block.checked((strings: List[String]) => strings ::: List(env))
+  Block.checked(strings => env => strings ::: List(env))
 )
 
 object AppendInt extends Block.Builder[Int, List[String], List[String]](
-  Block.checked((strings: List[String]) => strings ::: List("" + env))
+  Block.checked(strings => env => strings ::: List("" + env))
 )
 
 object AgentMain {

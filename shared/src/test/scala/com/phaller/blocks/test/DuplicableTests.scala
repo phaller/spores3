@@ -6,7 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import blocks.Block.{thunk, env}
+import blocks.Block.thunk
 import blocks.Duplicable.duplicate
 
 
@@ -37,7 +37,7 @@ class DuplicableTests {
   @Test
   def testDuplicateThunk(): Unit = {
     val x = 5
-    val b = thunk(x) {
+    val b = thunk(x) { env =>
       env + 1
     }
 
@@ -54,7 +54,7 @@ class DuplicableTests {
     val x = new C
     x.f = 4
 
-    val b = thunk(x) {
+    val b = thunk(x) { env =>
       env.f + 1
     }
 
@@ -71,7 +71,7 @@ class DuplicableTests {
   def testDuplicatedThunkAccessesNewEnv(): Unit = {
     val x = new C
 
-    val b = thunk(x) {
+    val b = thunk(x) { env =>
       env
     }
 
@@ -79,7 +79,7 @@ class DuplicableTests {
 
     val envVal = b2()
 
-    assert(envVal ne x)
+    assert(envVal != x)
   }
 
   @Test
@@ -87,7 +87,7 @@ class DuplicableTests {
     val x = new C
     x.f = 7
 
-    val b: Block[Unit, C] { type Env = C } = thunk(x) {
+    val b: Block[Unit, C] { type Env = C } = thunk(x) { env =>
       env
     }
 
@@ -104,7 +104,7 @@ class DuplicableTests {
     val x = new C
     x.f = 7
 
-    val b: Block[Unit, C] { type Env = C } = thunk(x) {
+    val b: Block[Unit, C] { type Env = C } = thunk(x) { env =>
       env
     }
 
@@ -133,7 +133,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env.f + y
+      (y: Int) => env => env.f + y
     }
 
     val b2 = duplicate(b)
@@ -153,7 +153,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env.f + y
+      (y: Int) => env => env.f + y
     }
 
     val res = duplicateThenApply(b, 3)
@@ -174,7 +174,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env.f + y
+      (y: Int) => env => env.f + y
     }
 
     val res = m1(b)
@@ -197,7 +197,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env.f + y
+      (y: Int) => env => env.f + y
     }
 
     val res = m1(b)
@@ -219,7 +219,7 @@ class DuplicableTests {
     x.f = 4
 
     val b = Block(x) {
-      (y: Int) => env.f + y
+      (y: Int) => env => env.f + y
     }
 
     val res = m1(DBlock(b))
@@ -239,7 +239,7 @@ class DuplicableTests {
     x.f = 7
 
     // create thunk:
-    val b = thunk(x) {
+    val b = thunk(x) { env =>
       env
     }
 
@@ -256,7 +256,7 @@ class DuplicableTests {
     x.f = 7
 
     val db = DBlock(Block(x) {
-      (y: Int) => env
+      (y: Int) => env => env
     })
 
     val dblock2 = db.duplicate()
@@ -295,7 +295,7 @@ class DuplicableTests {
     x.f = 7
 
     val db = DBlock(Block(x) {
-      (y: Int) => env
+      (y: Int) => env => env
     })
 
     val res = fun(5, db)

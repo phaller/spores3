@@ -36,7 +36,7 @@ sealed trait Block[-T, +R] extends (T => R) {
     */
   def apply(x: T): R
 
-  private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R =
+  private[blocks] def applyInternal(x: T)(env: Env): R =
     throw new Exception("Method must be overridden")
 
   private[blocks] def envir: Env
@@ -75,7 +75,7 @@ class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Noth
       type Env = E
       def apply(x: T): R =
         checkedFun.body(x)
-      override private[blocks] def applyInternal(x: T)(using Block.EnvAsParam[Env]): R =
+      override private[blocks] def applyInternal(x: T)(y: Env): R =
         checkedFun.body(x)
       private[blocks] def envir =
         throw new Exception("block does not have an environment")
@@ -101,15 +101,9 @@ object Block {
   extension [R](block: Block[Unit, R])
     def apply(): R = block.apply(())
 
-  /** The type under which the environment of a block is accessible.
-    *
-    * Only used internally (hence opaque).
-    */
-  opaque type EnvAsParam[T] = T
+  sealed class CheckedClosure[E, T, R] private[blocks] (val body: T => E => R)
 
-  sealed class CheckedClosure[E, T, R] private[blocks] (val body: T => EnvAsParam[E] ?=> R)
-
-  private[blocks] def createChecked[E, T, R](body: T => EnvAsParam[E] ?=> R) =
+  private[blocks] def createChecked[E, T, R](body: T => E => R) =
     new CheckedClosure[E, T, R](body)
 
   /** Checks that the argument function is a function literal that does
@@ -123,10 +117,10 @@ object Block {
     * @tparam R    the function's result type
     * @return a `CheckedClosure` instance compatible with a block builder
     */
-  inline def checked[E, T, R](inline fun: T => EnvAsParam[E] ?=> R): CheckedClosure[E, T, R] =
+  inline def checked[E, T, R](inline fun: T => E => R): CheckedClosure[E, T, R] =
     ${ checkedClosureCode('fun) }
 
-  def checkedClosureCode[E, T, R](bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
+  def checkedClosureCode[E, T, R](bodyExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
     checkBodyExpr(bodyExpr)
 
     '{ createChecked[E, T, R]($bodyExpr) }
@@ -145,9 +139,9 @@ object Block {
       new Block[T, R] {
         type Env = E
         def apply(x: T): R =
-          checkedFun.body(x)(using env)
-        override private[blocks] def applyInternal(x: T)(using EnvAsParam[Env]): R =
-          checkedFun.body(x)
+          checkedFun.body(x)(env)
+        override private[blocks] def applyInternal(x: T)(y: Env): R =
+          checkedFun.body(x)(y)
         private[blocks] val envir =
           env
       }
@@ -161,9 +155,9 @@ object Block {
         new Block[A, B] {
           type Env = E
           def apply(x: A): B =
-            fun.applyInternal(x)(using env)
-          override private[blocks] def applyInternal(x: A)(using EnvAsParam[Env]): B =
-            fun.applyInternal(x)
+            fun.applyInternal(x)(env)
+          override private[blocks] def applyInternal(x: A)(y: Env): B =
+            fun.applyInternal(x)(y)
           private[blocks] val envir = env
         }
       }
@@ -177,21 +171,13 @@ object Block {
           type Env = Nothing
           def apply(x: A): B =
             fun.apply(x) // ignore environment
-          override private[blocks] def applyInternal(x: A)(using EnvAsParam[Nothing]): B =
-            fun.applyInternal(x)
+          override private[blocks] def applyInternal(x: A)(y: Nothing): B =
+            fun.applyInternal(x)(y)
           private[blocks] def envir =
             throw new Exception("block does not have an environment")
         }
       }
     }
-
-  /** The environment of a block is accessed using `env` from within
-    * the body of the block.
-    *
-    * @tparam E the type of the environment of the current block
-    * @return the environment of the current block
-    */
-  def env[E](using ep: EnvAsParam[E]): E = ep
 
   /** Creates a block given an environment value/reference and a
     * function.  The given function must not capture anything; the
@@ -206,7 +192,7 @@ object Block {
     * @param body the block's body
     * @return a block initialized with the given environment and body
     */
-  inline def apply[E, T, R](inline env: E)(inline body: T => EnvAsParam[E] ?=> R): Block[T, R] { type Env = E } =
+  inline def apply[E, T, R](inline env: E)(inline body: T => E => R): Block[T, R] { type Env = E } =
     ${ applyCode('env)('body) }
 
   def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
@@ -228,7 +214,14 @@ object Block {
       val acc = new TreeAccumulator[List[Ident]] {
         def foldTree(ids: List[Ident], tree: Tree)(owner: Symbol): List[Ident] = tree match {
           case id @ Ident(_) => id :: ids
-          case _ => foldOverTree(ids, tree)(owner)
+          case _ =>
+            try {
+              foldOverTree(ids, tree)(owner)
+            } catch {
+              case me: MatchError =>
+                // compiler bug: skip checking tree
+                ids
+            }
         }
       }
       val foundIds = acc.foldTree(List(), anonfunBody)(defdefSym)
@@ -277,21 +270,25 @@ object Block {
         BlockTree(List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _))) =>
         checkCaptures(defdef.symbol, anonfunBody)
 
+      case Inlined(None, List(), BlockTree(List(),
+        BlockTree(List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)))) =>
+        checkCaptures(defdef.symbol, anonfunBody)
+
       case _ =>
         val str = tree.show(using Printer.TreeStructure)
         report.error(s"Argument must be a function literal", tree.pos)
     }
   }
 
-  private def applyCode[E, T, R](envExpr: Expr[E])(bodyExpr: Expr[T => EnvAsParam[E] ?=> R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
+  private def applyCode[E, T, R](envExpr: Expr[E])(bodyExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
     checkBodyExpr(bodyExpr)
 
     '{
       new Block[T, R] {
         type Env = E
-        def apply(x: T): R = $bodyExpr(x)(using $envExpr)
-        override private[blocks] def applyInternal(x: T)(using EnvAsParam[E]): R =
-          $bodyExpr(x)
+        def apply(x: T): R = $bodyExpr(x)($envExpr)
+        override private[blocks] def applyInternal(x: T)(env: E): R =
+          $bodyExpr(x)(env)
         private[blocks] val envir = $envExpr
       }
     }
@@ -325,12 +322,12 @@ object Block {
    * - `body` must be a function literal
    * - `body` must not capture anything
    */
-  def thunk[T, U](env: T)(body: EnvAsParam[T] ?=> U): Block[Unit, U] { type Env = T } =
+  def thunk[T, U](env: T)(body: T => U): Block[Unit, U] { type Env = T } =
     new Block[Unit, U] {
       type Env = T
-      def apply(x: Unit): U = body(using env)
-      override private[blocks] def applyInternal(x: Unit)(using EnvAsParam[T]): U =
-        body
+      def apply(x: Unit): U = body(env)
+      override private[blocks] def applyInternal(x: Unit)(env: T): U =
+        body(env)
       private[blocks] val envir = env
     }
 
