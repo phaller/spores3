@@ -59,10 +59,10 @@ private[blocks] def createChecked[T, R](body: T => R) =
 inline def checked[T, R](inline fun: T => R): CheckedFunction[T, R] =
   ${ checkedFunctionCode('fun) }
 
-def checkedFunctionCode[T, R](bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
-  Block.checkBodyExpr(bodyExpr)
+def checkedFunctionCode[T, R](funExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
+  Block.checkBodyExpr(funExpr)
 
-  '{ createChecked[T, R]($bodyExpr) }
+  '{ createChecked[T, R]($funExpr) }
 }
 
 class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Nothing, T, R] {
@@ -75,7 +75,7 @@ class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Noth
       type Env = E
       def apply(x: T): R =
         checkedFun.body(x)
-      override private[blocks] def applyInternal(x: T)(y: Env): R =
+      override private[blocks] def applyInternal(x: T)(env: Env): R =
         checkedFun.body(x)
       private[blocks] def envir =
         throw new Exception("block does not have an environment")
@@ -89,10 +89,8 @@ trait PackedBuilder[T, R] {
   private[blocks] def createBlock(envOpt: Option[String]): Block[T, R]
 }
 
-/** The `Block` companion object provides factory methods and the
-  * [[Block.Builder]] class for creating blocks, as well as the `env`
-  * member used to access the environment of a block from within the
-  * block's body.
+/** The `Block` companion object provides factory methods as well as
+  * the [[Block.Builder]] class for creating block builders.
   */
 object Block {
 
@@ -103,8 +101,8 @@ object Block {
 
   sealed class CheckedClosure[E, T, R] private[blocks] (val body: T => E => R)
 
-  private[blocks] def createChecked[E, T, R](body: T => E => R) =
-    new CheckedClosure[E, T, R](body)
+  private[blocks] def createChecked[E, T, R](fun: T => E => R) =
+    new CheckedClosure[E, T, R](fun)
 
   /** Checks that the argument function is a function literal that does
     * not capture any variable of an enclosing scope. Returns a
@@ -120,10 +118,10 @@ object Block {
   inline def checked[E, T, R](inline fun: T => E => R): CheckedClosure[E, T, R] =
     ${ checkedClosureCode('fun) }
 
-  def checkedClosureCode[E, T, R](bodyExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
-    checkBodyExpr(bodyExpr)
+  def checkedClosureCode[E, T, R](funExpr: Expr[T => E => R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
+    checkBodyExpr(funExpr)
 
-    '{ createChecked[E, T, R]($bodyExpr) }
+    '{ createChecked[E, T, R]($funExpr) }
   }
 
   class Builder[E, T, R](checkedFun: CheckedClosure[E, T, R])(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
@@ -180,10 +178,10 @@ object Block {
     }
 
   /** Creates a block given an environment value/reference and a
-    * function.  The given function must not capture anything; the
-    * `env` member must be used to access the block's environment.  In
-    * order to create a block with environment, the given function
-    * must be a *function literal*.
+    * function.  The given function must not capture anything.  The
+    * second (curried) parameter must be used to access the block's
+    * environment. The given function must be a *function literal*
+    * which is checked at compile time (using a macro).
     *
     * @tparam E the type of the block's environment
     * @tparam T the block's parameter type
