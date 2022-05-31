@@ -5,33 +5,26 @@ import scala.scalajs.reflect.Reflect
 
 
 @JSExportTopLevel("Creator")
-object Creator {
+protected[blocks] object Creator {
+
+  private def loadModule(name: String) = {
+    val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
+    if (creatorClassOpt.nonEmpty)
+      creatorClassOpt.get.loadModule()
+    else
+      null
+  }
 
   @JSExport("apply")
-  def apply[E, T, R](name: String): Block.Builder[E, T, R] = {
-    val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
-    if (creatorClassOpt.nonEmpty)
-      creatorClassOpt.get.loadModule().asInstanceOf[Block.Builder[E, T, R]]
-    else
-      null
-  }
+  def apply[E, T, R](name: String): Block.Builder[E, T, R] =
+    loadModule(name).asInstanceOf[Block.Builder[E, T, R]]
 
   @JSExport("applyNoEnv")
-  def applyNoEnv[T, R](name: String): Builder[T, R] = {
-    val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
-    if (creatorClassOpt.nonEmpty)
-      creatorClassOpt.get.loadModule().asInstanceOf[Builder[T, R]]
-    else
-      null
-  }
+  def applyNoEnv[T, R](name: String): Builder[T, R] =
+    loadModule(name).asInstanceOf[Builder[T, R]]
 
   @JSExport("packedBuilder")
-  def packedBuilder[T, R](name: String): PackedBuilder[T, R] = {
-    val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")
-    if (creatorClassOpt.nonEmpty)
-      creatorClassOpt.get.loadModule().asInstanceOf[PackedBuilder[T, R]]
-    else
-      null
-  }
+  def packedBuilder[T, R](name: String): PackedBuilder[T, R] =
+    loadModule(name).asInstanceOf[PackedBuilder[T, R]]
 
 }

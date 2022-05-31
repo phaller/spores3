@@ -1,7 +1,5 @@
 package com.phaller.blocks
 
-import scala.annotation.targetName
-
 import upickle.default.*
 
 import scala.quoted.*
@@ -59,10 +57,95 @@ private[blocks] def createChecked[T, R](body: T => R) =
 inline def checked[T, R](inline fun: T => R): CheckedFunction[T, R] =
   ${ checkedFunctionCode('fun) }
 
-def checkedFunctionCode[T, R](funExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
-  Block.checkBodyExpr(funExpr)
+private[blocks] def checkedFunctionCode[T, R](funExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
+  checkBodyExpr(funExpr)
 
   '{ createChecked[T, R]($funExpr) }
+}
+
+private def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
+  import quotes.reflect.{Block => BlockTree, *}
+
+  def symIsToplevelObject(sym: Symbol): Boolean =
+    sym.flags.is(Flags.Module) && sym.owner.flags.is(Flags.Package)
+
+  def ownerChainContains(sym: Symbol, transitiveOwner: Symbol): Boolean =
+    if (sym.maybeOwner.isNoSymbol) false
+    else ((sym.owner == transitiveOwner) || ownerChainContains(sym.owner, transitiveOwner))
+
+  def checkCaptures(defdefSym: Symbol, anonfunBody: Tree): Unit = {
+    /* collect all identifier uses.
+       check that they don't have an owner outside the anon fun.
+       uses of top-level objects are OK.
+     */
+
+    val acc = new TreeAccumulator[List[Ident]] {
+      def foldTree(ids: List[Ident], tree: Tree)(owner: Symbol): List[Ident] = tree match {
+        case id @ Ident(_) => id :: ids
+        case _ =>
+          try {
+            foldOverTree(ids, tree)(owner)
+          } catch {
+            case me: MatchError =>
+              // compiler bug: skip checking tree
+              ids
+          }
+      }
+    }
+    val foundIds = acc.foldTree(List(), anonfunBody)(defdefSym)
+    val foundSyms = foundIds.map(id => id.symbol)
+    val names = foundSyms.map(sym => sym.name)
+    val ownerNames = foundSyms.map(sym => sym.owner.name)
+
+    val allOwnersOK = foundSyms.forall(sym =>
+      ownerChainContains(sym, defdefSym) ||
+        symIsToplevelObject(sym) || ((!sym.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner)) || ((!sym.maybeOwner.isNoSymbol) && (!sym.owner.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner.owner))) // example: `ExecutionContext.Implicits.global`
+
+    // report error if not all owners OK
+    if (!allOwnersOK) {
+      foundIds.foreach { id =>
+        val sym = id.symbol
+        val isOwnedByToplevelObject =
+          symIsToplevelObject(sym) || ((!sym.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner)) || ((!sym.maybeOwner.isNoSymbol) && (!sym.owner.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner.owner))
+
+        val isOwnedByBlock = ownerChainContains(sym, defdefSym)
+        if (!isOwnedByToplevelObject) {
+          // might find illegal capturing
+          if (!isOwnedByBlock)
+            report.error(s"Invalid capture of variable `${id.name}`. Use first parameter of block's body to refer to the block's environment.", id.pos)
+        }
+      }
+    }
+  }
+
+  val tree = bodyExpr.asTerm
+  tree match {
+    case Inlined(None, List(),
+      TypeApply(Select(BlockTree(List(), BlockTree(
+        List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)
+      )), asInst), _)
+    ) =>
+      checkCaptures(defdef.symbol, anonfunBody)
+
+    case Inlined(None, List(),
+      TypeApply(Select(BlockTree(
+        List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)
+      ), asInst), _)
+    ) =>
+      checkCaptures(defdef.symbol, anonfunBody)
+
+    case Inlined(None, List(),
+      BlockTree(List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _))) =>
+      checkCaptures(defdef.symbol, anonfunBody)
+
+    case Inlined(None, List(), BlockTree(List(),
+      BlockTree(List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)))) =>
+      checkCaptures(defdef.symbol, anonfunBody)
+
+    case _ =>
+      val str = tree.show(using Printer.TreeStructure)
+      report.error(s"Argument must be a function literal", tree.pos)
+  }
 }
 
 class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Nothing, T, R] {
@@ -146,15 +229,15 @@ object Block {
 
   }
 
-  given [E: Duplicable, A, B]: Duplicable[Block[A, B] { type Env = E }] =
-    new Duplicable[Block[A, B] { type Env = E }] {
-      def duplicate(block: Block[A, B] { type Env = E }) = {
+  given [E: Duplicable, T, R]: Duplicable[Block[T, R] { type Env = E }] =
+    new Duplicable[Block[T, R] { type Env = E }] {
+      def duplicate(block: Block[T, R] { type Env = E }) = {
         val duplicatedEnv = summon[Duplicable[E]].duplicate(block.envir)
-        new Block[A, B] {
+        new Block[T, R] {
           type Env = E
-          def apply(x: A): B =
+          def apply(x: T): R =
             block.applyInternal(x)(duplicatedEnv)
-          override private[blocks] def applyInternal(x: A)(y: Env): B =
+          override private[blocks] def applyInternal(x: T)(y: Env): R =
             block.applyInternal(x)(y)
           private[blocks] val envir = duplicatedEnv
         }
@@ -162,14 +245,14 @@ object Block {
     }
 
   // how to duplicate a block without environment
-  given [A, B]: Duplicable[Block[A, B] { type Env = Nothing }] =
-    new Duplicable[Block[A, B] { type Env = Nothing }] {
-      def duplicate(block: Block[A, B] { type Env = Nothing }) = {
-        new Block[A, B] {
+  given [T, R]: Duplicable[Block[T, R] { type Env = Nothing }] =
+    new Duplicable[Block[T, R] { type Env = Nothing }] {
+      def duplicate(block: Block[T, R] { type Env = Nothing }) = {
+        new Block[T, R] {
           type Env = Nothing
-          def apply(x: A): B =
+          def apply(x: T): R =
             block.apply(x) // ignore environment
-          override private[blocks] def applyInternal(x: A)(y: Nothing): B =
+          override private[blocks] def applyInternal(x: T)(y: Nothing): R =
             block.applyInternal(x)(y)
           private[blocks] def envir =
             throw new Exception("block does not have an environment")
@@ -192,91 +275,6 @@ object Block {
     */
   inline def apply[E, T, R](inline env: E)(inline body: E => T => R): Block[T, R] { type Env = E } =
     ${ applyCode('env, 'body) }
-
-  def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
-    import quotes.reflect.{Block => BlockTree, *}
-
-    def symIsToplevelObject(sym: Symbol): Boolean =
-      sym.flags.is(Flags.Module) && sym.owner.flags.is(Flags.Package)
-
-    def ownerChainContains(sym: Symbol, transitiveOwner: Symbol): Boolean =
-      if (sym.maybeOwner.isNoSymbol) false
-      else ((sym.owner == transitiveOwner) || ownerChainContains(sym.owner, transitiveOwner))
-
-    def checkCaptures(defdefSym: Symbol, anonfunBody: Tree): Unit = {
-      /* collect all identifier uses.
-         check that they don't have an owner outside the anon fun.
-         uses of top-level objects are OK.
-       */
-
-      val acc = new TreeAccumulator[List[Ident]] {
-        def foldTree(ids: List[Ident], tree: Tree)(owner: Symbol): List[Ident] = tree match {
-          case id @ Ident(_) => id :: ids
-          case _ =>
-            try {
-              foldOverTree(ids, tree)(owner)
-            } catch {
-              case me: MatchError =>
-                // compiler bug: skip checking tree
-                ids
-            }
-        }
-      }
-      val foundIds = acc.foldTree(List(), anonfunBody)(defdefSym)
-      val foundSyms = foundIds.map(id => id.symbol)
-      val names = foundSyms.map(sym => sym.name)
-      val ownerNames = foundSyms.map(sym => sym.owner.name)
-
-      val allOwnersOK = foundSyms.forall(sym =>
-        ownerChainContains(sym, defdefSym) ||
-          symIsToplevelObject(sym) || ((!sym.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner)) || ((!sym.maybeOwner.isNoSymbol) && (!sym.owner.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner.owner))) // example: `ExecutionContext.Implicits.global`
-
-      // report error if not all owners OK
-      if (!allOwnersOK) {
-        foundIds.foreach { id =>
-          val sym = id.symbol
-          val isOwnedByToplevelObject =
-            symIsToplevelObject(sym) || ((!sym.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner)) || ((!sym.maybeOwner.isNoSymbol) && (!sym.owner.maybeOwner.isNoSymbol) && symIsToplevelObject(sym.owner.owner))
-
-          val isOwnedByBlock = ownerChainContains(sym, defdefSym)
-          if (!isOwnedByToplevelObject) {
-            // might find illegal capturing
-            if (!isOwnedByBlock)
-              report.error(s"Invalid capture of variable `${id.name}`. Use first parameter of block's body to refer to the block's environment.", id.pos)
-          }
-        }
-      }
-    }
-
-    val tree = bodyExpr.asTerm
-    tree match {
-      case Inlined(None, List(),
-        TypeApply(Select(BlockTree(List(), BlockTree(
-          List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)
-        )), asInst), _)
-      ) =>
-        checkCaptures(defdef.symbol, anonfunBody)
-
-      case Inlined(None, List(),
-        TypeApply(Select(BlockTree(
-          List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)
-        ), asInst), _)
-      ) =>
-        checkCaptures(defdef.symbol, anonfunBody)
-
-      case Inlined(None, List(),
-        BlockTree(List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _))) =>
-        checkCaptures(defdef.symbol, anonfunBody)
-
-      case Inlined(None, List(), BlockTree(List(),
-        BlockTree(List(defdef @ DefDef(anonfun, params, _, Some(anonfunBody))), Closure(_, _)))) =>
-        checkCaptures(defdef.symbol, anonfunBody)
-
-      case _ =>
-        val str = tree.show(using Printer.TreeStructure)
-        report.error(s"Argument must be a function literal", tree.pos)
-    }
-  }
 
   private def applyCode[E, T, R](envExpr: Expr[E], bodyExpr: Expr[E => T => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
     checkBodyExpr(bodyExpr)
@@ -325,17 +323,17 @@ object Block {
     * @param body the block's body
     * @return a block initialized with the given environment and body
     */
-  inline def thunk[T, R](inline env: T)(inline body: T => R): Block[Unit, R] { type Env = T } =
+  inline def thunk[E, R](inline env: E)(inline body: E => R): Block[Unit, R] { type Env = E } =
     ${ thunkCode('env, 'body) }
 
-  private def thunkCode[T, R](envExpr: Expr[T], bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[Block[Unit, R] { type Env = T }] = {
+  private def thunkCode[E, R](envExpr: Expr[E], bodyExpr: Expr[E => R])(using Type[E], Type[R], Quotes): Expr[Block[Unit, R] { type Env = E }] = {
     checkBodyExpr(bodyExpr)
 
     '{
       new Block[Unit, R] {
-        type Env = T
+        type Env = E
         def apply(x: Unit): R = $bodyExpr($envExpr)
-        override private[blocks] def applyInternal(x: Unit)(env: T): R =
+        override private[blocks] def applyInternal(x: Unit)(env: E): R =
           $bodyExpr(env)
         private[blocks] val envir = $envExpr
       }

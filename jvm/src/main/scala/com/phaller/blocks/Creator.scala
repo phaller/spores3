@@ -1,24 +1,18 @@
 package com.phaller.blocks
 
 
-object Creator {
+private[blocks] object Creator {
 
-  def apply[E, T, R](name: String): Block.Builder[E, T, R] = {
-    val creatorClass = Class.forName(name + "$")
-    val creatorField = creatorClass.getDeclaredField("MODULE$")
-    creatorField.get(null).asInstanceOf[Block.Builder[E, T, R]]
-  }
+  private def getModuleFieldValue(name: String) =
+    Class.forName(name + "$").getDeclaredField("MODULE$").get(null)
 
-  def applyNoEnv[T, R](name: String): Builder[T, R] = {
-    val creatorClass = Class.forName(name + "$")
-    val creatorField = creatorClass.getDeclaredField("MODULE$")
-    creatorField.get(null).asInstanceOf[Builder[T, R]]
-  }
+  def apply[E, T, R](name: String): Block.Builder[E, T, R] =
+    getModuleFieldValue(name).asInstanceOf[Block.Builder[E, T, R]]
 
-  def packedBuilder[T, R](name: String): PackedBuilder[T, R] = {
-    val creatorClass = Class.forName(name + "$")
-    val creatorField = creatorClass.getDeclaredField("MODULE$")
-    creatorField.get(null).asInstanceOf[PackedBuilder[T, R]]
-  }
+  def applyNoEnv[T, R](name: String): Builder[T, R] =
+    getModuleFieldValue(name).asInstanceOf[Builder[T, R]]
+
+  def packedBuilder[T, R](name: String): PackedBuilder[T, R] =
+    getModuleFieldValue(name).asInstanceOf[PackedBuilder[T, R]]
 
 }
