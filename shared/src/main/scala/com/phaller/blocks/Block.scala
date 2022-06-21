@@ -41,28 +41,6 @@ sealed trait Block[-T, +R] extends (T => R) {
 
 }
 
-sealed class CheckedFunction[T, R] private[blocks] (val body: T => R)
-
-private[blocks] def createChecked[T, R](body: T => R) =
-  new CheckedFunction[T, R](body)
-
-/** Checks that the argument function is a function literal that does
-  * not capture any variable of an enclosing scope.
-  *
-  * @param  fun  the function
-  * @tparam T    the function's parameter type
-  * @tparam R    the function's result type
-  * @return a `CheckedFunction` instance compatible with a block builder
-  */
-inline def checked[T, R](inline fun: T => R): CheckedFunction[T, R] =
-  ${ checkedFunctionCode('fun) }
-
-private[blocks] def checkedFunctionCode[T, R](funExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[CheckedFunction[T, R]] = {
-  checkBodyExpr(funExpr)
-
-  '{ createChecked[T, R]($funExpr) }
-}
-
 private def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
   import quotes.reflect.{Block => BlockTree, *}
 
@@ -148,7 +126,7 @@ private def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
   }
 }
 
-class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Nothing, T, R] {
+class Builder[T, R](fun: T => R) extends TypedBuilder[Nothing, T, R] {
 
   private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] =
     apply() // envOpt is empty
@@ -157,9 +135,9 @@ class Builder[T, R](checkedFun: CheckedFunction[T, R]) extends TypedBuilder[Noth
     new Block[T, R] {
       type Env = E
       def apply(x: T): R =
-        checkedFun.body(x)
+        fun(x)
       override private[blocks] def applyInternal(x: T)(env: Env): R =
-        checkedFun.body(x)
+        fun(x)
       private[blocks] def envir =
         throw new Exception("block does not have an environment")
     }
@@ -182,32 +160,7 @@ object Block {
   extension [R](block: Block[Unit, R])
     def apply(): R = block.apply(())
 
-  sealed class CheckedClosure[E, T, R] private[blocks] (val body: E => T => R)
-
-  private[blocks] def createChecked[E, T, R](fun: E => T => R) =
-    new CheckedClosure[E, T, R](fun)
-
-  /** Checks that the argument function is a function literal that does
-    * not capture any variable of an enclosing scope. Returns a
-    * `CheckedClosure` instance for creating a block with non-empty
-    * environment of type `E`.
-    *
-    * @param  fun  the function
-    * @tparam E    the environment type of the corresponding block
-    * @tparam T    the function's parameter type
-    * @tparam R    the function's result type
-    * @return a `CheckedClosure` instance compatible with a block builder
-    */
-  inline def checked[E, T, R](inline fun: E => T => R): CheckedClosure[E, T, R] =
-    ${ checkedClosureCode('fun) }
-
-  def checkedClosureCode[E, T, R](funExpr: Expr[E => T => R])(using Type[E], Type[T], Type[R], Quotes): Expr[CheckedClosure[E, T, R]] = {
-    checkBodyExpr(funExpr)
-
-    '{ createChecked[E, T, R]($funExpr) }
-  }
-
-  class Builder[E, T, R](checkedFun: CheckedClosure[E, T, R])(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
+  class Builder[E, T, R](fun: E => T => R)(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
 
     private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] = {
       // actually creates a Block[T, R] { type Env = E }
@@ -220,9 +173,9 @@ object Block {
       new Block[T, R] {
         type Env = E
         def apply(x: T): R =
-          checkedFun.body(env)(x)
+          fun(env)(x)
         override private[blocks] def applyInternal(x: T)(y: Env): R =
-          checkedFun.body(y)(x)
+          fun(y)(x)
         private[blocks] val envir =
           env
       }

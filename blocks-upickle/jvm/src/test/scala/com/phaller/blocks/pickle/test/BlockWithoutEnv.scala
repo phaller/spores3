@@ -1,8 +1,8 @@
 package com.phaller.blocks.pickle.test
 
-import com.phaller.blocks.{Builder, checked}
+import com.phaller.blocks.Builder
 
 
 object BlockWithoutEnv extends Builder[Int, Int](
-  checked((x: Int) => x + 1)
+  (x: Int) => x + 1
 )
