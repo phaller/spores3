@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Block, Creator, BlockData, PackedBlockData}
+import com.phaller.blocks.{Spore, Creator, SporeData, PackedSporeData}
 import com.phaller.blocks.pickle.given
 
 import upickle.default.*
@@ -15,22 +15,22 @@ class PickleTests {
 
   @Test
   def testCreator(): Unit = {
-    val c = Creator[Int, Int, Int]("com.phaller.blocks.pickle.test.MyBlock")
+    val c = Creator[Int, Int, Int]("com.phaller.blocks.pickle.test.MySpore")
     val s = c(12)
     val res = s(3)
     assert(res == 16)
   }
 
-  type BlockT = Block[Int, Int] { type Env = Int }
+  type SporeT = Spore[Int, Int] { type Env = Int }
 
   @Test
-  def testBlockReadWriter(): Unit = {
-    val name = "com.phaller.blocks.pickle.test.MyBlock"
+  def testSporeReadWriter(): Unit = {
+    val name = "com.phaller.blocks.pickle.test.MySpore"
     val env: Int = 12
 
-    given blockReadWriter: ReadWriter[BlockT] =
-      readwriter[ujson.Value].bimap[BlockT](
-        // currently, cannot obtain creator name from block `b`
+    given sporeReadWriter: ReadWriter[SporeT] =
+      readwriter[ujson.Value].bimap[SporeT](
+        // currently, cannot obtain creator name from spore `b`
         b => ujson.Arr(name, b.envir),
         json => {
           val n: String = json(0).str
@@ -40,97 +40,97 @@ class PickleTests {
         }
       )
 
-    // create a block
-    val block: BlockT = MyBlock(12)
+    // create a spore
+    val spore: SporeT = MySpore(12)
 
-    // pickle block
-    val res = write(block)
+    // pickle spore
+    val res = write(spore)
 
-    assert(res == """["com.phaller.blocks.pickle.test.MyBlock",12]""")
+    assert(res == """["com.phaller.blocks.pickle.test.MySpore",12]""")
   }
 
   @Test
-  def testBlockDataReadWriter(): Unit = {
+  def testSporeDataReadWriter(): Unit = {
     val x = 12 // environment
-    val data = BlockData(MyBlock, Some(x))
-    // pickle block data
+    val data = SporeData(MySpore, Some(x))
+    // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
-    val unpickledData = read[BlockData[Int, Int] { type Env = Int }](pickledData)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MySpore",1,"12"]""")
+    val unpickledData = read[SporeData[Int, Int] { type Env = Int }](pickledData)
     assert(unpickledData.fqn == data.fqn)
     assert(unpickledData.envOpt == data.envOpt)
   }
 
   @Test
-  def testBlockDataToBlock(): Unit = {
+  def testSporeDataToBlock(): Unit = {
     val x = 12 // environment
-    val data = BlockData(MyBlock, Some(x))
-    val block = data.toBlock
-    assert(block(3) == 16)
+    val data = SporeData(MySpore, Some(x))
+    val spore = data.toSpore
+    assert(spore(3) == 16)
   }
 
   @Test
-  def testBlockDataToBlockWithoutEnv(): Unit = {
-    val data = BlockData(BlockWithoutEnv)
-    val block = data.toBlock
-    assert(block(3) == 4)
+  def testSporeDataToBlockWithoutEnv(): Unit = {
+    val data = SporeData(SporeWithoutEnv)
+    val spore = data.toSpore
+    assert(spore(3) == 4)
   }
 
   @Test
-  def testBlockDataReadWriterToBlock(): Unit = {
+  def testSporeDataReadWriterToBlock(): Unit = {
     val x = 12 // environment
-    val data = BlockData(MyBlock, Some(x))
-    // pickle block data
+    val data = SporeData(MySpore, Some(x))
+    // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
-    val unpickledData = read[BlockData[Int, Int] { type Env = Int }](pickledData)
-    val unpickledBlock = unpickledData.toBlock
-    assert(unpickledBlock(3) == 16)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MySpore",1,"12"]""")
+    val unpickledData = read[SporeData[Int, Int] { type Env = Int }](pickledData)
+    val unpickledSpore = unpickledData.toSpore
+    assert(unpickledSpore(3) == 16)
   }
 
   @Test
-  def testBlockDataReadWriterToBlockWithoutEnv(): Unit = {
-    val data = BlockData(BlockWithoutEnv)
-    // pickle block data
+  def testSporeDataReadWriterToBlockWithoutEnv(): Unit = {
+    val data = SporeData(SporeWithoutEnv)
+    // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
-    val unpickledData = read[BlockData[Int, Int] { type Env = Nothing }](pickledData)
-    val unpickledBlock = unpickledData.toBlock
-    assert(unpickledBlock(3) == 4)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.SporeWithoutEnv",0]""")
+    val unpickledData = read[SporeData[Int, Int] { type Env = Nothing }](pickledData)
+    val unpickledSpore = unpickledData.toSpore
+    assert(unpickledSpore(3) == 4)
   }
 
   @Test
-  def testPackedBlockDataReadWriterToBlock(): Unit = {
+  def testPackedSporeDataReadWriterToSpore(): Unit = {
     val x = 12 // environment
-    val data = BlockData(MyBlock, Some(x))
-    // pickle block data
+    val data = SporeData(MySpore, Some(x))
+    // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MyBlock",1,"12"]""")
-    val unpickledData = read[PackedBlockData](pickledData)
-    val unpickledBlock = unpickledData.toBlock[Int, Int]
-    assert(unpickledBlock(3) == 16)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.MySpore",1,"12"]""")
+    val unpickledData = read[PackedSporeData](pickledData)
+    val unpickledSpore = unpickledData.toSpore[Int, Int]
+    assert(unpickledSpore(3) == 16)
   }
 
   @Test
-  def testPackedBlockDataReadWriterToBlockWithoutEnv(): Unit = {
-    val data = BlockData(BlockWithoutEnv)
-    // pickle block data
+  def testPackedSporeDataReadWriterToBlockWithoutEnv(): Unit = {
+    val data = SporeData(SporeWithoutEnv)
+    // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.BlockWithoutEnv",0]""")
-    val unpickledData = read[PackedBlockData](pickledData)
-    val unpickledBlock = unpickledData.toBlock[Int, Int]
-    assert(unpickledBlock(3) == 4)
+    assert(pickledData == """["com.phaller.blocks.pickle.test.SporeWithoutEnv",0]""")
+    val unpickledData = read[PackedSporeData](pickledData)
+    val unpickledSpore = unpickledData.toSpore[Int, Int]
+    assert(unpickledSpore(3) == 4)
   }
 
   @Test
   def testPickleAppendString(): Unit = {
-    val appendData = BlockData(AppendString, Some("three"))
+    val appendData = SporeData(AppendString, Some("three"))
     val serialized = write(appendData)
     assert(serialized == """["com.phaller.blocks.pickle.test.AppendString",1,"\"three\""]""")
-    val deserData = read[PackedBlockData](serialized)
-    val deserBlock = deserData.toBlock[List[String], List[String]]
+    val deserData = read[PackedSporeData](serialized)
+    val deserSpore = deserData.toSpore[List[String], List[String]]
     val l3 = List("four")
-    assert(deserBlock(l3) == List("four", "three"))
+    assert(deserSpore(l3) == List("four", "three"))
   }
 
 }

@@ -6,7 +6,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.collection.concurrent.TrieMap
 
-import com.phaller.blocks.{Block, Duplicable}
+import com.phaller.blocks.{Spore, Duplicable}
 import com.phaller.blocks.Duplicable.duplicate
 
 
@@ -34,7 +34,7 @@ object FutureMap {
     }
 
   def averageAge(customers: List[Customer]): Future[Float] = {
-    val block = Block[CustomerMap, List[Customer], Float](customerData) { data => cs =>
+    val spore = Spore[CustomerMap, List[Customer], Float](customerData) { data => cs =>
       val infos = cs.flatMap { c =>
         data.get(c.customerNo) match
           case Some(info) => List(info)
@@ -43,8 +43,8 @@ object FutureMap {
       val sumAges = infos.foldLeft(0)(_ + _.age).toFloat
       if (infos.nonEmpty) sumAges / infos.size else 0.0f
     }
-    val safeBlock = duplicate(block)
-    Future { safeBlock(customers) }
+    val safeSpore = duplicate(spore)
+    Future { safeSpore(customers) }
   }
 
   def main(args: Array[String]): Unit = {

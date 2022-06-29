@@ -4,8 +4,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Block, DBlock}
-import Block.thunk
+import com.phaller.blocks.{Spore, DBlock}
+import Spore.thunk
 
 
 @RunWith(classOf[JUnit4])
@@ -19,7 +19,7 @@ class DBlockTests {
     }
 
     val db = DBlock(b)
-    val b2 = db.duplicable.duplicate(db.block)
+    val b2 = db.duplicable.duplicate(db.spore)
 
     val res = b2()
     assert(res == 6)
@@ -50,7 +50,7 @@ class DBlockTests {
     }
 
     val db = DBlock(b)
-    val b2 = db.duplicable.duplicate(db.block)
+    val b2 = db.duplicable.duplicate(db.spore)
 
     val envVal = b2()
 
@@ -60,11 +60,11 @@ class DBlockTests {
   @Test
   def testDuplicateBlockWithoutEnv(): Unit = {
     // block does not capture anything
-    val b = Block {
+    val b = Spore {
       (x: Int) => x + 2
     }
     val db = DBlock(b)
-    val b2 = db.duplicable.duplicate(db.block)
+    val b2 = db.duplicable.duplicate(db.spore)
     val res = b2(3)
     assert(res == 5)
   }
@@ -74,12 +74,12 @@ class DBlockTests {
     val x = new C
     x.f = 4
 
-    val b = Block(x) {
+    val b = Spore(x) {
       env => (y: Int) => env.f + y
     }
 
     val db = DBlock(b)
-    val b2 = db.duplicable.duplicate(db.block)
+    val b2 = db.duplicable.duplicate(db.spore)
     val res = b2(3)
     assert(res == 7)
   }

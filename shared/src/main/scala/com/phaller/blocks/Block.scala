@@ -22,7 +22,7 @@ import scala.quoted.*
   * @tparam T the parameter type
   * @tparam R the result type
   */
-sealed trait Block[-T, +R] extends (T => R) {
+sealed trait Spore[-T, +R] extends (T => R) {
 
   /** The type of the block's environment.
     */
@@ -128,11 +128,11 @@ private def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
 
 class Builder[T, R](fun: T => R) extends TypedBuilder[Nothing, T, R] {
 
-  private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] =
+  private[blocks] def createSpore(envOpt: Option[String]): Spore[T, R] =
     apply() // envOpt is empty
 
-  def apply[E](): Block[T, R] { type Env = E } =
-    new Block[T, R] {
+  def apply[E](): Spore[T, R] { type Env = E } =
+    new Spore[T, R] {
       type Env = E
       def apply(x: T): R =
         fun(x)
@@ -147,30 +147,30 @@ class Builder[T, R](fun: T => R) extends TypedBuilder[Nothing, T, R] {
 trait TypedBuilder[E, T, R] extends PackedBuilder[T, R]
 
 trait PackedBuilder[T, R] {
-  private[blocks] def createBlock(envOpt: Option[String]): Block[T, R]
+  private[blocks] def createSpore(envOpt: Option[String]): Spore[T, R]
 }
 
 /** The `Block` companion object provides factory methods as well as
   * the [[Block.Builder]] class for creating block builders.
   */
-object Block {
+object Spore {
 
   /** Applies a block with parameter type `Unit`.
     */
-  extension [R](block: Block[Unit, R])
-    def apply(): R = block.apply(())
+  extension [R](spore: Spore[Unit, R])
+    def apply(): R = spore.apply(())
 
   class Builder[E, T, R](fun: E => T => R)(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
 
-    private[blocks] def createBlock(envOpt: Option[String]): Block[T, R] = {
-      // actually creates a Block[T, R] { type Env = E }
+    private[blocks] def createSpore(envOpt: Option[String]): Spore[T, R] = {
+      // actually creates a Spore[T, R] { type Env = E }
       // envOpt is non-empty
       val env = read[E](envOpt.get)
       apply(env)
     }
 
-    def apply(env: E): Block[T, R] { type Env = E } =
-      new Block[T, R] {
+    def apply(env: E): Spore[T, R] { type Env = E } =
+      new Spore[T, R] {
         type Env = E
         def apply(x: T): R =
           fun(env)(x)
@@ -182,31 +182,31 @@ object Block {
 
   }
 
-  given [E: Duplicable, T, R]: Duplicable[Block[T, R] { type Env = E }] =
-    new Duplicable[Block[T, R] { type Env = E }] {
-      def duplicate(block: Block[T, R] { type Env = E }) = {
-        val duplicatedEnv = summon[Duplicable[E]].duplicate(block.envir)
-        new Block[T, R] {
+  given [E: Duplicable, T, R]: Duplicable[Spore[T, R] { type Env = E }] =
+    new Duplicable[Spore[T, R] { type Env = E }] {
+      def duplicate(spore: Spore[T, R] { type Env = E }) = {
+        val duplicatedEnv = summon[Duplicable[E]].duplicate(spore.envir)
+        new Spore[T, R] {
           type Env = E
           def apply(x: T): R =
-            block.applyInternal(x)(duplicatedEnv)
+            spore.applyInternal(x)(duplicatedEnv)
           override private[blocks] def applyInternal(x: T)(y: Env): R =
-            block.applyInternal(x)(y)
+            spore.applyInternal(x)(y)
           private[blocks] val envir = duplicatedEnv
         }
       }
     }
 
   // how to duplicate a block without environment
-  given [T, R]: Duplicable[Block[T, R] { type Env = Nothing }] =
-    new Duplicable[Block[T, R] { type Env = Nothing }] {
-      def duplicate(block: Block[T, R] { type Env = Nothing }) = {
-        new Block[T, R] {
+  given [T, R]: Duplicable[Spore[T, R] { type Env = Nothing }] =
+    new Duplicable[Spore[T, R] { type Env = Nothing }] {
+      def duplicate(spore: Spore[T, R] { type Env = Nothing }) = {
+        new Spore[T, R] {
           type Env = Nothing
           def apply(x: T): R =
-            block.apply(x) // ignore environment
+            spore.apply(x) // ignore environment
           override private[blocks] def applyInternal(x: T)(y: Nothing): R =
-            block.applyInternal(x)(y)
+            spore.applyInternal(x)(y)
           private[blocks] def envir =
             throw new Exception("block does not have an environment")
         }
@@ -226,14 +226,14 @@ object Block {
     * @param body the block's body
     * @return a block initialized with the given environment and body
     */
-  inline def apply[E, T, R](inline env: E)(inline body: E => T => R): Block[T, R] { type Env = E } =
-    ${ applyCode('env, 'body) }
+  inline def apply[E, T, R](inline initEnv: E)(inline body: E => T => R): Spore[T, R] { type Env = E } =
+    ${ applyCode('initEnv, 'body) }
 
-  private def applyCode[E, T, R](envExpr: Expr[E], bodyExpr: Expr[E => T => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = E }] = {
+  private def applyCode[E, T, R](envExpr: Expr[E], bodyExpr: Expr[E => T => R])(using Type[E], Type[T], Type[R], Quotes): Expr[Spore[T, R] { type Env = E }] = {
     checkBodyExpr(bodyExpr)
 
     '{
-      new Block[T, R] {
+      new Spore[T, R] {
         type Env = E
         def apply(x: T): R = $bodyExpr($envExpr)(x)
         override private[blocks] def applyInternal(x: T)(env: E): R =
@@ -251,14 +251,14 @@ object Block {
     * @param body the block's body
     * @return a block with the given body
     */
-  inline def apply[T, R](inline body: T => R): Block[T, R] { type Env = Nothing } =
+  inline def apply[T, R](inline body: T => R): Spore[T, R] { type Env = Nothing } =
     ${ applyCode('body) }
 
-  private def applyCode[T, R](bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[Block[T, R] { type Env = Nothing }] = {
+  private def applyCode[T, R](bodyExpr: Expr[T => R])(using Type[T], Type[R], Quotes): Expr[Spore[T, R] { type Env = Nothing }] = {
     checkBodyExpr(bodyExpr)
 
     '{
-      new Block[T, R] {
+      new Spore[T, R] {
         type Env = Nothing
         def apply(x: T): R = $bodyExpr(x)
         private[blocks] def envir =
@@ -276,14 +276,14 @@ object Block {
     * @param body the block's body
     * @return a block initialized with the given environment and body
     */
-  inline def thunk[E, R](inline env: E)(inline body: E => R): Block[Unit, R] { type Env = E } =
+  inline def thunk[E, R](inline env: E)(inline body: E => R): Spore[Unit, R] { type Env = E } =
     ${ thunkCode('env, 'body) }
 
-  private def thunkCode[E, R](envExpr: Expr[E], bodyExpr: Expr[E => R])(using Type[E], Type[R], Quotes): Expr[Block[Unit, R] { type Env = E }] = {
+  private def thunkCode[E, R](envExpr: Expr[E], bodyExpr: Expr[E => R])(using Type[E], Type[R], Quotes): Expr[Spore[Unit, R] { type Env = E }] = {
     checkBodyExpr(bodyExpr)
 
     '{
-      new Block[Unit, R] {
+      new Spore[Unit, R] {
         type Env = E
         def apply(x: Unit): R = $bodyExpr($envExpr)
         override private[blocks] def applyInternal(x: Unit)(env: E): R =

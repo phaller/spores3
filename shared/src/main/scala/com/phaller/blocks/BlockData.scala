@@ -5,7 +5,7 @@ import scala.quoted.*
 
 /** Enables creating [[BlockData]] objects.
   */
-object BlockData {
+object SporeData {
 
   /** Creates a `BlockData` instance which serves as a serializable form
     * of a block. The method requires a *block builder* which is a
@@ -19,9 +19,9 @@ object BlockData {
     * @param builder the block builder defining the block's body
     * @param envOpt the block's optional environment
     */
-  inline def apply[N, T, R](inline builder: TypedBuilder[N, T, R], inline envOpt: Option[N] = None): BlockData[T, R] { type Env = N } = ${ applyCode('builder, 'envOpt) }
+  inline def apply[N, T, R](inline builder: TypedBuilder[N, T, R], inline envOpt: Option[N] = None): SporeData[T, R] { type Env = N } = ${ applyCode('builder, 'envOpt) }
 
-  private def applyCode[N, T, R](builderExpr: Expr[TypedBuilder[N, T, R]], envOptExpr: Expr[Option[N]])(using Type[N], Type[T], Type[R], Quotes): Expr[BlockData[T, R] { type Env = N }] = {
+  private def applyCode[N, T, R](builderExpr: Expr[TypedBuilder[N, T, R]], envOptExpr: Expr[Option[N]])(using Type[N], Type[T], Type[R], Quotes): Expr[SporeData[T, R] { type Env = N }] = {
     import quotes.reflect.*
 
     def allOwnersOK(owner: Symbol): Boolean =
@@ -35,7 +35,7 @@ object BlockData {
     }
 
     val fn = Expr(tree.show)
-    '{ new BlockData[T, R]($fn) {
+    '{ new SporeData[T, R]($fn) {
       type Env = N
       def envOpt = $envOptExpr
     } }
@@ -43,13 +43,13 @@ object BlockData {
 
 }
 
-abstract class BlockData[T, R](val fqn: String) { self =>
+abstract class SporeData[T, R](val fqn: String) { self =>
 
   type Env
 
   def envOpt: Option[Env]
 
-  def toBlock: Block[T, R] { type Env = self.Env } = {
+  def toSpore: Spore[T, R] { type Env = self.Env } = {
     if (envOpt.isEmpty) {
       val builder = Creator.applyNoEnv[T, R](fqn)
       builder[Env]()
@@ -61,11 +61,11 @@ abstract class BlockData[T, R](val fqn: String) { self =>
 
 }
 
-case class PackedBlockData(fqn: String, envOpt: Option[String] = None) {
+case class PackedSporeData(fqn: String, envOpt: Option[String] = None) {
 
-  def toBlock[T, R]: Block[T, R] = {
+  def toSpore[T, R]: Spore[T, R] = {
     val builder = Creator.packedBuilder[T, R](fqn)
-    builder.createBlock(envOpt)
+    builder.createSpore(envOpt)
   }
 
 }

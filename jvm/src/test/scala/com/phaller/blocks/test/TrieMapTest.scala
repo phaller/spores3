@@ -6,7 +6,7 @@ import org.junit.runners.JUnit4
 
 import scala.collection.concurrent.TrieMap
 
-import com.phaller.blocks.Block
+import com.phaller.blocks.Spore
 
 
 case class Customer(name: String, customerNo: Int)
@@ -21,7 +21,7 @@ class TrieMapTest {
 
   @Test
   def test(): Unit = {
-    val b = Block[CustomerMap, List[Customer], Float](customerData) { data => cs =>
+    val b = Spore[CustomerMap, List[Customer], Float](customerData) { data => cs =>
       val infos = cs.flatMap { c =>
         data.get(c.customerNo) match {
           case Some(info) => List(info)

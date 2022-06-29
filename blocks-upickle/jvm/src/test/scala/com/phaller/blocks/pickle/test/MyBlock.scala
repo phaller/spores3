@@ -1,8 +1,8 @@
 package com.phaller.blocks.pickle.test
 
-import com.phaller.blocks.Block
+import com.phaller.blocks.Spore
 
 
-object MyBlock extends Block.Builder[Int, Int, Int](
+object MySpore extends Spore.Builder[Int, Int, Int](
   env => x => env + x + 1
 )

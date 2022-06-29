@@ -6,7 +6,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import blocks.Block.thunk
+import blocks.Spore.thunk
 import blocks.Duplicable.duplicate
 
 
@@ -87,7 +87,7 @@ class DuplicableTests {
     val x = new C
     x.f = 7
 
-    val b: Block[Unit, C] { type Env = C } = thunk(x) { env =>
+    val b: Spore[Unit, C] { type Env = C } = thunk(x) { env =>
       env
     }
 
@@ -104,7 +104,7 @@ class DuplicableTests {
     val x = new C
     x.f = 7
 
-    val b: Block[Unit, C] { type Env = C } = thunk(x) { env =>
+    val b: Spore[Unit, C] { type Env = C } = thunk(x) { env =>
       env
     }
 
@@ -118,8 +118,8 @@ class DuplicableTests {
 
   @Test
   def testDuplicatedBlockNoCapture(): Unit = {
-    // block does not capture anything
-    val s = Block {
+    // spore does not capture anything
+    val s = Spore {
       (x: Int) => x + 2
     }
     val s2 = duplicate(s)
@@ -132,7 +132,7 @@ class DuplicableTests {
     val x = new C
     x.f = 4
 
-    val b = Block(x) {
+    val b = Spore(x) {
       env => (y: Int) => env.f + y
     }
 
@@ -143,16 +143,16 @@ class DuplicableTests {
 
   @Test
   def testDuplicateBlockWithEnvGeneric(): Unit = {
-    def duplicateThenApply[T, R, B <: Block[T, R] : Duplicable](block: B, arg: T): R = {
+    def duplicateThenApply[T, R, B <: Spore[T, R] : Duplicable](spore: B, arg: T): R = {
       val dup = summon[Duplicable[B]]
-      val duplicated = dup.duplicate(block)
+      val duplicated = dup.duplicate(spore)
       duplicated(arg)
     }
 
     val x = new C
     x.f = 4
 
-    val b = Block(x) {
+    val b = Spore(x) {
       env => (y: Int) => env.f + y
     }
 
@@ -161,19 +161,19 @@ class DuplicableTests {
   }
 
   @Test
-  def testPassingBlock(): Unit = {
-    def m2(block: Block[Int, Int], arg: Int): Int = {
+  def testPassingSpore(): Unit = {
+    def m2(block: Spore[Int, Int], arg: Int): Int = {
       block(arg)
     }
 
-    def m1(block: Block[Int, Int]): Int = {
+    def m1(block: Spore[Int, Int]): Int = {
       m2(block, 10) + 20
     }
 
     val x = new C
     x.f = 4
 
-    val b = Block(x) {
+    val b = Spore(x) {
       env => (y: Int) => env.f + y
     }
 
@@ -182,21 +182,21 @@ class DuplicableTests {
   }
 
   @Test
-  def testPassingBlockAndDuplicate(): Unit = {
-    def m2[B <: Block[Int, Int] : Duplicable](block: B, arg: Int): Int = {
+  def testPassingSporeAndDuplicate(): Unit = {
+    def m2[B <: Spore[Int, Int] : Duplicable](spore: B, arg: Int): Int = {
       val dup = summon[Duplicable[B]]
-      val duplicated = dup.duplicate(block)
+      val duplicated = dup.duplicate(spore)
       duplicated(arg)
     }
 
-    def m1[B <: Block[Int, Int] : Duplicable](block: B): Int = {
-      m2(block, 10) + 20
+    def m1[B <: Spore[Int, Int] : Duplicable](spore: B): Int = {
+      m2(spore, 10) + 20
     }
 
     val x = new C
     x.f = 4
 
-    val b = Block(x) {
+    val b = Spore(x) {
       env => (y: Int) => env.f + y
     }
 
@@ -205,7 +205,7 @@ class DuplicableTests {
   }
 
   @Test
-  def testPassingBlockAndDuplicateHelperClass(): Unit = {
+  def testPassingSporeAndDuplicateHelperClass(): Unit = {
     def m2[E](d: DBlock[Int, Int], arg: Int): Int = {
       val duplicated = d.duplicate()
       duplicated(arg)
@@ -218,7 +218,7 @@ class DuplicableTests {
     val x = new C
     x.f = 4
 
-    val b = Block(x) {
+    val b = Spore(x) {
       env => (y: Int) => env.f + y
     }
 
@@ -228,7 +228,7 @@ class DuplicableTests {
 
   @Test
   def testDuplicateThenApply(): Unit = {
-    def duplicateThenApply[S <: Block[Unit, C] : Duplicable](s: S): C = {
+    def duplicateThenApply[S <: Spore[Unit, C] : Duplicable](s: S): C = {
       val dup = summon[Duplicable[S]]
       val duplicated = dup.duplicate(s)
       duplicated()
@@ -255,7 +255,7 @@ class DuplicableTests {
     // x is a mutable instance:
     x.f = 7
 
-    val db = DBlock(Block(x) {
+    val db = DBlock(Spore(x) {
       env => (y: Int) => env
     })
 
@@ -270,7 +270,7 @@ class DuplicableTests {
 
   @Test
   def testDuplicateDBlockWithoutEnv(): Unit = {
-    val db = DBlock(Block {
+    val db = DBlock(Spore {
       (y: Int) => y + 1
     })
 
@@ -279,7 +279,7 @@ class DuplicableTests {
     val res2 = dblock2(5)
 
     assert(dblock2 ne db)
-    assert(res2 == db.block(5))
+    assert(res2 == db.spore(5))
   }
 
   @Test
@@ -294,7 +294,7 @@ class DuplicableTests {
     // x is a mutable instance:
     x.f = 7
 
-    val db = DBlock(Block(x) {
+    val db = DBlock(Spore(x) {
       env => (y: Int) => env
     })
 

@@ -16,8 +16,8 @@ protected[blocks] object Creator {
   }
 
   @JSExport("apply")
-  def apply[E, T, R](name: String): Block.Builder[E, T, R] =
-    loadModule(name).asInstanceOf[Block.Builder[E, T, R]]
+  def apply[E, T, R](name: String): Spore.Builder[E, T, R] =
+    loadModule(name).asInstanceOf[Spore.Builder[E, T, R]]
 
   @JSExport("applyNoEnv")
   def applyNoEnv[T, R](name: String): Builder[T, R] =

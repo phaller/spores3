@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
-import com.phaller.blocks.{Block, Builder, BlockData, PackedBlockData}
+import com.phaller.blocks.{Spore, Builder, SporeData, PackedSporeData}
 import com.phaller.blocks.pickle.given
 
 
@@ -18,11 +18,11 @@ object AppendThree extends Builder[List[String], List[String]](
   strings => strings ::: List("three")
 )
 
-object AppendString extends Block.Builder[String, List[String], List[String]](
+object AppendString extends Spore.Builder[String, List[String], List[String]](
   env => strings => strings ::: List(env)
 )
 
-object AppendInt extends Block.Builder[Int, List[String], List[String]](
+object AppendInt extends Spore.Builder[Int, List[String], List[String]](
   env => strings => strings ::: List("" + env)
 )
 
@@ -36,7 +36,7 @@ object AgentMain {
     val agent = Agent(lst)
 
     // send serializable block to agent
-    val data = BlockData(AppendThree, None)
+    val data = SporeData(AppendThree, None)
     agent.sendOff(data)
 
     val resFut = agent.getAsync()
@@ -47,7 +47,7 @@ object AgentMain {
 
     // send block that appends its environment, a string
     val example = "four"
-    val appendString = BlockData(AppendString, Some(example))
+    val appendString = SporeData(AppendString, Some(example))
     agent.sendOff(appendString)
 
     val res2 = Await.result(agent.getAsync(), d)
@@ -55,7 +55,7 @@ object AgentMain {
     println(res2)
 
     // send block that appends its environment, an integer
-    val appendInt = BlockData(AppendInt, Some(5))
+    val appendInt = SporeData(AppendInt, Some(5))
     agent.sendOff(appendInt)
 
     val res3 = Await.result(agent.getAsync(), d)
@@ -82,9 +82,9 @@ class Agent[T : ReadWriter] (init: T) { self =>
 
   private val state: AtomicReference[T] = new AtomicReference(init)
 
-  def sendOff[N](blockData: BlockData[T, T] { type Env = N })(using ReadWriter[BlockData[T, T] { type Env = N }]): Unit = {
+  def sendOff[N](sporeData: SporeData[T, T] { type Env = N })(using ReadWriter[SporeData[T, T] { type Env = N }]): Unit = {
     // serialize
-    val pickledData = write(blockData)
+    val pickledData = write(sporeData)
 
     enqueueSerialized(pickledData)
   }
@@ -96,12 +96,12 @@ class Agent[T : ReadWriter] (init: T) { self =>
           mailbox.poll() match {
             case ApplyBlock(serialized) =>
               // deserialize
-              val unpickledData = read[PackedBlockData](serialized)
-              val unpickledBlock = unpickledData.toBlock[T, T]
+              val unpickledData = read[PackedSporeData](serialized)
+              val unpickledSpore = unpickledData.toSpore[T, T]
 
-              // update state by applying the unpickled block
+              // update state by applying the unpickled spore
               val oldState = state.get()
-              val newState = unpickledBlock(oldState)
+              val newState = unpickledSpore(oldState)
               state.set(newState)
 
             case Get(promise) =>

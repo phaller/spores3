@@ -4,7 +4,7 @@ import scala.concurrent.{Future, Await}
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import com.phaller.blocks.Block
+import com.phaller.blocks.Spore
 
 
 object Futures:
@@ -24,8 +24,8 @@ object Futures:
 
       // captured variables are passed explicitly to
       // `apply` method of `Block` object
-      fut1.flatMap(Block(fut2) { future2 => res1 =>
-        future2.map(Block(res1) {
+      fut1.flatMap(Spore(fut2) { future2 => res1 =>
+        future2.map(Spore(res1) {
           env => res2 => env + res2
         })
       })

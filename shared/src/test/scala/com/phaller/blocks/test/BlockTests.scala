@@ -5,8 +5,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import blocks.Block
-import blocks.Block.thunk
+import blocks.Spore
+import blocks.Spore.thunk
 
 
 @RunWith(classOf[JUnit4])
@@ -14,16 +14,16 @@ class BlockTests {
 
   @Test
   def testWithoutEnv(): Unit = {
-    val b = Block { (x: Int) => x + 2 }
+    val b = Spore { (x: Int) => x + 2 }
     val res = b(3)
     assert(res == 5)
   }
 
   @Test
   def testWithoutEnv2(): Unit = {
-    def fun(block: Block[Int, Int] { type Env = Nothing }): Unit = {}
+    def fun(block: Spore[Int, Int] { type Env = Nothing }): Unit = {}
 
-    val b = Block((x: Int) => x + 2)
+    val b = Spore((x: Int) => x + 2)
 
     fun(b)
 
@@ -33,7 +33,7 @@ class BlockTests {
 
   @Test
   def testWithoutEnvWithType(): Unit = {
-    val s: Block[Int, Int] { type Env = Nothing } = Block {
+    val s: Spore[Int, Int] { type Env = Nothing } = Spore {
       (x: Int) => x + 2
     }
     val res = s(3)
@@ -42,17 +42,17 @@ class BlockTests {
 
   /* the following does not compile:
 [error] -- [E007] Type Mismatch Error: [...]/BlockTests.scala:37:61 
-[error] 37 |    val s: Block[Int, Int] { type Env = Nothing } = Block(y) {
+[error] 37 |    val s: Spore[Int, Int] { type Env = Nothing } = Spore(y) {
 [error]    |                                                    ^
-[error]    |             Found:    com.phaller.blocks.Block[Int, Int]{Env = Int}
-[error]    |             Required: com.phaller.blocks.Block[Int, Int]{Env = Nothing}
+[error]    |             Found:    com.phaller.blocks.Spore[Int, Int]{Env = Int}
+[error]    |             Required: com.phaller.blocks.Spore[Int, Int]{Env = Nothing}
 [error] 38 |      (x: Int) => x + 2 + env
 [error] 39 |    }
    */
   /*@Test
   def testWithoutEnvWithType1(): Unit = {
     val y = 5
-    val s: Block[Int, Int] { type Env = Nothing } = Block(y) {
+    val s: Spore[Int, Int] { type Env = Nothing } = Spore(y) {
       (x: Int) => x + 2 + env
     }
     val res = s(3)
@@ -62,7 +62,7 @@ class BlockTests {
   @Test
   def testWithEnv(): Unit = {
     val y = 5
-    val s = Block(y) {
+    val s = Spore(y) {
       env => (x: Int) => x + env
     }
     val res = s(10)
@@ -73,13 +73,13 @@ class BlockTests {
 [error] -- Error: [...]/BlockTests.scala:83:35
 [error] 83 |      env => (x: Int) => x + env + z
 [error]    |                                   ^
-[error]    |Invalid capture of variable `z`. Use first parameter of block's body to refer to the block's environment.
+[error]    |Invalid capture of variable `z`. Use first parameter of spore's body to refer to the spore's environment.
    */
   /*@Test
   def testWithEnvInvalidCapture(): Unit = {
     val y = 5
     val z = 6
-    val s = Block(y) {
+    val s = Spore(y) {
       env => (x: Int) => x + env + z
     }
     val res = s(10)
@@ -89,7 +89,7 @@ class BlockTests {
   @Test
   def testWithEnv2(): Unit = {
     val s = "anonymous function"
-    val b: Block[Int, Int] { type Env = String } = Block(s) {
+    val b: Spore[Int, Int] { type Env = String } = Spore(s) {
       env => (x: Int) => x + env.length
     }
     val res = b(10)
@@ -101,7 +101,7 @@ class BlockTests {
     val s = "anonymous function"
     val i = 5
 
-    val b: Block[Int, Int] { type Env = (String, Int) } = Block((s, i)) {
+    val b: Spore[Int, Int] { type Env = (String, Int) } = Spore((s, i)) {
       case (l, r) => (x: Int) => x + l.length - r
     }
 
@@ -114,7 +114,7 @@ class BlockTests {
     val s = "anonymous function"
     val i = 5
 
-    val b = Block((s, i)) {
+    val b = Spore((s, i)) {
       (l, r) => (x: Int) => x + l.length - r
     }
 
@@ -125,7 +125,7 @@ class BlockTests {
   @Test
   def testWithEnvWithType(): Unit = {
     val y = 5
-    val s: Block[Int, Int] { type Env = Int } = Block(y) {
+    val s: Spore[Int, Int] { type Env = Int } = Spore(y) {
       env => (x: Int) => x + env
     }
     val res = s(11)
@@ -144,9 +144,9 @@ class BlockTests {
 
   @Test
   def testNestedWithoutEnv(): Unit = {
-    val s = Block {
+    val s = Spore {
       (x: Int) =>
-        val s2 = Block { (y: Int) => y - 1 }
+        val s2 = Spore { (y: Int) => y - 1 }
         s2(x) + 2
     }
     val res = s(3)
@@ -157,9 +157,9 @@ class BlockTests {
   def testNestedWithEnv1(): Unit = {
     val z = 5
 
-    val s = Block(z) {
+    val s = Spore(z) {
       env => (x: Int) =>
-        val s2 = Block(env) { env => (y: Int) => env + y - 1 }
+        val s2 = Spore(env) { env => (y: Int) => env + y - 1 }
         s2(x) + 2
     }
     val res = s(3)
@@ -171,9 +171,9 @@ class BlockTests {
     val z = 5
     val w = 6
 
-    val s = Block((w, z)) {
+    val s = Spore((w, z)) {
       case (l, r) => (x: Int) =>
-        val s2 = Block(r) { env => (y: Int) => env + y - 1 }
+        val s2 = Spore(r) { env => (y: Int) => env + y - 1 }
         s2(x) + 2 - l
     }
 
@@ -185,7 +185,7 @@ class BlockTests {
   def testLocalClasses(): Unit = {
     val x = 5
 
-    val b = Block(x) { env => (y: Int) =>
+    val b = Spore(x) { env => (y: Int) =>
       class Local2 { def m() = y }
       class Local(p: Int)(using loc: Local2) {
         val fld = env + p
@@ -204,11 +204,11 @@ class BlockTests {
   def testThreadSafe(): Unit = {
     given ThreadSafe[Int] = new ThreadSafe[Int] {}
 
-    def fun(b: Block[Int, Int], x: Int)(using ThreadSafe[b.Env]): Int =
+    def fun(b: Spore[Int, Int], x: Int)(using ThreadSafe[b.Env]): Int =
       b(x)
 
     val y = 5
-    val s = Block(y) {
+    val s = Spore(y) {
       env => (x: Int) => x + env
     }
 
