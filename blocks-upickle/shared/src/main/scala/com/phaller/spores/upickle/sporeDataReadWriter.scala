@@ -1,4 +1,4 @@
-package com.phaller.spores.pickle
+package com.phaller.spores.upickle
 
 import com.phaller.spores.{SporeData, PackedSporeData}
 

@@ -1,4 +1,4 @@
-package com.phaller.blocks.sample
+package com.phaller.spores.sample
 
 import upickle.default.*
 
@@ -10,8 +10,8 @@ import scala.concurrent.ExecutionContext
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
-import com.phaller.blocks.{Spore, Builder, SporeData, PackedSporeData}
-import com.phaller.blocks.pickle.given
+import com.phaller.spores.{Spore, Builder, SporeData, PackedSporeData}
+import com.phaller.spores.upickle.given
 
 
 object AppendThree extends Builder[List[String], List[String]](

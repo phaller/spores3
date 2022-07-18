@@ -1,4 +1,4 @@
-package com.phaller.blocks.sample
+package com.phaller.spores.sample
 
 import scala.util.Random
 
@@ -6,10 +6,9 @@ import scala.concurrent.{Future, Await}
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import com.phaller.blocks.Spore
-import com.phaller.blocks.Spore.thunk
-import com.phaller.blocks.Duplicable
-import com.phaller.blocks.Duplicable.duplicate
+import com.phaller.spores.{Spore, Duplicable}
+import com.phaller.spores.Spore.thunk
+import com.phaller.spores.Duplicable.duplicate
 
 
 /**
