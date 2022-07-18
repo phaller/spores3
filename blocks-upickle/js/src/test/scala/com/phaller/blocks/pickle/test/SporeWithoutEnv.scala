@@ -1,8 +1,8 @@
-package com.phaller.blocks.pickle.test
+package com.phaller.spores.pickle.test
 
 import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
 
-import com.phaller.blocks.Builder
+import com.phaller.spores.Builder
 
 
 @EnableReflectiveInstantiation

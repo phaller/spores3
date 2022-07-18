@@ -1,6 +1,6 @@
-package com.phaller.blocks.pickle.test
+package com.phaller.spores.pickle.test
 
-import com.phaller.blocks.Builder
+import com.phaller.spores.Builder
 
 
 object SporeWithoutEnv extends Builder[Int, Int](

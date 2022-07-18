@@ -1,6 +1,6 @@
-package com.phaller.blocks.pickle
+package com.phaller.spores.pickle
 
-import com.phaller.blocks.{SporeData, PackedSporeData}
+import com.phaller.spores.{SporeData, PackedSporeData}
 
 import upickle.default.*
 

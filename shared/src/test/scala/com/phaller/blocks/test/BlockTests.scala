@@ -1,16 +1,16 @@
 package com.phaller
-package blocks.test
+package spores.test
 
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import blocks.Spore
-import blocks.Spore.thunk
+import spores.Spore
+import spores.Spore.thunk
 
 
 @RunWith(classOf[JUnit4])
-class BlockTests {
+class SporeTests {
 
   @Test
   def testWithoutEnv(): Unit = {
@@ -21,13 +21,13 @@ class BlockTests {
 
   @Test
   def testWithoutEnv2(): Unit = {
-    def fun(block: Spore[Int, Int] { type Env = Nothing }): Unit = {}
+    def fun(s: Spore[Int, Int] { type Env = Nothing }): Unit = {}
 
-    val b = Spore((x: Int) => x + 2)
+    val s = Spore((x: Int) => x + 2)
 
-    fun(b)
+    fun(s)
 
-    val res = b(3)
+    val res = s(3)
     assert(res == 5)
   }
 
@@ -88,37 +88,37 @@ class BlockTests {
 
   @Test
   def testWithEnv2(): Unit = {
-    val s = "anonymous function"
-    val b: Spore[Int, Int] { type Env = String } = Spore(s) {
+    val str = "anonymous function"
+    val s: Spore[Int, Int] { type Env = String } = Spore(str) {
       env => (x: Int) => x + env.length
     }
-    val res = b(10)
+    val res = s(10)
     assert(res == 28)
   }
 
   @Test
   def testWithEnvTuple(): Unit = {
-    val s = "anonymous function"
+    val str = "anonymous function"
     val i = 5
 
-    val b: Spore[Int, Int] { type Env = (String, Int) } = Spore((s, i)) {
+    val s: Spore[Int, Int] { type Env = (String, Int) } = Spore((str, i)) {
       case (l, r) => (x: Int) => x + l.length - r
     }
 
-    val res = b(10)
+    val res = s(10)
     assert(res == 23)
   }
 
   @Test
   def testWithEnvParamUntupling(): Unit = {
-    val s = "anonymous function"
+    val str = "anonymous function"
     val i = 5
 
-    val b = Spore((s, i)) {
+    val s = Spore((str, i)) {
       (l, r) => (x: Int) => x + l.length - r
     }
 
-    val res = b(10)
+    val res = s(10)
     assert(res == 23)
   }
 
@@ -185,7 +185,7 @@ class BlockTests {
   def testLocalClasses(): Unit = {
     val x = 5
 
-    val b = Spore(x) { env => (y: Int) =>
+    val s = Spore(x) { env => (y: Int) =>
       class Local2 { def m() = y }
       class Local(p: Int)(using loc: Local2) {
         val fld = env + p
@@ -196,7 +196,7 @@ class BlockTests {
       l.fld
     }
 
-    val res = b(3)
+    val res = s(3)
     assert(res == 9)
   }
 
@@ -204,8 +204,8 @@ class BlockTests {
   def testThreadSafe(): Unit = {
     given ThreadSafe[Int] = new ThreadSafe[Int] {}
 
-    def fun(b: Spore[Int, Int], x: Int)(using ThreadSafe[b.Env]): Int =
-      b(x)
+    def fun(s: Spore[Int, Int], x: Int)(using ThreadSafe[s.Env]): Int =
+      s(x)
 
     val y = 5
     val s = Spore(y) {

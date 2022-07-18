@@ -1,11 +1,11 @@
-package com.phaller.blocks.pickle.test
+package com.phaller.spores.pickle.test
 
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Spore, Creator, SporeData, PackedSporeData}
-import com.phaller.blocks.pickle.given
+import com.phaller.spores.{Spore, Creator, SporeData, PackedSporeData}
+import com.phaller.spores.pickle.given
 
 import upickle.default.*
 
@@ -15,7 +15,7 @@ class PickleTests {
 
   @Test
   def testCreator(): Unit = {
-    val c = Creator[Int, Int, Int]("com.phaller.blocks.pickle.test.MySpore")
+    val c = Creator[Int, Int, Int]("com.phaller.spores.pickle.test.MySpore")
     val s = c(12)
     val res = s(3)
     assert(res == 16)
@@ -25,7 +25,7 @@ class PickleTests {
 
   @Test
   def testSporeReadWriter(): Unit = {
-    val name = "com.phaller.blocks.pickle.test.MySpore"
+    val name = "com.phaller.spores.pickle.test.MySpore"
     val env: Int = 12
 
     given sporeReadWriter: ReadWriter[SporeT] =
@@ -46,7 +46,7 @@ class PickleTests {
     // pickle spore
     val res = write(spore)
 
-    assert(res == """["com.phaller.blocks.pickle.test.MySpore",12]""")
+    assert(res == """["com.phaller.spores.pickle.test.MySpore",12]""")
   }
 
   @Test
@@ -55,7 +55,7 @@ class PickleTests {
     val data = SporeData(MySpore, Some(x))
     // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MySpore",1,"12"]""")
+    assert(pickledData == """["com.phaller.spores.pickle.test.MySpore",1,"12"]""")
     val unpickledData = read[SporeData[Int, Int] { type Env = Int }](pickledData)
     assert(unpickledData.fqn == data.fqn)
     assert(unpickledData.envOpt == data.envOpt)
@@ -82,7 +82,7 @@ class PickleTests {
     val data = SporeData(MySpore, Some(x))
     // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MySpore",1,"12"]""")
+    assert(pickledData == """["com.phaller.spores.pickle.test.MySpore",1,"12"]""")
     val unpickledData = read[SporeData[Int, Int] { type Env = Int }](pickledData)
     val unpickledSpore = unpickledData.toSpore
     assert(unpickledSpore(3) == 16)
@@ -93,7 +93,7 @@ class PickleTests {
     val data = SporeData(SporeWithoutEnv)
     // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.SporeWithoutEnv",0]""")
+    assert(pickledData == """["com.phaller.spores.pickle.test.SporeWithoutEnv",0]""")
     val unpickledData = read[SporeData[Int, Int] { type Env = Nothing }](pickledData)
     val unpickledSpore = unpickledData.toSpore
     assert(unpickledSpore(3) == 4)
@@ -105,7 +105,7 @@ class PickleTests {
     val data = SporeData(MySpore, Some(x))
     // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.MySpore",1,"12"]""")
+    assert(pickledData == """["com.phaller.spores.pickle.test.MySpore",1,"12"]""")
     val unpickledData = read[PackedSporeData](pickledData)
     val unpickledSpore = unpickledData.toSpore[Int, Int]
     assert(unpickledSpore(3) == 16)
@@ -116,7 +116,7 @@ class PickleTests {
     val data = SporeData(SporeWithoutEnv)
     // pickle spore data
     val pickledData = write(data)
-    assert(pickledData == """["com.phaller.blocks.pickle.test.SporeWithoutEnv",0]""")
+    assert(pickledData == """["com.phaller.spores.pickle.test.SporeWithoutEnv",0]""")
     val unpickledData = read[PackedSporeData](pickledData)
     val unpickledSpore = unpickledData.toSpore[Int, Int]
     assert(unpickledSpore(3) == 4)
@@ -126,7 +126,7 @@ class PickleTests {
   def testPickleAppendString(): Unit = {
     val appendData = SporeData(AppendString, Some("three"))
     val serialized = write(appendData)
-    assert(serialized == """["com.phaller.blocks.pickle.test.AppendString",1,"\"three\""]""")
+    assert(serialized == """["com.phaller.spores.pickle.test.AppendString",1,"\"three\""]""")
     val deserData = read[PackedSporeData](serialized)
     val deserSpore = deserData.toSpore[List[String], List[String]]
     val l3 = List("four")

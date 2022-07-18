@@ -1,4 +1,4 @@
-package com.phaller.blocks.test
+package com.phaller.spores.test
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -6,7 +6,7 @@ import org.junit.runners.JUnit4
 
 import scala.collection.concurrent.TrieMap
 
-import com.phaller.blocks.Spore
+import com.phaller.spores.Spore
 
 
 case class Customer(name: String, customerNo: Int)
@@ -21,7 +21,7 @@ class TrieMapTest {
 
   @Test
   def test(): Unit = {
-    val b = Spore[CustomerMap, List[Customer], Float](customerData) { data => cs =>
+    val s = Spore[CustomerMap, List[Customer], Float](customerData) { data => cs =>
       val infos = cs.flatMap { c =>
         data.get(c.customerNo) match {
           case Some(info) => List(info)
@@ -33,7 +33,7 @@ class TrieMapTest {
       else sumAges / infos.size
     }
 
-    val res = b(List())
+    val res = s(List())
     assert(res == 0)
   }
 

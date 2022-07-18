@@ -1,23 +1,23 @@
-package com.phaller.blocks
+package com.phaller.spores
 
 import scala.quoted.*
 
 
-/** Enables creating [[BlockData]] objects.
+/** Enables creating [[SporeData]] objects.
   */
 object SporeData {
 
-  /** Creates a `BlockData` instance which serves as a serializable form
-    * of a block. The method requires a *block builder* which is a
+  /** Creates a `SporeData` instance which serves as a serializable form
+    * of a spore. The method requires a *spore builder* which is a
     * top-level object extending either [[Builder]] or
-    * [[Block.Builder]].  Both of these implement the [[TypedBuilder]]
+    * [[Spore.Builder]].  Both of these implement the [[TypedBuilder]]
     * trait.
     *
-    * @tparam N the type of the block's environment
-    * @tparam T the block's parameter type
-    * @tparam R the block's result type
-    * @param builder the block builder defining the block's body
-    * @param envOpt the block's optional environment
+    * @tparam N the type of the spore's environment
+    * @tparam T the spore's parameter type
+    * @tparam R the spore's result type
+    * @param builder the spore builder defining the spore's body
+    * @param envOpt the spore's optional environment
     */
   inline def apply[N, T, R](inline builder: TypedBuilder[N, T, R], inline envOpt: Option[N] = None): SporeData[T, R] { type Env = N } = ${ applyCode('builder, 'envOpt) }
 
@@ -27,18 +27,20 @@ object SporeData {
     def allOwnersOK(owner: Symbol): Boolean =
       owner.isNoSymbol || ((owner.flags.is(Flags.Module) || owner.flags.is(Flags.Package)) && allOwnersOK(owner.owner))
 
-    val tree: Term = builderExpr.asTerm
+    val tree       = builderExpr.asTerm
     val builderTpe = tree.tpe
-    val owner = builderTpe.typeSymbol.maybeOwner
+    val owner      = builderTpe.typeSymbol.maybeOwner
     if (!allOwnersOK(owner)) {
       report.error("An owner of the provided builder is neither an object nor a package.")
     }
 
     val fn = Expr(tree.show)
-    '{ new SporeData[T, R]($fn) {
-      type Env = N
-      def envOpt = $envOptExpr
-    } }
+    '{
+      new SporeData[T, R]($fn) {
+        type Env = N
+        def envOpt = $envOptExpr
+      }
+    }
   }
 
 }

@@ -1,7 +1,7 @@
-package com.phaller.blocks
+package com.phaller.spores
 
 
-private[blocks] object Creator {
+private[spores] object Creator {
 
   private def getModuleFieldValue(name: String) =
     Class.forName(name + "$").getDeclaredField("MODULE$").get(null)

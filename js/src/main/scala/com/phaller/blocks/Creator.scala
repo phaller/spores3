@@ -1,11 +1,11 @@
-package com.phaller.blocks
+package com.phaller.spores
 
 import scala.scalajs.js.annotation.{JSExportTopLevel, JSExport}
 import scala.scalajs.reflect.Reflect
 
 
 @JSExportTopLevel("Creator")
-protected[blocks] object Creator {
+protected[spores] object Creator {
 
   private def loadModule(name: String) = {
     val creatorClassOpt = Reflect.lookupLoadableModuleClass(name + "$")

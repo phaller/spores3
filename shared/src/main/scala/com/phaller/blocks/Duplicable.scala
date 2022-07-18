@@ -1,4 +1,4 @@
-package com.phaller.blocks
+package com.phaller.spores
 
 
 trait Duplicable[T]:
@@ -6,8 +6,8 @@ trait Duplicable[T]:
 
 object Duplicable {
 
-  def duplicate[T](x: T)(using dup: Duplicable[T]): T =
-    dup.duplicate(x)
+  def duplicate[T](value: T)(using duplicable: Duplicable[T]): T =
+    duplicable.duplicate(value)
 
   given Duplicable[Char] with
     def duplicate(value: Char): Char = value

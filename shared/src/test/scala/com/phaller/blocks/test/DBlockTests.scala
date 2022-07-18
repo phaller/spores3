@@ -1,15 +1,15 @@
-package com.phaller.blocks.test
+package com.phaller.spores.test
 
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.blocks.{Spore, DBlock}
+import com.phaller.spores.{Spore, DSpore}
 import Spore.thunk
 
 
 @RunWith(classOf[JUnit4])
-class DBlockTests {
+class DSporeTests {
 
   @Test
   def testDuplicateThunk(): Unit = {
@@ -18,7 +18,7 @@ class DBlockTests {
       env + 1
     }
 
-    val db = DBlock(b)
+    val db = DSpore(b)
     val b2 = db.duplicable.duplicate(db.spore)
 
     val res = b2()
@@ -34,7 +34,7 @@ class DBlockTests {
       env + 1
     }
 
-    val db = DBlock(b)
+    val db = DSpore(b)
     val b2 = db.duplicate()
 
     val res = b2()
@@ -49,7 +49,7 @@ class DBlockTests {
       env
     }
 
-    val db = DBlock(b)
+    val db = DSpore(b)
     val b2 = db.duplicable.duplicate(db.spore)
 
     val envVal = b2()
@@ -63,7 +63,7 @@ class DBlockTests {
     val b = Spore {
       (x: Int) => x + 2
     }
-    val db = DBlock(b)
+    val db = DSpore(b)
     val b2 = db.duplicable.duplicate(db.spore)
     val res = b2(3)
     assert(res == 5)
@@ -78,7 +78,7 @@ class DBlockTests {
       env => (y: Int) => env.f + y
     }
 
-    val db = DBlock(b)
+    val db = DSpore(b)
     val b2 = db.duplicable.duplicate(db.spore)
     val res = b2(3)
     assert(res == 7)
