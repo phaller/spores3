@@ -10,8 +10,8 @@ ThisBuild / organizationHomepage := Some(url("https://www.phaller.com/"))
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
-    url("https://github.com/phaller/blocks"),
-    "scm:git@github.com:phaller/blocks.git"
+    url("https://github.com/phaller/spores3"),
+    "scm:git@github.com:phaller/spores3.git"
   )
 )
 ThisBuild / developers := List(
@@ -25,7 +25,7 @@ ThisBuild / developers := List(
 
 ThisBuild / description := "Spores3 provides abstractions for making closures in Scala safer and more flexible"
 ThisBuild / licenses := List("Apache-2.0" -> new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
-ThisBuild / homepage := Some(url("https://github.com/phaller/blocks"))
+ThisBuild / homepage := Some(url("https://github.com/phaller/spores3"))
 
 ThisBuild / pomIncludeRepository := { _ => false }
 ThisBuild / publishTo := {

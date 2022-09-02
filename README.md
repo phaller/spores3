@@ -1,6 +1,6 @@
 # Spores3
 
-[![Build Status](https://github.com/phaller/blocks/actions/workflows/build-test.yml/badge.svg)](https://github.com/phaller/blocks/actions)
+[![Build Status](https://github.com/phaller/spores3/actions/workflows/build-test.yml/badge.svg)](https://github.com/phaller/spores3/actions)
 
 ## Introduction
 
