@@ -85,7 +85,7 @@ uPickle. The shown code snippets assume the following imports:
 
 ```scala
     import com.phaller.spores.{Spore, SporeData, PackedSporeData}
-    import com.phaller.spores.pickle.given
+    import com.phaller.spores.upickle.given
     import Spore.env
 ```
 
@@ -133,7 +133,7 @@ A `SporeData` object is created as follows:
     val data = SporeData(MySpore, Some(x)) // `x` is the environment, as before
 ```
 
-Using the `given` instance in package `com.phaller.spores.pickle`, the
+Using the `given` instance in package `com.phaller.spores.upickle`, the
 `SporeData` object can be pickled and unpickled:
 
 ```scala

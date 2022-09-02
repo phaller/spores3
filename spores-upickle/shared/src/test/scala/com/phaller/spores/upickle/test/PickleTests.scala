@@ -5,7 +5,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import com.phaller.spores.{Spore, Creator, SporeData, PackedSporeData}
-import com.phaller.spores.pickle.given
+import com.phaller.spores.upickle.given
 
 import upickle.default.*
 

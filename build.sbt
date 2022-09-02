@@ -23,7 +23,7 @@ ThisBuild / developers := List(
   )
 )
 
-ThisBuild / description := "Blocks provide abstractions for making closures in Scala safer and more flexible"
+ThisBuild / description := "Spores3 provides abstractions for making closures in Scala safer and more flexible"
 ThisBuild / licenses := List("Apache-2.0" -> new URL("https://www.apache.org/licenses/LICENSE-2.0.txt"))
 ThisBuild / homepage := Some(url("https://github.com/phaller/blocks"))
 
@@ -47,7 +47,7 @@ ThisBuild / credentials += Credentials(
 
 lazy val root = project
   .in(file("."))
-  .aggregate(blocks.jvm, blocks.js)
+  .aggregate(spores.jvm, spores.js)
   .settings(
     // following instructions on cross building at:
     // https://www.scala-sbt.org/1.x/docs/Cross-Build.html
@@ -56,10 +56,10 @@ lazy val root = project
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
   )
 
-lazy val blocks = crossProject(JVMPlatform, JSPlatform)
+lazy val spores = crossProject(JVMPlatform, JSPlatform)
   .in(file("."))
   .settings(
-    name := "blocks",
+    name := "spores3",
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
   )
@@ -70,18 +70,18 @@ lazy val blocks = crossProject(JVMPlatform, JSPlatform)
 
 lazy val sample = project
   .in(file("sample"))
-  .dependsOn(blocks.jvm, blocksUpickle.jvm)
+  .dependsOn(spores.jvm, sporesUpickle.jvm)
   .settings(
-    name := "blocks-sample",
+    name := "spores3-sample",
     crossScalaVersions := supportedScalaVersions,
     publish / skip := true,
   )
 
-lazy val blocksUpickle = crossProject(JVMPlatform, JSPlatform)
-  .in(file("blocks-upickle"))
-  .dependsOn(blocks)
+lazy val sporesUpickle = crossProject(JVMPlatform, JSPlatform)
+  .in(file("spores-upickle"))
+  .dependsOn(spores)
   .settings(
-    name := "blocks-upickle",
+    name := "spores3-upickle",
     crossScalaVersions := supportedScalaVersions,
     libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
   )
