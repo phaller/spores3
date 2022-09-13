@@ -22,15 +22,15 @@ jobs:
       with:
         distribution: temurin
         java-version: ${{ matrix.java }}
-    - name: Build and test blocksJVM
+    - name: Build and test sporesJVM
       shell: bash
-      run: sbt "project blocksJVM ; clean ; +test"
-    - name: Build and test blocksJS
+      run: sbt "project sporesJVM ; clean ; +test"
+    - name: Build and test sporesJS
       shell: bash
-      run: sbt "project blocksJS ; clean ; +test"
-    - name: Build and test blocksUpickleJVM
+      run: sbt "project sporesJS ; clean ; +test"
+    - name: Build and test sporesUpickleJVM
       shell: bash
-      run: sbt "project blocksUpickleJVM ; clean ; +test"
-    - name: Build and test blocksUpickleJS
+      run: sbt "project sporesUpickleJVM ; clean ; +test"
+    - name: Build and test sporesUpickleJS
       shell: bash
-      run: sbt "project blocksUpickleJS ; clean ; +test"
+      run: sbt "project sporesUpickleJS ; clean ; +test"
