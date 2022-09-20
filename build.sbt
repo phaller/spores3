@@ -1,4 +1,4 @@
-lazy val Scala31 = "3.1.2"
+lazy val Scala32 = "3.2.0"
 lazy val upickleVersion = "2.0.0"
 lazy val junitInterfaceVersion = "0.11"
 
@@ -34,7 +34,7 @@ ThisBuild / publishTo := {
 ThisBuild / publishMavenStyle := true
 
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := Scala31
+ThisBuild / scalaVersion := Scala32
 
 ThisBuild / credentials += Credentials(
   "GnuPG Key ID",
