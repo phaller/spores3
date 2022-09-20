@@ -28,9 +28,3 @@ jobs:
     - name: Build and test sporesJS
       shell: bash
       run: sbt "project sporesJS ; clean ; +test"
-    - name: Build and test sporesUpickleJVM
-      shell: bash
-      run: sbt "project sporesUpickleJVM ; clean ; +test"
-    - name: Build and test sporesUpickleJS
-      shell: bash
-      run: sbt "project sporesUpickleJS ; clean ; +test"

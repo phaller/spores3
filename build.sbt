@@ -70,25 +70,9 @@ lazy val spores = crossProject(JVMPlatform, JSPlatform)
 
 lazy val sample = project
   .in(file("sample"))
-  .dependsOn(spores.jvm, sporesUpickle.jvm)
+  .dependsOn(spores.jvm)
   .settings(
     name := "spores3-sample",
     crossScalaVersions := supportedScalaVersions,
     publish / skip := true,
-  )
-
-lazy val sporesUpickle = crossProject(JVMPlatform, JSPlatform)
-  .in(file("spores-upickle"))
-  .dependsOn(spores)
-  .settings(
-    name := "spores3-upickle",
-    crossScalaVersions := supportedScalaVersions,
-    libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
-  )
-  .jvmSettings(
-    libraryDependencies += "com.novocode" % "junit-interface" % junitInterfaceVersion % "test"
-  )
-  .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
-  .jsSettings(
-    scalaJSUseMainModuleInitializer := true
   )

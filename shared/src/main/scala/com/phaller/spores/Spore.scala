@@ -1,6 +1,6 @@
 package com.phaller.spores
 
-import upickle.default.*
+import _root_.upickle.default.*
 
 import scala.quoted.*
 
