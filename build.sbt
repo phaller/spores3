@@ -1,6 +1,4 @@
-lazy val Scala30 = "3.0.2"
 lazy val Scala31 = "3.1.2"
-lazy val supportedScalaVersions = List(Scala31, Scala30)
 lazy val upickleVersion = "2.0.0"
 lazy val junitInterfaceVersion = "0.11"
 
@@ -36,7 +34,7 @@ ThisBuild / publishTo := {
 ThisBuild / publishMavenStyle := true
 
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := supportedScalaVersions.head
+ThisBuild / scalaVersion := Scala31
 
 ThisBuild / credentials += Credentials(
   "GnuPG Key ID",
@@ -49,9 +47,6 @@ lazy val root = project
   .in(file("."))
   .aggregate(spores.jvm, spores.js)
   .settings(
-    // following instructions on cross building at:
-    // https://www.scala-sbt.org/1.x/docs/Cross-Build.html
-    crossScalaVersions := Nil,
     publish / skip := true,
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
   )
@@ -60,7 +55,6 @@ lazy val spores = crossProject(JVMPlatform, JSPlatform)
   .in(file("."))
   .settings(
     name := "spores3",
-    crossScalaVersions := supportedScalaVersions,
     libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
   )
   .jvmSettings(
@@ -73,6 +67,5 @@ lazy val sample = project
   .dependsOn(spores.jvm)
   .settings(
     name := "spores3-sample",
-    crossScalaVersions := supportedScalaVersions,
     publish / skip := true,
   )

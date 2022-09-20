@@ -24,7 +24,7 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: Build and test sporesJVM
       shell: bash
-      run: sbt "project sporesJVM ; clean ; +test"
+      run: sbt "project sporesJVM ; clean ; test"
     - name: Build and test sporesJS
       shell: bash
-      run: sbt "project sporesJS ; clean ; +test"
+      run: sbt "project sporesJS ; clean ; test"
