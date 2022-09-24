@@ -82,7 +82,7 @@ class Agent[T : ReadWriter] (init: T) { self =>
 
   private val state: AtomicReference[T] = new AtomicReference(init)
 
-  def sendOff[N](sporeData: SporeData[T, T] { type Env = N })(using ReadWriter[SporeData[T, T] { type Env = N }]): Unit = {
+  def sendOff[N, S <: SporeData[T, T] { type Env = N } : ReadWriter](sporeData: S): Unit = {
     // serialize
     val pickledData = write(sporeData)
 
