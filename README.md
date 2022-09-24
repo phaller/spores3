@@ -46,12 +46,13 @@ as an argument:
 val str = "anonymous function"
 
 val s = Spore(str) {  // `str` is the environment of the spore
-  (x: Int) => x + env.length
+  env => (x: Int) => x + env.length
 }
 ```
 
-Within a spore, the environment is accessed using the `env` member of
-the `Spore` object. In the above example, `env` has type
+If a spore has an environment, then the spore's body has an additional
+parameter, called `env` above, which enables accessing the
+environment.  In the above example, `env` has type
 `String`. Consequently, the type of the spore is `Spore[Int, Int] {
 type Env = String }`.
 
@@ -64,12 +65,23 @@ val str = "anonymous function"
 val num = 5
 
 val s = Spore((str, num)) {
-  (x: Int) => x + env._1.length - env._2
+  env => (x: Int) => x + env._1.length - env._2
 }
 ```
 
 The corresponding spore type is `Spore[Int, Int] { type Env = (String,
-Int) }`.
+Int) }`. Since the environment is passed as the first parameter of the
+body function, it is possible to use pattern matching, which avoids
+the use of clunky accessors `_1`, `_2`, etc.:
+
+```scala
+val str = "anonymous function"
+val num = 5
+
+val s = Spore((str, num)) {
+  case (s, n) => (x: Int) => x + s.length - n
+}
+```
 
 ## Pickling of spores
 
@@ -86,14 +98,13 @@ uPickle. The shown code snippets assume the following imports:
 ```scala
     import com.phaller.spores.{Spore, SporeData, PackedSporeData}
     import com.phaller.spores.upickle.given
-    import Spore.env
 ```
 
 First, the definition of the spore:
 
 ```scala
     object MySpore extends Spore.Builder[Int, Int, Int](
-      (x: Int) => env + x + 1
+      env => (x: Int) => env + x + 1
     )
 ```
 
@@ -105,9 +116,9 @@ two type arguments.  The type of a spore builder requires a third type
 argument indicating the **type of the spore's environment**. The
 builder type's first type argument specifies the environment type.
 
-The body of the spore refers to the spore's environment using
-`Spore.env`. By providing a concrete environment, an actual spore can
-be created as follows:
+The body of the spore refers to the spore's environment using the
+extra `env` parameter. By providing a concrete environment, an actual
+spore can be created as follows:
 
 ```scala
     val x = 12
@@ -175,6 +186,5 @@ Among others, capture checking introduces **pure functions** of type
 `A -> B` which cannot capture any capabilities. However, a pure
 function might still capture a variable that's not a capability. The
 body of a spore is even more restricted, however: it cannot capture
-**any variable**; the environment can only be accessed using
-`Spore.env`. That's why the capture checking of spores is required
-even when using the capture checking extension.
+**any variable**. That's why the capture checking of spores is
+required even when using the capture checking extension.
