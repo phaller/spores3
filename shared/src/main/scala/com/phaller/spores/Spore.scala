@@ -126,6 +126,21 @@ private def checkBodyExpr[T, S](bodyExpr: Expr[T => S])(using Quotes): Unit = {
   }
 }
 
+/** Used for creating serializable spores that don't have an
+  * environment. Example:
+  *
+  * ```scala
+  * object SporeWithoutEnv extends Builder[Int, Int](
+  *   (x: Int) => x + 1
+  * )
+  * ```
+  *
+  * Builders can be used to create [[SporeData]] instances, which are
+  * serializable.
+  *
+  * @tparam T the parameter type
+  * @tparam R the result type
+  */
 class Builder[T, R](fun: T => R) extends TypedBuilder[Nothing, T, R] {
 
   private[spores] def createSpore(envOpt: Option[String]): Spore[T, R] =
@@ -160,6 +175,32 @@ object Spore {
   extension [R](spore: Spore[Unit, R])
     def apply(): R = spore.apply(())
 
+  /** Used for creating serializable spores. The first step is to create
+    * a top-level object that extends `Spore.Builder`:
+    *
+    * ```scala
+    * object MySpore extends Spore.Builder[Int, Int, Int](
+    *   env => (x: Int) => env + x + 1
+    * )
+    * ```
+    *
+    * The builder's first type argument specifies the environment
+    * type.  The body of the spore refers to the spore's environment
+    * using the extra `env` parameter.  By providing a concrete
+    * environment, an actual spore can be created as follows:
+    *
+    * ```scala
+    * val x = 12
+    * val sp = MySpore(x)  // environment is integer value 12
+    * ```
+    *
+    * Builders can be used to create [[SporeData]] instances, which
+    * are serializable.
+    *
+    * @tparam E the environment type
+    * @tparam T the parameter type
+    * @tparam R the result type
+    */
   class Builder[E, T, R](fun: E => T => R)(using ReadWriter[E]) extends TypedBuilder[E, T, R] {
 
     private[spores] def createSpore(envOpt: Option[String]): Spore[T, R] = {
