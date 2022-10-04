@@ -39,7 +39,7 @@ ThisBuild / scalaVersion := Scala32
 ThisBuild / credentials += Credentials(
   "GnuPG Key ID",
   "gpg",
-  "D83E7D99A038AF99DEDC841C73187B9E148329E6",
+  "B4CC0C56EBBBC95D23D14C454ADDDD4698B3BC95",
   "ignored"
 )
 
