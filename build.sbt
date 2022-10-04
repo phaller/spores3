@@ -33,7 +33,7 @@ ThisBuild / publishTo := {
 }
 ThisBuild / publishMavenStyle := true
 
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+ThisBuild / version      := "0.1.0"
 ThisBuild / scalaVersion := Scala32
 
 ThisBuild / credentials += Credentials(
