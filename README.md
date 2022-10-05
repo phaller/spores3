@@ -16,6 +16,14 @@ Spores3 is a new take on the earlier
 uses a new approach for type-class-based serialization, and feature a
 simpler, more robust implementation.
 
+## Add to your project
+
+Add the following dependency to your `build.sbt`:
+
+```
+libraryDependencies += "com.phaller" %% "spores3" % "0.1.0"
+```
+
 ## Overview
 
 Creating a simple spore is similar to creating a regular anonymous
