@@ -55,6 +55,7 @@ lazy val spores = crossProject(JVMPlatform, JSPlatform)
   .in(file("."))
   .settings(
     name := "spores3",
+    Compile / doc / target := target.value / "api",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
   )
   .jvmSettings(
