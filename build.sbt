@@ -1,5 +1,5 @@
 lazy val Scala33 = "3.3.1"
-lazy val upickleVersion = "2.0.0"
+lazy val upickleVersion = "3.0.0"
 lazy val junitInterfaceVersion = "0.11"
 
 ThisBuild / organization := "com.phaller"
