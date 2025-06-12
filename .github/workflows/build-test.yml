@@ -16,12 +16,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Setup JDK
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: ${{ matrix.java }}
+        cache: sbt
+    - name: Setup sbt
+      uses: sbt/setup-sbt@v1
     - name: Build and test sporesJVM
       shell: bash
       run: sbt "project sporesJVM ; clean ; test"
