@@ -1,4 +1,4 @@
-package com.phaller.spores
+package spores
 
 
 trait Duplicable[T]:

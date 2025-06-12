@@ -1,4 +1,3 @@
-package com.phaller
 package spores
 package test
 

@@ -1,4 +1,4 @@
-package com.phaller.spores.test
+package spores.test
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -6,7 +6,7 @@ import org.junit.runners.JUnit4
 
 import scala.collection.concurrent.TrieMap
 
-import com.phaller.spores.Spore
+import spores.Spore
 
 
 case class Customer(name: String, customerNo: Int)

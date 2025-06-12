@@ -1,4 +1,4 @@
-package com.phaller.spores
+package spores
 
 import _root_.upickle.default.*
 

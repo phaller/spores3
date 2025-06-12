@@ -1,4 +1,4 @@
-package com.phaller.spores
+package spores
 
 import scala.scalajs.js.annotation.{JSExportTopLevel, JSExport}
 import scala.scalajs.reflect.Reflect

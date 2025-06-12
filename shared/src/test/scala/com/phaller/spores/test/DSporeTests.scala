@@ -1,10 +1,10 @@
-package com.phaller.spores.test
+package spores.test
 
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import com.phaller.spores.{Spore, DSpore}
+import spores.{Spore, DSpore}
 import Spore.thunk
 
 

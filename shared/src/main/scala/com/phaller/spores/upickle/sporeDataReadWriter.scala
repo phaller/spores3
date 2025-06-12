@@ -1,6 +1,6 @@
-package com.phaller.spores.upickle
+package spores.upickle
 
-import com.phaller.spores.{SporeData, PackedSporeData}
+import spores.{SporeData, PackedSporeData}
 
 import upickle.default.*
 
