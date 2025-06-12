@@ -1,6 +1,6 @@
-package com.phaller.spores.pickle.test
+package spores.pickle.test
 
-import com.phaller.spores.Spore
+import spores.Spore
 
 
 object MySpore extends Spore.Builder[Int, Int, Int](

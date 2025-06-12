@@ -1,10 +1,10 @@
-package com.phaller.spores.sample
+package spores.sample
 
 import scala.concurrent.{Future, Await}
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import com.phaller.spores.Spore
+import spores.Spore
 
 
 object Futures:
