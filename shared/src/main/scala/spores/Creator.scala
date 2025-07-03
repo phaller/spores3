@@ -4,7 +4,7 @@ package spores
 private[spores] object Creator {
 
   private def getModuleFieldValue(name: String) =
-    Class.forName(name + "$").getDeclaredField("MODULE$").get(null)
+    Reflection.loadModule(name + "$")
 
   def apply[E, T, R](name: String): Spore.Builder[E, T, R] =
     getModuleFieldValue(name).asInstanceOf[Spore.Builder[E, T, R]]
