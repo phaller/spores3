@@ -1,7 +1,6 @@
 package spores.pickle.test
 
-import scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
-
+import spores.Reflection.EnableReflectiveInstantiation
 import spores.Spore
 
 

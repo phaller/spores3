@@ -45,22 +45,21 @@ ThisBuild / credentials += Credentials(
 
 lazy val root = project
   .in(file("."))
-  .aggregate(spores.jvm, spores.js)
+  .aggregate(spores.jvm, spores.js, spores.native)
   .settings(
     publish / skip := true,
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
   )
 
-lazy val spores = crossProject(JVMPlatform, JSPlatform)
+lazy val spores = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("."))
   .settings(
     name := "spores3",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
-  )
-  .jvmSettings(
-    libraryDependencies += "com.novocode" % "junit-interface" % junitInterfaceVersion % "test"
+    libraryDependencies += "com.novocode" % "junit-interface" % junitInterfaceVersion % "test",
   )
   .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
+  .nativeConfigure(_.enablePlugins(ScalaNativeJUnitPlugin))
 
 lazy val sample = project
   .in(file("sample"))
