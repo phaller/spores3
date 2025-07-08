@@ -1,10 +1,9 @@
 package spores.pickle.test
 
 import spores.Reflection.EnableReflectiveInstantiation
-import spores.Builder
+import spores.SporeBuilder
 
 
-@EnableReflectiveInstantiation
-object SporeWithoutEnv extends Builder[Int, Int](
+object SporeWithoutEnv extends SporeBuilder[Int => Int](
   (x: Int) => x + 1
 )

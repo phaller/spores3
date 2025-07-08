@@ -7,11 +7,25 @@ private[spores] object Reflection {
 
   export scala.scalajs.reflect.annotation.EnableReflectiveInstantiation
 
-  def loadModule(name: String): Any = {
-    val creatorClassOpt = Reflect.lookupLoadableModuleClass(name)
-    if (creatorClassOpt.nonEmpty)
-      creatorClassOpt.get.loadModule()
-    else
-      throw new Exception(s"Module class $name not found")
+  def loadModuleFieldValue[T](name: String): T = {
+    Reflect.lookupLoadableModuleClass(name) match {
+      case Some(clazz) => {
+        clazz.loadModule().asInstanceOf[T]
+      }
+      case None => {
+        throw new Exception(s"Module class $name not found")
+      }
+    }
+  }
+
+  def loadClassInstance[T](name: String): T = {
+    Reflect.lookupInstantiatableClass(name) match {
+      case Some(clazz) => {
+        clazz.newInstance().asInstanceOf[T]
+      }
+      case None => {
+        throw new Exception(s"Class $name not found")
+      }
+    }
   }
 }

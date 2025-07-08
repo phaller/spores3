@@ -7,7 +7,11 @@ private[spores] object Reflection {
   // Dummy annotation as JVM reflection is enabled by default
   class EnableReflectiveInstantiation extends StaticAnnotation
 
-  def loadModule(name: String): Any = {
-    Class.forName(name).getDeclaredField("MODULE$").get(null)
+  def loadModuleFieldValue[T](name: String): T = {
+    Class.forName(name).getDeclaredField("MODULE$").get(null).asInstanceOf[T]
+  }
+
+  def loadClassInstance[T](name: String): T = {
+    Class.forName(name).getDeclaredConstructor().newInstance().asInstanceOf[T]
   }
 }

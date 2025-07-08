@@ -1,11 +1,10 @@
 package spores.pickle.test
 
 import spores.Reflection.EnableReflectiveInstantiation
-import spores.Spore
+import spores.SporeBuilder
 
 
-@EnableReflectiveInstantiation
 object AppendString extends
-    Spore.Builder[String, List[String], List[String]](
+    SporeBuilder[String => List[String] => List[String]](
   env => strings => strings ::: List(env)
 )

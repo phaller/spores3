@@ -4,8 +4,8 @@ package spores
 trait Duplicable[T]:
   def duplicate(value: T): T
 
-object Duplicable {
 
+object Duplicable {
   def duplicate[T](value: T)(using duplicable: Duplicable[T]): T =
     duplicable.duplicate(value)
 
@@ -35,5 +35,8 @@ object Duplicable {
 
   given Duplicable[String] with
     def duplicate(value: String): String = value
+
+  given [T]: Duplicable[Spore[T]] with
+    def duplicate(value: Spore[T]): Spore[T] = value
 
 }
