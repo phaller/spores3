@@ -1,4 +1,12 @@
+.DS_Store
+
 *~
 project/target/
 target/
+
 .bsp/
+.vscode/
+.idea/
+.metals/
+.bloop/
+metals.sbt

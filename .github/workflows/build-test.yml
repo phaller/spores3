@@ -1,6 +1,7 @@
 name: Build and test
 on:
   push:
+  pull_request:
 jobs:
   test:
     strategy:
@@ -25,9 +26,9 @@ jobs:
         cache: sbt
     - name: Setup sbt
       uses: sbt/setup-sbt@v1
-    - name: Build and test sporesJVM
+    - name: Build and test coreJVM
       shell: bash
-      run: sbt "project sporesJVM ; clean ; test"
-    - name: Build and test sporesJS
+      run: sbt "project coreJVM ; clean ; test"
+    - name: Build and test coreJS
       shell: bash
-      run: sbt "project sporesJS ; clean ; test"
+      run: sbt "project coreJS ; clean ; test"
