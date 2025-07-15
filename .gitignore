@@ -10,3 +10,5 @@ target/
 .metals/
 .bloop/
 metals.sbt
+
+*.json

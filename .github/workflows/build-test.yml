@@ -11,6 +11,12 @@ jobs:
           - os: ubuntu-latest
             java: 8
           - os: ubuntu-latest
+            java: 11
+          - os: ubuntu-latest
+            java: 17
+          - os: ubuntu-latest
+            java: 21
+          - os: macos-latest
             java: 17
           - os: windows-latest
             java: 17
@@ -18,6 +24,14 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    # TODO: Temporary fix for Windows (July 2025). See error message:
+    # error STL1000: Unexpected compiler version, expected Clang 19.0.0 or newer
+    - name: Setup Clang 19 (Windows only)
+      if: runner.os == 'Windows'
+      uses: egor-tensin/setup-clang@v1
+      with:
+        version: 19
+        platform: x64
     - name: Setup JDK
       uses: actions/setup-java@v4
       with:
@@ -26,9 +40,21 @@ jobs:
         cache: sbt
     - name: Setup sbt
       uses: sbt/setup-sbt@v1
-    - name: Build and test coreJVM
-      shell: bash
-      run: sbt "project coreJVM ; clean ; test"
-    - name: Build and test coreJS
-      shell: bash
-      run: sbt "project coreJS ; clean ; test"
+    - name: Build
+      run: |
+        sbt -v compile
+        sbt -v test:compile
+    - name: Test
+      run: |
+        sbt -v test
+    - name: Sample
+      run: |
+        sbt -v "sampleJVM / runMain spores.sample.BuilderExample"
+        sbt -v "sampleJVM / runMain spores.sample.LambdaExample"
+        sbt -v "sampleJVM / runMain spores.sample.AutoCaptureExample"
+        sbt -v "sampleJVM / runMain spores.sample.AgentMain"
+        sbt -v "sampleJVM / runMain spores.sample.Futures"
+        sbt -v "sampleJVM / runMain spores.sample.FutureMap"
+        sbt -v "sampleJVM / runMain spores.sample.ParallelTreeReduction"
+        sbt -v "sampleJS / run"
+        sbt -v "sampleNative / run"

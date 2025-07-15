@@ -18,6 +18,12 @@ ThisBuild / developers := List(
     name  = "Philipp Haller",
     email = "hallerp@gmail.com",
     url   = url("https://github.com/phaller")
+  ),
+  Developer(
+    id    = "jspenger",
+    name  = "Jonas Spenger",
+    email = "jonas.spenger@gmail.com",
+    url   = url("https://github.com/jspenger")
   )
 )
 
@@ -43,6 +49,7 @@ ThisBuild / credentials += Credentials(
   "ignored"
 )
 
+
 lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("core"))
   .settings(
@@ -54,10 +61,15 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
   .nativeConfigure(_.enablePlugins(ScalaNativeJUnitPlugin))
 
-lazy val sample = project
+
+lazy val sample = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("sample"))
-  .dependsOn(core.jvm)
   .settings(
     name := "spores3-sample",
+    libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
     publish / skip := true,
   )
+  .jsSettings(
+    scalaJSUseMainModuleInitializer := true,
+  )
+  .dependsOn(core)
