@@ -54,6 +54,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("core"))
   .settings(
     name := "spores3",
+    Compile / doc / target := target.value / "api",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
     libraryDependencies += "com.novocode" % "junit-interface" % junitInterfaceVersion % "test",
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
