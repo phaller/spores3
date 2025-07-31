@@ -30,42 +30,69 @@ object LambdaExample {
 
 
   def main(args: Array[String]): Unit = {
+    assert(
+      Lambda1.unwrap().apply(10) == "01"
+    )
     println(
-      Lambda1.apply(10)
+      Lambda1.unwrap().apply(10)
     )
 
+    assert(
+      Lambda1.withEnv(100).unwrap() == "001"
+    )
     println(
       Lambda1.withEnv(100).unwrap()
     )
 
+    assert(
+      Lambda2.withEnv(10).unwrap() == "22"
+    )
     println(
       Lambda2.withEnv(10).unwrap()
     )
 
+    assert(
+      Lambda3.unwrap().apply(Some(10)) == 11
+    )
     println(
-      Lambda3(Some(10))
+      Lambda3.unwrap().apply(Some(10))
     )
 
+    assert(
+      Lambda4.unwrap() == 14
+    )
     println(
       Lambda4.unwrap()
     )
 
     writeToFile(Lambda1, "Lambda1.json")
+    assert(
+      readFromFile[Spore[Int => String]]("Lambda1.json").unwrap().apply(10) == "01"
+    )
     println(
       readFromFile[Spore[Int => String]]("Lambda1.json")
     )
 
     writeToFile(Lambda2, "Lambda2.json")
+    assert(
+      readFromFile[Spore[Int => String]]("Lambda2.json").withEnv(10).unwrap() == "22"
+    )
     println(
       readFromFile[Spore[Int => String]]("Lambda2.json")
     )
 
     writeToFile(Lambda3, "Lambda3.json")
+    assert(
+      readFromFile[Spore[Option[Int] => Int]]("Lambda3.json").unwrap().apply(Some(10)) == 11
+    )
     println(
       readFromFile[Spore[Option[Int] => Int]]("Lambda3.json")
     )
 
     writeToFile(Lambda3.withEnv(Some(42)), "Lambda3WithEnv.json")
+    assert(
+      readFromFile[Spore[Int]]("Lambda3WithEnv.json").unwrap() == 43
+    )
     println(
       readFromFile[Spore[Int]]("Lambda3WithEnv.json")
     )
