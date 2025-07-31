@@ -4,8 +4,8 @@ import scala.concurrent.{Future, Await}
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import spores.{Duplicable, Duplicate}
-import spores.Duplicate.given
+import spores.default.*
+import spores.default.given
 
 
 object Futures:
@@ -26,16 +26,12 @@ object Futures:
       val fut2 = fib(n - 2)
 
       // captured variables are passed explicitly to
-      // `apply` method of `Block` object
-      fut1.flatMap(
-        Duplicate.applyWithEnv(fut2) { fut2 => (res1: Int) =>
-          fut2.map(
-            Duplicate.applyWithEnv(res1) {
-              res1 => (res2: Int) => res1 + res2
-            }.unwrap()
-          )
-        }.unwrap()
-      )
+      // `applyWithEnv` method of `Spore` object
+      fut1.flatMap(Duplicate.applyWithEnv(fut2) { fut2 => (res1: Int) =>
+        fut2.map(Duplicate.applyWithEnv(res1) {
+          res1 => (res2: Int) => res1 + res2
+        })
+      })
 
   def main(args: Array[String]): Unit =
     // computes 8th Fibonacci number = 21

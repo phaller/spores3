@@ -19,4 +19,13 @@ object Conversions {
   // > `Conversion[spores.Spore[(T1) ?=> R], (T1) ?=> R]` because its result
   // > type `(T1) ?=> R` is a contextual function type.
 
+  given conversionDuplicateToFunction0[R]: Conversion[Duplicate[() => R], (() => R)] = { dup => dup.unwrap() }
+  given conversionDuplicateToFunction1[T1, R]: Conversion[Duplicate[T1 => R], (T1 => R)] = { dup => dup.unwrap() }
+  given conversionDuplicateToFunction2[T1, T2, R]: Conversion[Duplicate[(T1, T2) => R], ((T1, T2) => R)] = { dup => dup.unwrap() }
+  given conversionDuplicateToFunction3[T1, T2, T3, R]: Conversion[Duplicate[(T1, T2, T3) => R], ((T1, T2, T3) => R)] = { dup => dup.unwrap() }
+  given conversionDuplicateToFunction4[T1, T2, T3, T4, R]: Conversion[Duplicate[(T1, T2, T3, T4) => R], ((T1, T2, T3, T4) => R)] = { dup => dup.unwrap() }
+  given conversionDuplicateToFunction5[T1, T2, T3, T4, T5, R]: Conversion[Duplicate[(T1, T2, T3, T4, T5) => R], ((T1, T2, T3, T4, T5) => R)] = { dup => dup.unwrap() }
+  given conversionDuplicateToFunction6[T1, T2, T3, T4, T5, T6, R]: Conversion[Duplicate[(T1, T2, T3, T4, T5, T6) => R], ((T1, T2, T3, T4, T5, T6) => R)] = { dup => dup.unwrap() }
+  given conversionDuplicateToFunction7[T1, T2, T3, T4, T5, T6, T7, R]: Conversion[Duplicate[(T1, T2, T3, T4, T5, T6, T7) => R], ((T1, T2, T3, T4, T5, T6, T7) => R)] = { dup => dup.unwrap() }
+
 }

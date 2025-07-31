@@ -6,8 +6,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.collection.concurrent.TrieMap
 
-import spores.{Duplicate, Duplicable}
-import spores.Duplicable.duplicate
+import spores.default.*
+import spores.default.given
 
 
 case class Customer(name: String, customerNo: Int)
@@ -44,7 +44,7 @@ object FutureMap {
       if (infos.nonEmpty) sumAges / infos.size else 0.0f
     }
     val safeSpore = duplicate(spore)
-    Future { safeSpore.unwrap().apply(customers) }
+    Future { safeSpore(customers) }
   }
 
   def main(args: Array[String]): Unit = {
