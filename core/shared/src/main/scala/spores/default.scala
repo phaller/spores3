@@ -12,5 +12,6 @@ package object default {
   export spores.Duplicate
   export spores.ReadWriters.given
   export spores.Conversions.given
+  export spores.Tupled.*
 
 }
