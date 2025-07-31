@@ -139,37 +139,6 @@ sealed trait Spore[+T] {
       case PackedWithCtx(packed, packedEnv) => packed.unwrap()(using packedEnv.unwrap())
   }
 
-  def apply[R]()(using ev: T <:< (() => R)): R = {
-    this.unwrap().apply()
-  }
-
-  def apply[T1, R](arg1: T1)(using ev: T <:< (T1 => R)): R = {
-    this.unwrap().apply(arg1)
-  }
-
-  def apply[T1, T2, R](arg1: T1, arg2: T2)(using ev: T <:< ((T1, T2) => R)): R = {
-    this.unwrap().apply(arg1, arg2)
-  }
-
-  def apply[T1, T2, T3, R](arg1: T1, arg2: T2, arg3: T3)(using ev: T <:< ((T1, T2, T3) => R)): R = {
-    this.unwrap().apply(arg1, arg2, arg3)
-  }
-
-  def apply[T1, T2, T3, T4, R](arg1: T1, arg2: T2, arg3: T3, arg4: T4)(using ev: T <:< ((T1, T2, T3, T4) => R)): R = {
-    this.unwrap().apply(arg1, arg2, arg3, arg4)
-  }
-
-  def apply[T1, T2, T3, T4, T5, R](arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5)(using ev: T <:< ((T1, T2, T3, T4, T5) => R)): R = {
-    this.unwrap().apply(arg1, arg2, arg3, arg4, arg5)
-  }
-
-  def apply[T1, T2, T3, T4, T5, T6, R](arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6)(using ev: T <:< ((T1, T2, T3, T4, T5, T6) => R)): R = {
-    this.unwrap().apply(arg1, arg2, arg3, arg4, arg5, arg6)
-  }
-
-  def apply[T1, T2, T3, T4, T5, T6, T7, R](arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5, arg6: T6, arg7: T7)(using ev: T <:< ((T1, T2, T3, T4, T5, T6, T7) => R)): R = {
-    this.unwrap().apply(arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-  }
 }
 
 
