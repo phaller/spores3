@@ -89,7 +89,7 @@ object AutoCaptureExample {
     // opt: val filter = Spore.auto{ (l: List[Int]) => l.filter(btwn1020.unwrap()) }
 
     println(filter)
-    // result: PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$3),PackedEnv({"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","funName":"spores.experimental.example.AutoCaptureExample$Lambda$1"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"10","rw":{"$type":"spores.Packed.PackedObject","funName":"spores.ReadWriters$IntRW$"}}},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"20","rw":{"$type":"spores.Packed.PackedObject","funName":"spores.ReadWriters$IntRW$"}}},PackedObject(spores.ReadWriters$SporeRW$)))
+    // result: PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$3),PackedEnv({"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","className":"spores.experimental.example.AutoCaptureExample$Lambda$1"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"10","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"20","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}},PackedObject(spores.ReadWriters$SporeRW$)))
 
     println(filter.apply(List(9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)))
     // result: List(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
