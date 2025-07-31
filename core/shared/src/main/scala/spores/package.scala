@@ -5,8 +5,4 @@
   * Create a Spore using the factories in [[spores.Spore]], or by using the
   * [[spores.SporeBuilder]] or [[spores.SporeClassBuilder]].
   */
-package object spores {
-
-  export spores.ReadWriters.given
-
-}
+package object spores

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import spores.{Spore, SporeBuilder}
-import spores.given
+import spores.default.given
 
 
 object AppendThree extends SporeBuilder[List[String] => List[String]](
