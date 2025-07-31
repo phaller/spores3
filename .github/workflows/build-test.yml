@@ -50,7 +50,7 @@ jobs:
     - name: Sample
       run: |
         sbt -v "sampleJVM / runMain spores.sample.BuilderExample"
-        sbt -v "sampleJVM / runMain spores.sample.LambdaExample"
+        sbt -v "sampleJVM / runMain spores.sample.SporeExample"
         sbt -v "sampleJVM / runMain spores.sample.AutoCaptureExample"
         sbt -v "sampleJVM / runMain spores.sample.AgentMain"
         sbt -v "sampleJVM / runMain spores.sample.Futures"
