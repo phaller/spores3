@@ -1,5 +1,5 @@
-lazy val Scala33 = "3.3.6"
-lazy val upickleVersion = "3.1.0"
+lazy val Scala33 = "3.3.4"
+lazy val upickleVersion = "3.3.0"
 lazy val junitInterfaceVersion = "0.11"
 
 ThisBuild / organization := "com.phaller"
@@ -56,7 +56,7 @@ lazy val core = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     name := "spores3",
     libraryDependencies += "com.lihaoyi" %%% "upickle" % upickleVersion,
     libraryDependencies += "com.novocode" % "junit-interface" % junitInterfaceVersion % "test",
-    testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v"),
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-v"),
   )
   .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
   .nativeConfigure(_.enablePlugins(ScalaNativeJUnitPlugin))
