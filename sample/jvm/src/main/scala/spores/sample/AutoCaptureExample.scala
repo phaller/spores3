@@ -2,8 +2,8 @@ package spores.sample
 
 import upickle.default.*
 
-import spores.*
-import spores.given
+import spores.default.*
+import spores.default.given
 
 
 object AutoCaptureExample {

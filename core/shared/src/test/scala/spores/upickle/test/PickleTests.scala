@@ -7,7 +7,7 @@ import org.junit.runners.JUnit4
 import upickle.default.*
 
 import spores.{Spore, Reflection, SporeBuilder}
-import spores.given
+import spores.default.given
 
 
 @RunWith(classOf[JUnit4])
