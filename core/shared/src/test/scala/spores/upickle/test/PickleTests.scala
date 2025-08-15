@@ -28,7 +28,7 @@ class PickleTests {
 
     // pickle spore
     val pickled = write(spore)
-    assert(pickled == """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedObject","funName":"spores.pickle.test.MySpore$"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"12","rw":{"$type":"spores.Packed.PackedObject","funName":"spores.ReadWriters$IntRW$"}}}""")
+    assert(pickled == """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedObject","className":"spores.pickle.test.MySpore$"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"12","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}}""")
 
     // unpickle spore
     val unpickled = read[Spore[Int => Int]](pickled)
@@ -41,7 +41,7 @@ class PickleTests {
     val spore: Spore[Int => Int] = SporeWithoutEnv.build()
 
     val pickled = write(spore)
-    assert(pickled == """{"$type":"spores.Packed.PackedObject","funName":"spores.pickle.test.SporeWithoutEnv$"}""")
+    assert(pickled == """{"$type":"spores.Packed.PackedObject","className":"spores.pickle.test.SporeWithoutEnv$"}""")
 
     val unpickled = read[Spore[Int => Int]](pickled)
     assert(unpickled.unwrap()(3) == 4)
@@ -53,7 +53,7 @@ class PickleTests {
     val spore: Spore[List[String] => List[String]] = AppendString.build().withEnv("three")
 
     val pickled = write(spore)
-    assert(pickled == """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedObject","funName":"spores.pickle.test.AppendString$"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"\"three\"","rw":{"$type":"spores.Packed.PackedObject","funName":"spores.ReadWriters$StringRW$"}}}""")
+    assert(pickled == """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedObject","className":"spores.pickle.test.AppendString$"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"\"three\"","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$StringRW$"}}}""")
 
     val unpickled = read[Spore[List[String] => List[String]]](pickled)
     val l3 = List("four")

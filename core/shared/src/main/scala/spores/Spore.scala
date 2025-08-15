@@ -131,9 +131,9 @@ sealed trait Spore[+T] {
     */
   def unwrap(): T = {
     this match
-      case PackedObject(funName) => Reflection.loadModuleFieldValue[SporeBuilder[T]](funName).fun
-      case PackedClass(funName)  => Reflection.loadClassInstance[SporeClassBuilder[T]](funName).fun
-      case PackedLambda(funName) => Reflection.loadClassInstance[SporeLambdaBuilder[T]](funName).fun
+      case PackedObject(className) => Reflection.loadModuleFieldValue[SporeBuilder[T]](className).fun
+      case PackedClass(className)  => Reflection.loadClassInstance[SporeClassBuilder[T]](className).fun
+      case PackedLambda(className) => Reflection.loadClassInstance[SporeLambdaBuilder[T]](className).fun
       case PackedEnv(env, rw) => read(env)(using rw.unwrap())
       case PackedWithEnv(packed, packedEnv) => packed.unwrap()(packedEnv.unwrap())
       case PackedWithCtx(packed, packedEnv) => packed.unwrap()(using packedEnv.unwrap())
@@ -185,9 +185,9 @@ object Spore extends SporeObjectCompanionJVM
 private object Packed {
 
   // Static:
-  final case class PackedObject[+T](funName: String) extends Spore[T]
-  final case class PackedClass[+T] (funName: String) extends Spore[T]
-  final case class PackedLambda[+T](funName: String) extends Spore[T]
+  final case class PackedObject[+T](className: String) extends Spore[T]
+  final case class PackedClass[+T] (className: String) extends Spore[T]
+  final case class PackedLambda[+T](className: String) extends Spore[T]
   // Dynamic:
   final case class PackedEnv[E]        (env: String, rw: Spore[ReadWriter[E]])       extends Spore[E]
   final case class PackedWithEnv[E, +T](packed: Spore[E => T],  packedEnv: Spore[E]) extends Spore[T]
