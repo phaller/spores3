@@ -5,7 +5,7 @@ import spores.given
 import spores.sample.platform.*
 
 
-object LambdaExample {
+object SporeExample {
 
   val Lambda1 = Spore.apply[Int => String] { x => x.toString.reverse }
 
