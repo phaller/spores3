@@ -76,36 +76,37 @@ object AutoCaptureExample {
     println(btwn1020)
     // result: PackedWithEnv(PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$1),PackedEnv(10,PackedObject(spores.ReadWriters$IntRW$))),PackedEnv(20,PackedObject(spores.ReadWriters$IntRW$)))
 
-    println(btwn1020.apply(5))
-    // result: false
+    assert(btwn1020.unwrap().apply(5) == false)
+    println(btwn1020.unwrap().apply(5))
 
-    println(btwn1020.apply(15))
-    // result: true
+    assert(btwn1020.unwrap().apply(15) == true)
+    println(btwn1020.unwrap().apply(15))
 
+    assert(btwn1020.unwrap().apply(25) == false)
     println(btwn1020.apply(25))
-    // result: false
 
     val filter = Spore.auto { (l: List[Int]) => l.filter(btwn1020.unwrap()) }
-    // opt: val filter = Spore.auto{ (l: List[Int]) => l.filter(btwn1020.unwrap()) }
 
     println(filter)
     // result: PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$3),PackedEnv({"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","funName":"spores.experimental.example.AutoCaptureExample$Lambda$1"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"10","rw":{"$type":"spores.Packed.PackedObject","funName":"spores.ReadWriters$IntRW$"}}},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"20","rw":{"$type":"spores.Packed.PackedObject","funName":"spores.ReadWriters$IntRW$"}}},PackedObject(spores.ReadWriters$SporeRW$)))
 
-    println(filter.apply(List(9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)))
-    // result: List(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
+    val l = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+    val expected = List(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
+    assert(filter.unwrap().apply(l) == expected)
+    println(filter.unwrap().apply(l))
 
     val inRange = isInRange(Range(1, 2))
 
     println(inRange)
     // result: PackedWithEnv(PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$2),PackedEnv({"x":1,"y":2},PackedObject(spores.experimental.example.AutoCaptureExample$RangeRW$))),PackedEnv(null,PackedObject(spores.ReadWriters$UnitRW$)))
 
-    println(inRange.apply(0))
-    // result: false
+    assert(inRange.unwrap().apply(0) == false)
+    println(inRange.unwrap().apply(0))
 
-    println(inRange.apply(1))
-    // result: true
+    assert(inRange.unwrap().apply(1) == true)
+    println(inRange.unwrap().apply(1))
 
-    println(inRange.apply(2))
-    // result: false
+    assert(inRange.unwrap().apply(2) == false)
+    println(inRange.unwrap().apply(2))
   }
 }
