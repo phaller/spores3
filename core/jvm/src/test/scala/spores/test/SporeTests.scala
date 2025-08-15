@@ -5,7 +5,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import spores.Spore
-import spores.given
+import spores.default.given
 
 
 @RunWith(classOf[JUnit4])

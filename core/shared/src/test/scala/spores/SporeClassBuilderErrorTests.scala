@@ -5,8 +5,8 @@ import org.junit.runners.JUnit4
 import org.junit.Test
 import org.junit.Assert.*
 
-import spores.given
-import spores.*
+import spores.default.given
+import spores.default.*
 import spores.TestUtils.*
 
 object SporeClassBuilderErrorTests:

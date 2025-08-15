@@ -6,7 +6,8 @@ import org.junit.runners.JUnit4
 
 import scala.collection.concurrent.TrieMap
 
-import spores.{Duplicable, Duplicate}
+import spores.default.*
+import spores.default.given
 
 
 case class Customer(name: String, customerNo: Int)
@@ -33,7 +34,7 @@ class TrieMapTest {
       val sumAges = infos.foldLeft(0)(_ + _.age).toFloat
       if (infos.size == 0) 0
       else sumAges / infos.size
-    }.unwrap()
+    }
 
     val res = s(List())
     assert(res == 0)

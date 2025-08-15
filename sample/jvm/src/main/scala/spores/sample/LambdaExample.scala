@@ -1,7 +1,7 @@
 package spores.sample
 
-import spores.*
-import spores.given
+import spores.default.*
+import spores.default.given
 import spores.sample.platform.*
 
 

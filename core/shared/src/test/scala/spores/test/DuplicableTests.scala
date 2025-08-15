@@ -5,8 +5,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
-import spores.Duplicable.duplicate
-import spores.Duplicate
+import spores.default.*
+import spores.default.given
 
 
 class C {
@@ -42,7 +42,7 @@ class DuplicableTests {
 
     val b2 = duplicate(b)
 
-    val res = b2.unwrap()()
+    val res = b2()
     assert(res == 6)
   }
 
@@ -57,7 +57,7 @@ class DuplicableTests {
 
     val b2 = duplicate(b)
 
-    val res = b2.unwrap()()
+    val res = b2()
     assert(res == 5)
 
     val dup = b.asInstanceOf[DuplicateWithEnv[C, Int]]
@@ -76,7 +76,7 @@ class DuplicableTests {
 
     val b2 = duplicate(b)
 
-    val envVal = b2.unwrap()()
+    val envVal = b2()
 
     assert(envVal != x)
   }
@@ -92,7 +92,7 @@ class DuplicableTests {
 
     val b2 = duplicate(b)
 
-    val envVal = b2.unwrap()()
+    val envVal = b2()
 
     assert(envVal.f == 7)
     assert(envVal ne x)
@@ -109,7 +109,7 @@ class DuplicableTests {
 
     val b2 = duplicate(b)
 
-    val envVal = b2.unwrap()()
+    val envVal = b2()
 
     assert(envVal.f == 7)
     assert(envVal ne x)
@@ -122,7 +122,7 @@ class DuplicableTests {
       (x: Int) => x + 2
     }
     val s2 = duplicate(s)
-    val res = s2.unwrap()(3)
+    val res = s2(3)
     assert(res == 5)
   }
 
@@ -136,7 +136,7 @@ class DuplicableTests {
     }
 
     val b2 = duplicate(b)
-    val res = b2.unwrap()(3)
+    val res = b2(3)
     assert(res == 7)
   }
 
@@ -145,7 +145,7 @@ class DuplicableTests {
     def duplicateThenApply[T, R, B <: Duplicate[T => R] : Duplicable](spore: B, arg: T): R = {
       val dup = summon[Duplicable[B]]
       val duplicated = dup.duplicate(spore)
-      duplicated.unwrap()(arg)
+      duplicated(arg)
     }
 
     val x = new C
@@ -162,7 +162,7 @@ class DuplicableTests {
   @Test
   def testPassingSpore(): Unit = {
     def m2(s: Duplicate[Int => Int], arg: Int): Int = {
-      s.unwrap()(arg)
+      s(arg)
     }
 
     def m1(s: Duplicate[Int => Int]): Int = {
@@ -185,7 +185,7 @@ class DuplicableTests {
     def m2[B <: Duplicate[Int => Int] : Duplicable](spore: B, arg: Int): Int = {
       val dup = summon[Duplicable[B]]
       val duplicated = dup.duplicate(spore)
-      duplicated.unwrap()(arg)
+      duplicated(arg)
     }
 
     def m1[B <: Duplicate[Int => Int] : Duplicable](spore: B): Int = {
@@ -208,7 +208,7 @@ class DuplicableTests {
     def duplicateThenApply[S <: Duplicate[Unit => C] : Duplicable](s: S): C = {
       val dup = summon[Duplicable[S]]
       val duplicated = dup.duplicate(s)
-      duplicated.unwrap().apply(())
+      duplicated(())
     }
 
     val x = new C

@@ -10,8 +10,8 @@ import scala.concurrent.ExecutionContext
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
-import spores.{Spore, SporeBuilder}
-import spores.given
+import spores.default.*
+import spores.default.given
 
 
 object AppendThree extends SporeBuilder[List[String] => List[String]](
@@ -96,8 +96,7 @@ class Agent[T : ReadWriter] (init: T) { self =>
           mailbox.poll() match {
             case ApplyBlock(serialized) =>
               // deserialize
-              val unpickledData = read[Spore[T => T]](serialized)
-              val unpickledSpore = unpickledData.unwrap()
+              val unpickledSpore = read[Spore[T => T]](serialized)
 
               // update state by applying the unpickled spore
               val oldState = state.get()
