@@ -7,8 +7,8 @@ import org.junit.Assert.*
 
 import upickle.default.*
 
-import spores.*
-import spores.given
+import spores.default.*
+import spores.default.given
 import spores.TestUtils.*
 
 
