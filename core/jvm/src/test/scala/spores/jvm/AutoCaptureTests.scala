@@ -16,18 +16,18 @@ object AutoCaptureTests {
 
   case class Foo(x: Int, y: Int)
 
-  inline def writeReadUnwrap[T](s: Spore[T]): T = {
+  def writeReadUnwrap[T](s: Spore[T]): T = {
     val w = write(s)
     val r = read[Spore[T]](w)
     r.unwrap()
   }
 
-  inline def readUnwrap[T](json: String): T = {
+  def readUnwrap[T](json: String): T = {
     val r = read[Spore[T]](json)
     r.unwrap()
   }
 
-  inline def countCapturedInSpore[T](s: Spore[T], captured: String): Int = {
+  def countCapturedInSpore[T](s: Spore[T], captured: String): Int = {
     // Note: the `captured` String should otherwise not occur in the JSON.
     val length = captured.length
     val json = write(s)
