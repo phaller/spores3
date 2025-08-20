@@ -35,6 +35,11 @@ private[spores] trait SporeObjectCompanionJVM {
     spores.jvm.Spore.apply(fun)
   }
 
+  /** Alias for [[applyWithEnv]]. */
+  inline def apply[E, T](inline env: E)(inline fun: E => T)(using rw: Spore[ReadWriter[E]]): Spore[T] = {
+    applyWithEnv(env)(fun)
+  }
+
   /** Create a Spore from the provided closure `fun` with an environment
     * variable `env` as the first parameter of the closure.
     *
