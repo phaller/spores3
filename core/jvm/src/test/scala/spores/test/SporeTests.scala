@@ -39,6 +39,15 @@ class SporeTests {
     assert(res == 5)
   }
 
+  @Test
+  def testWithoutEnvWithType1(): Unit = {
+    val s: Spore[Int => Int] = Spore {
+      x => x + 2
+    }
+    val res = s.unwrap()(3)
+    assert(res == 5)
+  }
+
   /* the following does not compile:
 [error] -- [E007] Type Mismatch Error: [...]/BlockTests.scala:37:61 
 [error] 37 |    val s: Spore[Int, Int] { type Env = Nothing } = Spore(y) {
