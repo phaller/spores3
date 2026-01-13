@@ -17,10 +17,11 @@ uses a new approach for type-class-based serialization, and feature a
 simpler, more robust implementation.
 
 Talks:
+- Talk at Scala Days 2025: [video](https://www.youtube.com/watch?v=9Fw0iQ0Rze8), [slides](https://speakerdeck.com/jspenger/simple-and-safe-pickling-of-closures-in-scala-3)
 - Talk at Strange Loop 2022: [video](https://www.youtube.com/watch?v=UN4yv8YYDDY), [slides](https://speakerdeck.com/phaller/how-to-avoid-safety-hazards-when-using-closures-in-scala)
 - Talk at ScalaCon 2022: [video](https://skillsmatter.com/skillscasts/18029-how-to-avoid-safety-hazards-when-using-closures-in-scala), [slides](https://speakerdeck.com/phaller/how-to-avoid-safety-hazards-when-using-closures-in-scala-f9997f74-8e94-41fe-9dd9-eda198fc28f7)
 
-Paper: Philipp Haller. Enhancing closures in Scala 3 with Spores3. 13th ACM SIGPLAN Scala Symposium, Berlin, Germany, June 2022. [DOI](https://doi.org/10.1145/3550198.3550428)
+Paper: Philipp Haller. Enhancing closures in Scala 3 with Spores3. 13th ACM SIGPLAN Scala Symposium, Berlin, Germany, June 2022. [DOI](https://doi.org/10.1145/3550198.3550428) (open access)
 
 ## Add to your project
 
