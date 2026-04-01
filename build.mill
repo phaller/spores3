@@ -1,0 +1,107 @@
+//| mill-version: 1.1.5
+//| mill-jvm-opts: ["-Xss8m"]
+//| mvnDeps:
+//| - com.github.lolgab::mill-mima_mill1:0.2.0
+package build
+
+import mill._
+import mill.scalalib._
+import mill.scalalib.publish._
+import mill.scalajslib._
+import mill.scalanativelib._
+import com.github.lolgab.mill.mima._
+
+val scala3 = "3.3.7"
+val scalaJS = "1.20.2"
+val scalaNative = "0.5.10"
+val upickle = "3.3.0"
+val utest = "0.9.5"
+
+trait CommonTestModule extends TestModule.Utest {
+  def mvnDeps = Seq(mvn"com.lihaoyi::utest::$utest")
+}
+
+trait CommonMimaModule extends Mima {
+  def mimaPreviousVersions: T[Seq[String]] = Seq.empty[String]
+
+  def mimaReportBinaryIssues() = {
+    if (this.isInstanceOf[ScalaNativeModule] || this.isInstanceOf[ScalaJSModule]) Task.Command {}
+    else super.mimaReportBinaryIssues()
+  }
+}
+
+trait CommonPublishModule extends ScalaModule with PublishModule with CommonMimaModule {
+  def scalaVersion = scala3
+  def publishVersion = "0.3.0-SNAPSHOT"
+
+  def pomSettings = PomSettings(
+    description = "Spores3 provides abstractions for making closures in Scala safer and more flexible",
+    organization = "com.phaller",
+    url = "https://github.com/phaller/spores3",
+    licenses = Seq(License.`Apache-2.0`),
+    versionControl = VersionControl.github(owner = "phaller", repo = "spores3"),
+    developers = Seq(
+      Developer("phaller", "Philipp Haller", "https://github.com/phaller"),
+      Developer("jspenger", "Jonas Spenger", "https://github.com/jspenger")
+    )
+  )
+
+  def versionScheme: T[Option[VersionScheme]] = Some(VersionScheme.SemVerSpec)
+}
+
+trait CommonPlatformModule extends ScalaModule with PlatformScalaModule {
+  def platformSources = Task.Sources(
+    platformCrossSuffix match {
+      case "jvm" => Seq(os.sub / "src-jvm-native")
+      case "js" => Seq(os.sub / "src-js-native")
+      case "native" => Seq(os.sub / "src-js-native", os.sub / "src-jvm-native")
+    }*
+  )
+
+  override def sources = Task { super.sources() ++ platformSources() }
+}
+
+object spores3 extends Module {
+
+  trait Shared extends CommonPublishModule with CommonPlatformModule {
+    def artifactName = "spores3"
+    def mvnDeps = Seq(mvn"com.lihaoyi::upickle::$upickle")
+  }
+
+  object jvm extends Shared {
+    object test extends ScalaTests with CommonTestModule
+  }
+
+  object js extends Shared with ScalaJSModule {
+    def scalaJSVersion = scalaJS
+    object test extends ScalaJSTests with CommonTestModule
+  }
+
+  object native extends Shared with ScalaNativeModule {
+    def scalaNativeVersion = scalaNative
+    object test extends ScalaNativeTests with CommonTestModule
+  }
+}
+
+object sample extends Module {
+
+  trait Shared extends ScalaModule with CommonPlatformModule {
+    def scalaVersion = scala3
+    def mvnDeps = Seq(mvn"com.lihaoyi::upickle::$upickle")
+  }
+
+  object jvm extends Shared {
+    def moduleDeps = Seq(spores3.jvm)
+  }
+
+  object js extends Shared with ScalaJSModule {
+    def scalaJSVersion = scalaJS
+    def moduleDeps = Seq(spores3.js)
+    def scalaJSUseMainModuleInitializer = true
+  }
+
+  object native extends Shared with ScalaNativeModule {
+    def scalaNativeVersion = scalaNative
+    def moduleDeps = Seq(spores3.native)
+  }
+}
