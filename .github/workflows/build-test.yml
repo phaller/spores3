@@ -37,24 +37,32 @@ jobs:
       with:
         distribution: temurin
         java-version: ${{ matrix.java }}
-        cache: sbt
-    - name: Setup sbt
-      uses: sbt/setup-sbt@v1
+    - name: Setup Mill (MacOS/Ubuntu)
+      if: runner.os != 'Windows'
+      run: |
+        curl -L https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/1.1.5/mill-dist-1.1.5-mill.sh -o mill
+        chmod +x mill
+        ./mill version
+    - name: Setup Mill (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        curl.exe -L https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/1.1.5/mill-dist-1.1.5-mill.bat -o mill.bat
+        ./mill version
     - name: Build
-      run: |
-        sbt -v compile
-        sbt -v test:compile
+      run: ./mill __.compile
     - name: Test
-      run: |
-        sbt -v test
+      run: ./mill __.test
     - name: Sample
-      run: |
-        sbt -v "sampleJVM / runMain spores.sample.BuilderExample"
-        sbt -v "sampleJVM / runMain spores.sample.SporeExample"
-        sbt -v "sampleJVM / runMain spores.sample.AutoCaptureExample"
-        sbt -v "sampleJVM / runMain spores.sample.AgentMain"
-        sbt -v "sampleJVM / runMain spores.sample.Futures"
-        sbt -v "sampleJVM / runMain spores.sample.FutureMap"
-        sbt -v "sampleJVM / runMain spores.sample.ParallelTreeReduction"
-        sbt -v "sampleJS / run"
-        sbt -v "sampleNative / run"
+      run: >
+        ./mill --no-daemon
+        sample.jvm.runMain spores.sample.BuilderExample +
+        sample.jvm.runMain spores.sample.SporeExample +
+        sample.jvm.runMain spores.sample.AutoCaptureExample +
+        sample.jvm.runMain spores.sample.AgentMain +
+        sample.jvm.runMain spores.sample.Futures +
+        sample.jvm.runMain spores.sample.FutureMap +
+        sample.jvm.runMain spores.sample.ParallelTreeReduction +
+        sample.jvm.runMain spores.sample.WorkflowMain +
+        sample.jvm.runMain spores.sample.ForComprehension +
+        sample.js.run +
+        sample.native.run

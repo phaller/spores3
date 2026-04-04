@@ -28,7 +28,13 @@ Paper: Philipp Haller. Enhancing closures in Scala 3 with Spores3. 13th ACM SIGP
 Add the following dependency to your `build.sbt`:
 
 ```
-libraryDependencies += "com.phaller" %% "spores3" % "0.1.0"
+libraryDependencies += "com.phaller" %%% "spores3" % "0.1.0"
+```
+
+Add the following dependency to your `build.mill`:
+
+```
+def mvnDeps = Seq(mvn"com.phaller::spores3::0.1.0")
 ```
 
 ## Overview
