@@ -49,7 +49,6 @@ import upickle.default.*
   *   The type of the packed closure.
   */
 sealed trait Spore[+T] {
-  import spores.Packed.*
 
   /** Applies the packed closure to a value of type `T1`. Only available if the
     * wrapped closure of type `T` is a subtype of `T1 => R`.
@@ -59,7 +58,7 @@ sealed trait Spore[+T] {
     *
     * @param env
     *   The value applied to the packed closure.
-    * @param prw
+    * @param ev
     *   The implicit `Spore[ReadWriter[T1]]` used for packing the `env`.
     * @tparam T1
     *   The type of the value applied to the packed closure.
@@ -68,8 +67,8 @@ sealed trait Spore[+T] {
     * @return
     *   A new `Spore[R]` with the result of the application.
     */
-  def withEnv[T1, R](env: T1)(using prw: Spore[ReadWriter[T1]])(using @implicitNotFound(CanWithEnv.MSG) ev: CanWithEnv[T, T1, R]): Spore[R] = {
-    PackedWithEnv(this, PackedEnv(write(env)(using prw.unwrap()), prw))
+  def withEnv[T1, R](env: T1)(using ev: Spore[ReadWriter[T1]])(using @implicitNotFound(CanWithEnv.MSG) ev2: CanWithEnv[T, T1, R]): Spore[R] = {
+    AST.WithEnv(this, AST.Val(ev, env))
   }
 
   /** Optimization for applying this `Spore[T1 => R]` directly to a `Spore[T1]`.
@@ -79,8 +78,8 @@ sealed trait Spore[+T] {
     * Only available if the wrapped closure of type `T` is a subtype of `T1 =>
     * R`.
     */
-  def withEnv2[T1, R](env: Spore[T1])(using @implicitNotFound(CanWithEnv.MSG) ev: CanWithEnv[T, T1, R]): Spore[R] = {
-    PackedWithEnv(this, env)
+  def withEnv2[T1, R](env: Spore[T1])(using @implicitNotFound(CanWithEnv.MSG) ev2: CanWithEnv[T, T1, R]): Spore[R] = {
+    AST.WithEnv(this, env)
   }
 
   /** Applies the packed closure to a context value of type `T1`. Only available
@@ -91,7 +90,7 @@ sealed trait Spore[+T] {
     *
     * @param env
     *   The context value applied to the packed closure.
-    * @param prw
+    * @param ev
     *   The implicit `Spore[ReadWriter[T1]]` used for packing the `env`.
     * @tparam T1
     *   The type of the context value applied to the packed closure.
@@ -100,8 +99,8 @@ sealed trait Spore[+T] {
     * @return
     *   A new `Spore[R]` with the result of the application.
     */
-  def withCtx[T1, R](env: T1)(using prw: Spore[ReadWriter[T1]])(using @implicitNotFound(CanWithCtx.MSG) ev: CanWithCtx[T, T1, R]): Spore[R] = {
-    PackedWithCtx(this, PackedEnv(write(env)(using prw.unwrap()), prw))
+  def withCtx[T1, R](env: T1)(using ev: Spore[ReadWriter[T1]])(using @implicitNotFound(CanWithCtx.MSG) ev2: CanWithCtx[T, T1, R]): Spore[R] = {
+    AST.WithCtx(this, AST.Val(ev, env))
   }
 
   /** Optimization for applying this `Spore[T1 ?=> R]` directly to a
@@ -112,8 +111,8 @@ sealed trait Spore[+T] {
     * Only available if the wrapped closure of type `T` is a subtype of `T1 ?=>
     * R`.
     */
-  def withCtx2[T1, R](env: Spore[T1])(using @implicitNotFound(CanWithCtx.MSG) ev: CanWithCtx[T, T1, R]): Spore[R] = {
-    PackedWithCtx(this, env)
+  def withCtx2[T1, R](env: Spore[T1])(using @implicitNotFound(CanWithCtx.MSG) ev2: CanWithCtx[T, T1, R]): Spore[R] = {
+    AST.WithCtx(this, env)
   }
 
   def map[U](fun: Spore[T => U]): Spore[U] = {
@@ -131,12 +130,10 @@ sealed trait Spore[+T] {
     */
   def unwrap(): T = {
     this match
-      case PackedObject(className) => Reflection.loadModuleFieldValue[SporeBuilder[T]](className).fun
-      case PackedClass(className)  => Reflection.loadClassInstance[SporeClassBuilder[T]](className).fun
-      case PackedLambda(className) => Reflection.loadClassInstance[SporeLambdaBuilder[T]](className).fun
-      case PackedEnv(env, rw) => read(env)(using rw.unwrap())
-      case PackedWithEnv(packed, packedEnv) => packed.unwrap()(packedEnv.unwrap())
-      case PackedWithCtx(packed, packedEnv) => packed.unwrap()(using packedEnv.unwrap())
+      case AST.Body(_, _, body) => body
+      case AST.Val(_, value) => value
+      case AST.WithEnv(fun, env) => fun.unwrap()(env.unwrap())
+      case AST.WithCtx(fun, env) => fun.unwrap()(using env.unwrap())
   }
 
 }
@@ -151,17 +148,11 @@ sealed trait Spore[+T] {
 object Spore extends SporeObjectCompanionJVM
 
 
-private object Packed {
-
-  // Static:
-  final case class PackedObject[+T](className: String) extends Spore[T]
-  final case class PackedClass[+T] (className: String) extends Spore[T]
-  final case class PackedLambda[+T](className: String) extends Spore[T]
-  // Dynamic:
-  final case class PackedEnv[E]        (env: String, rw: Spore[ReadWriter[E]])       extends Spore[E]
-  final case class PackedWithEnv[E, +T](packed: Spore[E => T],  packedEnv: Spore[E]) extends Spore[T]
-  final case class PackedWithCtx[E, +T](packed: Spore[E ?=> T], packedEnv: Spore[E]) extends Spore[T]
-
+private object AST {
+  case class Body[+T](kind: Int, className: String, body: T) extends Spore[T]
+  case class Val[T](ev: Spore[ReadWriter[T]], value: T) extends Spore[T]
+  case class WithEnv[E, +R](fun: Spore[E => R], env: Spore[E]) extends Spore[R]
+  case class WithCtx[E, +R](fun: Spore[E ?=> R], env: Spore[E]) extends Spore[R]
 }
 
 

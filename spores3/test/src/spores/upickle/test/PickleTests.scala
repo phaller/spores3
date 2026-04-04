@@ -13,7 +13,7 @@ object PickleTests extends TestSuite {
   val tests = Tests {
     test("testReflection") {
       val b = Reflection.loadModuleFieldValue[SporeBuilder[Int => Int => Int]]("spores.pickle.test.MySpore$")
-      val fun = b.fun
+      val fun = b.body
       val res = fun(12)(3)
       assert(16 == res)
     }
@@ -24,7 +24,7 @@ object PickleTests extends TestSuite {
 
       // pickle spore
       val pickled = write(spore)
-      assert(pickled == """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedObject","className":"spores.pickle.test.MySpore$"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"12","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}}""")
+      assert(pickled == """{"tag":"WithEnv","fun":{"tag":"Body","kind":0,"className":"spores.pickle.test.MySpore$"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":12}}""")
 
       // unpickle spore
       val unpickled = read[Spore[Int => Int]](pickled)
@@ -36,7 +36,7 @@ object PickleTests extends TestSuite {
       val spore: Spore[Int => Int] = SporeWithoutEnv.build()
 
       val pickled = write(spore)
-      assert(pickled == """{"$type":"spores.Packed.PackedObject","className":"spores.pickle.test.SporeWithoutEnv$"}""")
+      assert(pickled == """{"tag":"Body","kind":0,"className":"spores.pickle.test.SporeWithoutEnv$"}""")
 
       val unpickled = read[Spore[Int => Int]](pickled)
       assert(4 == unpickled.unwrap()(3))
@@ -47,7 +47,7 @@ object PickleTests extends TestSuite {
       val spore: Spore[List[String] => List[String]] = AppendString.build().withEnv("three")
 
       val pickled = write(spore)
-      assert(pickled == """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedObject","className":"spores.pickle.test.AppendString$"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"\"three\"","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$StringRW$"}}}""")
+      assert(pickled == """{"tag":"WithEnv","fun":{"tag":"Body","kind":0,"className":"spores.pickle.test.AppendString$"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"three"}}""")
 
       val unpickled = read[Spore[List[String] => List[String]]](pickled)
       val l3 = List("four")

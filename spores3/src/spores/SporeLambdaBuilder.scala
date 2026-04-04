@@ -3,12 +3,12 @@ package spores
 import upickle.default.*
 
 import spores.Reflection
-import spores.Packed.*
+import spores.AST
 
 
 /** Internal API. Used by the spores.jvm.Spore lambda factories. */
 @Reflection.EnableReflectiveInstantiation
-private[spores] trait SporeLambdaBuilder[+T](val fun: T) {
+private[spores] trait SporeLambdaBuilder[+T](val body: T) {
 
   final inline def build(): Spore[T] = {
     ${ SporeLambdaBuilder.buildMacro('this) }
@@ -21,6 +21,6 @@ private object SporeLambdaBuilder {
 
   def buildMacro[T](expr: Expr[SporeLambdaBuilder[T]])(using Type[T], Quotes): Expr[Spore[T]] = {
     // No checks needed, all relevant checks are done in the spores.jvm.Spore lambda factories.
-    '{ PackedLambda($expr.getClass().getName()) }
+    '{ AST.Body(2, $expr.getClass().getName(), $expr.body) }
   }
 }

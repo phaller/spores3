@@ -3,7 +3,6 @@ package spores
 import upickle.default.*
 
 import spores.*
-import spores.Packed.*
 
 
 /** A factory for packing environment values of type `T` into `Spore[T]` by
@@ -15,14 +14,14 @@ object Env {
     *
     * @param env
     *   The value to pack.
-    * @param rw
+    * @param ev
     *   The implicit `Spore[ReadWriter[T]]` used for packing the `env`.
     * @tparam T
     *   The type of the value to pack.
     * @return
     *   A new `Spore[T]` with the packed `env`.
     */
-  def apply[T](env: T)(using rw: Spore[ReadWriter[T]]): Spore[T] = {
-    PackedEnv(write(env)(using rw.unwrap()), rw)
+  def apply[T](env: T)(using ev: Spore[ReadWriter[T]]): Spore[T] = {
+    AST.Val(ev, env)
   }
 }

@@ -3,7 +3,6 @@ package spores
 import upickle.default.*
 
 import spores.*
-import spores.Packed.*
 
 
 /** A collection of ReadWriters. Contains both `ReadWriter[Spore[T]]` and
@@ -23,13 +22,65 @@ object ReadWriters {
   // ReadWriter[Spore[T]]
   //////////////////////////////////////////////////////////////////////////////
 
-  given [T]: ReadWriter[Spore[T]]  = macroRW
-  given [T]: ReadWriter[PackedObject[T]] = macroRW
-  given [T]: ReadWriter[PackedClass[T]]  = macroRW
-  given [T]: ReadWriter[PackedLambda[T]] = macroRW
-  given [E]: ReadWriter[PackedEnv[E]]    = macroRW
-  given [E, T]: ReadWriter[PackedWithEnv[E, T]] = macroRW
-  given [E, T]: ReadWriter[PackedWithCtx[E, T]] = macroRW
+  given [T]: ReadWriter[Spore[T]] =
+    summon[ReadWriter[ujson.Value]].bimap[Spore[T]](
+      sp => {
+        sp match {
+          case AST.Body(kind, className, _) =>
+            ujson.Obj(
+              "tag" -> ujson.Str("Body"),
+              "kind" -> ujson.Num(kind),
+              "className" -> ujson.Str(className),
+            )
+          case AST.Val(ev, value) =>
+            ujson.Obj(
+              "tag" -> ujson.Str("Val"),
+              "ev" -> writeJs(ev),
+              "value" -> writeJs(value)(using ev.unwrap()),
+            )
+          case AST.WithEnv(fun, env) =>
+            ujson.Obj(
+              "tag" -> ujson.Str("WithEnv"),
+              "fun" -> writeJs(fun),
+              "env" -> writeJs(env),
+            )
+          case AST.WithCtx(fun, env) =>
+            ujson.Obj(
+              "tag" -> ujson.Str("WithCtx"),
+              "fun" -> writeJs(fun),
+              "env" -> writeJs(env),
+            )
+        }
+      },
+      js => {
+        js("tag").str match {
+          case "Body" =>
+            val kind = js("kind").num.toInt
+            val className = js("className").str
+            val body = kind match {
+              case 0 =>
+                Reflection.loadModuleFieldValue[SporeBuilder[T]](className).body
+              case 1 =>
+                Reflection.loadClassInstance[SporeClassBuilder[T]](className).body
+              case 2 =>
+                Reflection.loadClassInstance[SporeLambdaBuilder[T]](className).body
+            }
+            AST.Body(kind, className, body)
+          case "Val" =>
+            val ev = read[Spore[ReadWriter[T]]](js("ev"))
+            val value = read[T](js("value"))(using ev.unwrap())
+            AST.Val(ev, value)
+          case "WithEnv" =>
+            val fun = read[Spore[Any => T]](js("fun"))
+            val env = read[Spore[Any]](js("env"))
+            AST.WithEnv(fun, env)
+          case "WithCtx" =>
+            val fun = read[Spore[Any ?=> T]](js("fun"))
+            val env = read[Spore[Any]](js("env"))
+            AST.WithCtx(fun, env)
+        }
+      },
+    )
 
   //////////////////////////////////////////////////////////////////////////////
   // Spore[ReadWriter[T]] for primitive T
@@ -69,26 +120,8 @@ object ReadWriters {
   // Spore[ReadWriter[Spore[?]]]
   //////////////////////////////////////////////////////////////////////////////
 
-  private[spores] object SporeRW extends SporeBuilder[ReadWriter[Spore[?]]](macroRW)
+  private[spores] object SporeRW extends SporeBuilder[ReadWriter[Spore[?]]](summon[ReadWriter[Spore[?]]])
   given packedSporeRW[T]: Spore[ReadWriter[Spore[T]]] = SporeRW.build().asInstanceOf[Spore[ReadWriter[Spore[T]]]]
-
-  private[spores] object PackedObjectRW extends SporeBuilder[ReadWriter[PackedObject[?]]](macroRW)
-  given packedObjectRW[T]: Spore[ReadWriter[PackedObject[T]]] = PackedObjectRW.build().asInstanceOf[Spore[ReadWriter[PackedObject[T]]]]
-
-  private[spores] object PackedClassRW extends SporeBuilder[ReadWriter[PackedClass[?]]](macroRW)
-  given packedClassRW[T]: Spore[ReadWriter[PackedClass[T]]] = PackedClassRW.build().asInstanceOf[Spore[ReadWriter[PackedClass[T]]]]
-
-  private[spores] object PackedLambdaRW extends SporeBuilder[ReadWriter[PackedLambda[?]]](macroRW)
-  given packedLambdaRW[T]: Spore[ReadWriter[PackedLambda[T]]] = PackedLambdaRW.build().asInstanceOf[Spore[ReadWriter[PackedLambda[T]]]]
-
-  private[spores] object PackedEnvRW extends SporeBuilder[ReadWriter[PackedEnv[?]]](macroRW)
-  given packedEnvRW[E]: Spore[ReadWriter[PackedEnv[E]]] = PackedEnvRW.build().asInstanceOf[Spore[ReadWriter[PackedEnv[E]]]]
-
-  private[spores] object PackedWithEnvRW extends SporeBuilder[ReadWriter[PackedWithEnv[?, ?]]](macroRW)
-  given packedWithEnvRW[E, T]: Spore[ReadWriter[PackedWithEnv[E, T]]] = PackedWithEnvRW.build().asInstanceOf[Spore[ReadWriter[PackedWithEnv[E, T]]]]
-
-  private[spores] object PackedWithCtxRW extends SporeBuilder[ReadWriter[PackedWithCtx[?, ?]]](macroRW)
-  given packedWithCtxRW[E, T]: Spore[ReadWriter[PackedWithCtx[E, T]]] = PackedWithCtxRW.build().asInstanceOf[Spore[ReadWriter[PackedWithCtx[E, T]]]]
 
   //////////////////////////////////////////////////////////////////////////////
   // Spore[ReadWriter[F[T]]] for Option[T], List[T], etc.
@@ -105,9 +138,6 @@ object ReadWriters {
 
   private[spores] class ListRW[T] extends SporeClassBuilder[ReadWriter[T] ?=> ReadWriter[List[T]]]({ summon })
   given listRW[T](using tRW: Spore[ReadWriter[T]]): Spore[ReadWriter[List[T]]] = new ListRW[T].build().withCtx2(tRW)
-
-  private[spores] object Tuple0RW extends SporeBuilder[ReadWriter[EmptyTuple]](macroRW[EmptyTuple])
-  given tuple0RW: Spore[ReadWriter[EmptyTuple]] = Tuple0RW.build()
 
   private[spores] class Tuple1RW[T1] extends SporeClassBuilder[ReadWriter[T1] ?=> ReadWriter[Tuple1[T1]]]({ summon })
   given tuple1RW[T1](using t1RW: Spore[ReadWriter[T1]]): Spore[ReadWriter[Tuple1[T1]]] = new Tuple1RW[T1].build().withCtx2(t1RW)
