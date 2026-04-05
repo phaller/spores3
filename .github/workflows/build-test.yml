@@ -39,10 +39,7 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: Setup Mill (MacOS/Ubuntu)
       if: runner.os != 'Windows'
-      run: |
-        curl -L https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/1.1.5/mill-dist-1.1.5-mill.sh -o mill
-        chmod +x mill
-        ./mill version
+      run: ./mill version
     - name: Setup Mill (Windows)
       if: runner.os == 'Windows'
       run: |
