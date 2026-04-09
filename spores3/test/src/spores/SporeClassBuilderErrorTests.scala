@@ -7,26 +7,42 @@ import spores.default.*
 import spores.TestUtils.*
 
 object SporeClassBuilderErrorTestsDefs {
-  object NotClzClz extends SporeClassBuilder[Int => Int](x => x)
+  object NotClzClz extends SporeClassBuilder[Int => Int] {
+    override def body = x => x
+  }
 
   def someMethod: SporeClassBuilder[Int => Int] = {
-    class Local extends SporeClassBuilder[Int => Int](x => x)
+    class Local extends SporeClassBuilder[Int => Int] {
+      override def body = x => x
+    }
     new Local()
   }
 
   class NestedBuilderInClass:
-    class Inner extends SporeClassBuilder[Int](10)
+    class Inner extends SporeClassBuilder[Int] {
+      override def body = 10
+    }
 
-  class ClassWithoutPublicConstructor private () extends SporeClassBuilder[Int => Int](x => x)
+  class ClassWithoutPublicConstructor private () extends SporeClassBuilder[Int => Int] {
+    override def body = x => x
+  }
   object ClassWithoutPublicConstructor:
     def apply(): ClassWithoutPublicConstructor = new ClassWithoutPublicConstructor()
 
-  class ClassWithParameters(i: Int) extends SporeClassBuilder[() => Int](() => i)
+  class ClassWithParameters(i: Int) extends SporeClassBuilder[() => Int] {
+    override def body = () => i
+  }
 
   class F[T]
-  class ClassWithContext1[T: F] extends SporeClassBuilder[F[T]](summon)
-  class ClassWithContext2[T](using F[T]) extends SporeClassBuilder[F[T]](summon)
-  class ClassWithContext3[T](implicit f: F[T]) extends SporeClassBuilder[F[T]](summon)
+  class ClassWithContext1[T: F] extends SporeClassBuilder[F[T]] {
+    override def body = summon
+  }
+  class ClassWithContext2[T](using F[T]) extends SporeClassBuilder[F[T]] {
+    override def body = summon
+  }
+  class ClassWithContext3[T](implicit f: F[T]) extends SporeClassBuilder[F[T]] {
+    override def body = summon
+  }
 }
 
 object SporeClassBuilderErrorTests extends TestSuite {
@@ -115,7 +131,7 @@ object SporeClassBuilderErrorTests extends TestSuite {
       // given Spore[ReadWriter[T]] = PackedRW[T].build()
       //
       // // This will crash at runtime, as the init method is assumed to not have any params.
-      // summon[Spore[ReadWriter[Int]]].unwrap()
+      // summon[Spore[ReadWriter[Int]]].get()
 
       assert:
         typeCheckErrorMessages:

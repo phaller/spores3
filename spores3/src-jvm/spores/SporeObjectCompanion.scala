@@ -4,14 +4,16 @@ import scala.annotation.targetName
 import upickle.default.ReadWriter
 
 import spores.*
+import spores.jvm.*
 
 
-/** Internal API. Extended from by the [[spores.Spore]] companion object. This
-  * is a hack for having platform-specific operations in the companion object.
-  */
-private[spores] trait SporeObjectCompanionJVM {
+/** Internal API. Extended from by the [[spores.Spore]] companion object. */
+private[spores] trait SporeObjectCompanion {
 
-  /** Create a Spore from the provided closure `fun`.
+  // This is a hack for having platform-specific operations in the companion
+  // object.
+
+  /** Create a Spore from the provided closure `body`.
     *
     * The created Spore is safe to serialize and deserialize. The closure must
     * not capture any variables, otherwise it will cause a compile error.
@@ -24,23 +26,18 @@ private[spores] trait SporeObjectCompanionJVM {
     * val mySpore = Spore.apply[Int => String] { x => x.toString.reverse }
     *   }}}
     *
-    * @param fun
+    * @param body
     *   The closure.
     * @tparam T
     *   The type of the closure.
     * @return
-    *   A new `Spore[T]` with the packed closure `fun`.
+    *   A new `Spore[T]` with the packed closure `body`.
     */
-  inline def apply[T](inline fun: T): Spore[T] = {
-    spores.jvm.Spore.apply(fun)
+  inline def apply[T](inline body: T): Spore[T] = {
+    SporeJVM.apply(body)
   }
 
-  /** Alias for [[applyWithEnv]]. */
-  inline def apply[E, T](inline env: E)(inline fun: E => T)(using rw: Spore[ReadWriter[E]]): Spore[T] = {
-    applyWithEnv(env)(fun)
-  }
-
-  /** Create a Spore from the provided closure `fun` with an environment
+  /** Create a Spore from the provided closure `body` with an environment
     * variable `env` as the first parameter of the closure.
     *
     * The created Spore is safe to serialize and deserialize. The closure must
@@ -53,22 +50,22 @@ private[spores] trait SporeObjectCompanionJVM {
     *
     * @param env
     *   The environment variable applied to the closure.
-    * @param fun
+    * @param body
     *   The closure.
-    * @param rw
+    * @param ev
     *   The implicit `Spore[ReadWriter[E]]` used for packing the `env`.
     * @tparam E
     *   The type of the environment variable.
     * @tparam T
     *   The return type of the closure.
     * @return
-    *   A new `Spore[T]` with the packed closure `fun` applied to the `env`.
+    *   A new `Spore[T]` with the packed closure `body` applied to the `env`.
     */
-  inline def applyWithEnv[E, T](inline env: E)(inline fun: E => T)(using rw: Spore[ReadWriter[E]]): Spore[T] = {
-    spores.jvm.Spore.applyWithEnv(env)(fun)
+  inline def applyWithEnv[E, T](inline env: E)(inline body: E => T)(using ev: Spore[ReadWriter[E]]): Spore[T] = {
+    SporeJVM.applyWithEnv(env)(body)
   }
 
-  /** Create a Spore from the provided closure `fun` with an environment
+  /** Create a Spore from the provided closure `body` with an environment
     * variable `env` as the first **implicit** parameter of the closure.
     *
     * The created Spore is safe to serialize and deserialize. The closure must
@@ -81,19 +78,19 @@ private[spores] trait SporeObjectCompanionJVM {
     *
     * @param env
     *   The context environment variable applied to the closure.
-    * @param fun
+    * @param body
     *   The closure.
-    * @param rw
+    * @param ev
     *   The implicit `Spore[ReadWriter[E]]` used for packing the `env`.
     * @tparam E
     *   The type of the context environment variable.
     * @tparam T
     *   The return type of the closure.
     * @return
-    *   A new `Spore[T]` with the packed closure `fun` using the implicit `env`.
+    *   A new `Spore[T]` with the packed closure `body` using the implicit `env`.
     */
-  inline def applyWithCtx[E, T](inline env: E)(inline fun: E ?=> T)(using rw: Spore[ReadWriter[E]]): Spore[T] = {
-    spores.jvm.Spore.applyWithCtx(env)(fun)
+  inline def applyWithCtx[E, T](inline env: E)(inline body: E ?=> T)(using ev: Spore[ReadWriter[E]]): Spore[T] = {
+    SporeJVM.applyWithCtx(env)(body)
   }
 
   /** Create a Spore from `f`. Automatically captures variables and checks
@@ -114,14 +111,14 @@ private[spores] trait SporeObjectCompanionJVM {
     * }
     *   }}}
     *
-    * @param f
+    * @param body
     *   The closure.
-    * @tparam F
+    * @tparam T
     *   The type of the closure.
     * @return
     *   A new `Spore[F]` with the packed closure `f`.
     */
-  inline def auto[T](inline fun: T): Spore[T] = {
-    spores.jvm.AutoCapture.apply(fun)
+  inline def auto[T](inline body: T): Spore[T] = {
+    SporeJVM.auto(body)
   }
 }

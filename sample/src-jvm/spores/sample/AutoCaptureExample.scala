@@ -4,6 +4,7 @@ import upickle.default.*
 
 import spores.default.*
 import spores.default.given
+import spores.conversions.given
 
 
 object AutoCaptureExample {
@@ -50,7 +51,9 @@ object AutoCaptureExample {
   // is captured and packed. Here we create a custom `Range` data type, and its
   // corresponding readwriter.
   case class Range(x: Int, y: Int)
-  object RangeRW extends SporeBuilder[ReadWriter[Range]]({ macroRW })
+  object RangeRW extends SporeBuilder[ReadWriter[Range]]{ 
+    override def body = macroRW
+  }
   given rangeRW: Spore[ReadWriter[Range]] = RangeRW.build()
 
   // Now we can create a similar factory but by capturing a `Range` object.
@@ -76,37 +79,37 @@ object AutoCaptureExample {
     println(btwn1020)
     // result: PackedWithEnv(PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$1),PackedEnv(10,PackedObject(spores.ReadWriters$IntRW$))),PackedEnv(20,PackedObject(spores.ReadWriters$IntRW$)))
 
-    assert(btwn1020.unwrap().apply(5) == false)
-    println(btwn1020.unwrap().apply(5))
+    assert(btwn1020.get().apply(5) == false)
+    println(btwn1020.get().apply(5))
 
-    assert(btwn1020.unwrap().apply(15) == true)
-    println(btwn1020.unwrap().apply(15))
+    assert(btwn1020.get().apply(15) == true)
+    println(btwn1020.get().apply(15))
 
-    assert(btwn1020.unwrap().apply(25) == false)
+    assert(btwn1020.get().apply(25) == false)
     println(btwn1020.apply(25))
 
-    val filter = Spore.auto { (l: List[Int]) => l.filter(btwn1020.unwrap()) }
+    val filter = Spore.auto { (l: List[Int]) => l.filter(btwn1020.get()) }
 
     println(filter)
     // result: PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$3),PackedEnv({"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","className":"spores.experimental.example.AutoCaptureExample$Lambda$1"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"10","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"20","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}},PackedObject(spores.ReadWriters$SporeRW$)))
 
     val l = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
     val expected = List(10, 11, 12, 13, 14, 15, 16, 17, 18, 19)
-    assert(filter.unwrap().apply(l) == expected)
-    println(filter.unwrap().apply(l))
+    assert(filter.get().apply(l) == expected)
+    println(filter.get().apply(l))
 
     val inRange = isInRange(Range(1, 2))
 
     println(inRange)
     // result: PackedWithEnv(PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$2),PackedEnv({"x":1,"y":2},PackedObject(spores.experimental.example.AutoCaptureExample$RangeRW$))),PackedEnv(null,PackedObject(spores.ReadWriters$UnitRW$)))
 
-    assert(inRange.unwrap().apply(0) == false)
-    println(inRange.unwrap().apply(0))
+    assert(inRange.get().apply(0) == false)
+    println(inRange.get().apply(0))
 
-    assert(inRange.unwrap().apply(1) == true)
-    println(inRange.unwrap().apply(1))
+    assert(inRange.get().apply(1) == true)
+    println(inRange.get().apply(1))
 
-    assert(inRange.unwrap().apply(2) == false)
-    println(inRange.unwrap().apply(2))
+    assert(inRange.get().apply(2) == false)
+    println(inRange.get().apply(2))
   }
 }

@@ -4,15 +4,28 @@ import utest._
 
 import upickle.default.*
 
-import spores.{Spore, Reflection, SporeBuilder}
+import spores.default.*
 import spores.default.given
 
 
 object PickleTests extends TestSuite {
 
+  extension (sp1: Spore[_]) {
+    def ===(sp2: Spore[_]): Boolean = {
+      import Spore0.AST.*
+
+      (sp1, sp2) match {
+        case (Body(c1, k1, _), Body(c2, k2, _)) => c1 ==  c2 && k1 ==  k2
+        case (Value(e1, v1),   Value(e2, v2 ))  => e1 === e2 && v1 ==  v2
+        case (WithEnv(f1, e1), WithEnv(f2, e2)) => f1 === f2 && e1 === e2
+        case _ => false
+      }
+    }
+  }
+
   val tests = Tests {
     test("testReflection") {
-      val b = Reflection.loadModuleFieldValue[SporeBuilder[Int => Int => Int]]("spores.pickle.test.MySpore$")
+      val b = spores.Reflection.loadModuleFieldValue[SporeBuilder[Int => Int => Int]]("spores.pickle.test.MySpore$")
       val fun = b.body
       val res = fun(12)(3)
       assert(16 == res)
@@ -28,8 +41,8 @@ object PickleTests extends TestSuite {
 
       // unpickle spore
       val unpickled = read[Spore[Int => Int]](pickled)
-      assert(16 == unpickled.unwrap()(3))
-      assert(unpickled == spore)
+      assert(16 == unpickled.get()(3))
+      assert(unpickled === spore)
     }
 
     test("testSporeWithoutEnvReadWriter") {
@@ -39,8 +52,8 @@ object PickleTests extends TestSuite {
       assert(pickled == """{"tag":"Body","kind":0,"className":"spores.pickle.test.SporeWithoutEnv$"}""")
 
       val unpickled = read[Spore[Int => Int]](pickled)
-      assert(4 == unpickled.unwrap()(3))
-      assert(unpickled == spore)
+      assert(4 == unpickled.get()(3))
+      assert(unpickled === spore)
     }
 
     test("testSporeAppendStringReadWriter") {
@@ -51,8 +64,8 @@ object PickleTests extends TestSuite {
 
       val unpickled = read[Spore[List[String] => List[String]]](pickled)
       val l3 = List("four")
-      assert(unpickled.unwrap()(l3) == List("four", "three"))
-      assert(unpickled == spore)
+      assert(unpickled.get()(l3) == List("four", "three"))
+      assert(unpickled === spore)
     }
   }
 

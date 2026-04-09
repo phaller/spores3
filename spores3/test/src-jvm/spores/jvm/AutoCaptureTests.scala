@@ -16,12 +16,12 @@ object AutoCaptureTestsDefs {
   def writeReadUnwrap[T](s: Spore[T]): T = {
     val w = write(s)
     val r = read[Spore[T]](w)
-    r.unwrap()
+    r.get()
   }
 
   def readUnwrap[T](json: String): T = {
     val r = read[Spore[T]](json)
-    r.unwrap()
+    r.get()
   }
 
   def countCapturedInSpore[T](s: Spore[T], captured: String): Int = {
@@ -47,9 +47,15 @@ object AutoCaptureTestsDefs {
       case Node(left, right) => f(reduce(left, f), reduce(right, f))
     }
   }
-  object TreeRW extends SporeBuilder[ReadWriter[Tree[Int]]]({ macroRW })
-  object LeafRW extends SporeBuilder[ReadWriter[Leaf[Int]]]({ macroRW })
-  object NodeRW extends SporeBuilder[ReadWriter[Node[Int]]]({ macroRW })
+  object TreeRW extends SporeBuilder[ReadWriter[Tree[Int]]]{ 
+    override def body = macroRW
+  }
+  object LeafRW extends SporeBuilder[ReadWriter[Leaf[Int]]]{
+    override def body = macroRW
+  }
+  object NodeRW extends SporeBuilder[ReadWriter[Node[Int]]]{ 
+    override def body = macroRW
+  }
   given treeRW: Spore[ReadWriter[Tree[Int]]] = TreeRW.build()
   given leafRW: Spore[ReadWriter[Leaf[Int]]] = LeafRW.build()
   given nodeRW: Spore[ReadWriter[Node[Int]]] = NodeRW.build()
@@ -128,7 +134,7 @@ object AutoCaptureTests extends TestSuite {
       val json0 = """{"tag":"Body","kind":2,"className":"spores.jvm.AutoCaptureTestsDefs$FunctionsToReadFromJSON$Lambda$1"}"""
       val json1 = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.AutoCaptureTestsDefs$FunctionsToReadFromJSON$Lambda$2"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"0123456789-1"}}"""
       val json2 = """{"tag":"WithEnv","fun":{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.AutoCaptureTestsDefs$FunctionsToReadFromJSON$Lambda$3"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"0123456789-1"}},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"0123456789-2"}}"""
-      val json3 = """{"tag":"WithEnv","fun":{"tag":"WithEnv","fun":{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.AutoCaptureTestsDefs$FunctionsToReadFromJSON$Lambda$4"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"0123456789-1"}},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"0123456789-2"}},"env":{"tag":"Val","ev":{"tag":"WithCtx","fun":{"tag":"Body","kind":1,"className":"spores.ReadWriters$ListRW"},"env":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"}},"value":["a","b","c"]}}"""
+      val json3 = """{"tag":"WithEnv","fun":{"tag":"WithEnv","fun":{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.AutoCaptureTestsDefs$FunctionsToReadFromJSON$Lambda$4"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"0123456789-1"}},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"},"value":"0123456789-2"}},"env":{"tag":"Val","ev":{"tag":"WithEnv","fun":{"tag":"Body","kind":1,"className":"spores.ReadWriters$ListRW"},"env":{"tag":"Body","kind":0,"className":"spores.ReadWriters$StringRW$"}},"value":["a","b","c"]}}"""
 
       val a1 = "0123456789-1"
       val a2 = "0123456789-2"

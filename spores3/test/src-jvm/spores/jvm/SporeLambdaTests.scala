@@ -4,7 +4,9 @@ import utest._
 
 import spores.default.given
 import spores.default.*
+import spores.conversions.given
 import spores.TestUtils.*
+
 
 object SporeLambdaTestsDefs {
   val lambda = Spore.apply[Int => Boolean] { x => x > 10 }
@@ -39,31 +41,31 @@ object SporeLambdaTests extends TestSuite {
       val predicate = lambda
       assert(predicate(11))
       assert(!predicate(9))
-      assert(predicate.unwrap()(11))
-      assert(!predicate.unwrap()(9))
+      assert(predicate.get()(11))
+      assert(!predicate.get()(9))
     }
   
     test("testLambdaWithEnv") {
       val predicate9 = Spore.applyWithEnv(9) { x => x > 10 }
       val predicate11 = Spore.applyWithEnv(11) { x => x > 10 }
-      assert(!predicate9.unwrap())
-      assert(predicate11.unwrap())
+      assert(!predicate9.get())
+      assert(predicate11.get())
     }
   
     test("testLambdaWithCtx") {
       val predicate9 = Spore.applyWithCtx(9) { summon[Int] > 10 }
       val predicate11 = Spore.applyWithCtx(11) { summon[Int] > 10 }
-      assert(!predicate9.unwrap())
-      assert(predicate11.unwrap())
+      assert(!predicate9.get())
+      assert(predicate11.get())
     }
   
     test("testPackBuildHigherOrderLambda") {
-      val higherLevelFilter = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]] { env => x => if env.unwrap().apply(x) then Some(x) else None }
+      val higherLevelFilter = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]] { env => x => if env.get().apply(x) then Some(x) else None }
       val filter = higherLevelFilter.withEnv(lambda)
       assert(Some(11) == filter(11))
       assert(None == filter(9))
-      assert(Some(11) == filter.unwrap()(11))
-      assert(None == filter.unwrap()(9))
+      assert(Some(11) == filter.get()(11))
+      assert(None == filter.get()(9))
     }
   
     test("testPackedLambdaReadWriter") {
@@ -75,8 +77,8 @@ object SporeLambdaTests extends TestSuite {
       val loaded = upickle.default.read[Spore[Int => Boolean]](json)
       assert(loaded(11))
       assert(!loaded(9))
-      assert(loaded.unwrap()(11))
-      assert(!loaded.unwrap()(9))
+      assert(loaded.get()(11))
+      assert(!loaded.get()(9))
     }
   
     test("testNestedLambdaReadWriter") {
@@ -88,8 +90,8 @@ object SporeLambdaTests extends TestSuite {
       val loaded = upickle.default.read[Spore[Int => Boolean]](json)
       assert(loaded(11))
       assert(!loaded(9))
-      assert(loaded.unwrap()(11))
-      assert(!loaded.unwrap()(9))
+      assert(loaded.get()(11))
+      assert(!loaded.get()(9))
     }
   
     test("testPackedLambdaWithEnvReadWriter") {
@@ -101,8 +103,8 @@ object SporeLambdaTests extends TestSuite {
       assert(json9 == packed9)
       assert(json11 == packed11)
   
-      val loaded9 = upickle.default.read[Spore[Boolean]](json9).unwrap()
-      val loaded11 = upickle.default.read[Spore[Boolean]](json11).unwrap()
+      val loaded9 = upickle.default.read[Spore[Boolean]](json9).get()
+      val loaded11 = upickle.default.read[Spore[Boolean]](json11).get()
       assert(!loaded9)
       assert(loaded11)
     }
@@ -113,75 +115,76 @@ object SporeLambdaTests extends TestSuite {
       val packed = upickle.default.write(lambdaWithEnv)
       assert(json == packed)
   
-      val loaded = upickle.default.read[Spore[Boolean]](json).unwrap()
+      val loaded = upickle.default.read[Spore[Boolean]](json).get()
       assert(loaded)
     }
   
     test("testLambdaWithOptionEnvironment") {
       val packed = Spore.applyWithEnv(Some(11)) { x => x.getOrElse(0) }
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(11 == fun)
     }
   
     test("testLambdaWithListEnvironment") {
       val packed = Spore.applyWithEnv(List(1, 2, 3)) { x => x.sum }
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(6 == fun)
     }
   
     test("testLambdaFromMethodCreator") {
       val packed = methodLambda()
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(fun(11))
       assert(!fun(9))
     }
   
     test("testLambdaFromMethodCreatorWithUnnusedArg") {
       val packed = methodLambdaWithUnnusedArg(11)
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(fun(11))
       assert(!fun(9))
     }
   
     test("testLambdaFromInlinedMethodCreator") {
       val packed = inlinedMethodLambda()
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(fun(11))
       assert(!fun(9))
     }
   
     test("testLambdaFromInlinedMethodCreatorWithArg") {
       val packed = inlinedMethodLambdaWithArg(10)
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(fun(11))
       assert(!fun(9))
     }
   
     test("testLambdaFromClassCreator") {
       val packed = ClassWithLambda().lambda
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(fun(11))
       assert(!fun(9))
     }
   
     test("testLambdaFromClassMethodCreator") {
       val packed = ClassWithLambda().methodLambda()
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(fun(11))
       assert(!fun(9))
     }
   
-    test("testSporeApplyWithEnvAlias") {
-      val spore  = Spore.apply[Int, Int => Boolean](12) { env => x => x > env }
-      val fun = spore.unwrap()
-      assert(fun(13))
-      assert(!fun(11))
-    }
+    // Deprecated
+    // test("testSporeApplyWithEnvAlias") {
+    //   val spore  = Spore.apply[Int, Int => Boolean](12) { env => x => x > env }
+    //   val fun = spore.get()
+    //   assert(fun(13))
+    //   assert(!fun(11))
+    // }
   
-    test("testSporeApplyWithEnvAlias2") {
-      val spore = Spore.apply("Hello") { (env: String) => (x: Int) => x.toString() + env }
-      val fun = spore.unwrap()
-      assert("12Hello" == fun(12))
-    }
+    // test("testSporeApplyWithEnvAlias2") {
+    //   val spore = Spore.apply("Hello") { (env: String) => (x: Int) => x.toString() + env }
+    //   val fun = spore.get()
+    //   assert("12Hello" == fun(12))
+    // }
   }
 }

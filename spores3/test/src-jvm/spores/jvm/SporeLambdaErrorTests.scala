@@ -30,7 +30,7 @@ object SporeLambdaErrorTests extends TestSuite {
       assert:
         typeCheckErrorMessages:
           """
-          Spore.apply[Int => Int] { x => Spore.apply[Int => Int] { y => x + y }.unwrap().apply(x) }
+          Spore.apply[Int => Int] { x => Spore.apply[Int => Int] { y => x + y }.get().apply(x) }
           """
         .contains:
           """
@@ -66,7 +66,7 @@ object SporeLambdaErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           class TestClass {
-            Spore.apply { () => this.toString() }.unwrap()
+            Spore.apply { () => this.toString() }.get()
           }
           (new TestClass())
           """
@@ -80,7 +80,7 @@ object SporeLambdaErrorTests extends TestSuite {
           """
           class Outer:
             val x = 12
-            Spore.apply { () => 42 * x }.unwrap()
+            Spore.apply { () => 42 * x }.get()
           (new Outer())
           """
         .contains:

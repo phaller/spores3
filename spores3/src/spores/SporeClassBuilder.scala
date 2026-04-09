@@ -3,7 +3,6 @@ package spores
 import upickle.default.*
 
 import spores.Reflection
-import spores.AST
 
 
 /** A class-based builder trait that packs a [[Spore]] with a closure of type
@@ -30,24 +29,4 @@ import spores.AST
   *   The wrapped closure.
   */
 @Reflection.EnableReflectiveInstantiation
-trait SporeClassBuilder[+T](private[spores] val body: T) {
-
-  /** Packs the wrapped closure into a [[Spore]] of type `T`.
-    *
-    * @return
-    *   A new Spore with the wrapped closure.
-    */
-  final inline def build(): Spore[T] = {
-    ${ SporeClassBuilder.buildMacro('this) }
-  }
-}
-
-
-private object SporeClassBuilder {
-  import scala.quoted.*
-
-  def buildMacro[T](expr: Expr[SporeClassBuilder[T]])(using Type[T], Quotes): Expr[Spore[T]] = {
-    Macros.isTopLevelClass(expr)
-    '{ AST.Body(1, $expr.getClass().getName(), $expr.body) }
-  }
-}
+trait SporeClassBuilder[+T] extends SporeClassBuilder0[ReadWriter, T]

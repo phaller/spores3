@@ -4,19 +4,31 @@ import utest._
 
 import spores.default.given
 import spores.default.*
+import spores.conversions.given
 import spores.TestUtils.*
 
+
 object SporeClassBuilderTestsDefs {
-  class Thunk[T] extends SporeClassBuilder[T => () => T](t => () => t)
+  class Thunk[T] extends SporeClassBuilder[T => () => T] {
+    override def body = t => () => t
+  }
 
-  class Predicate extends SporeClassBuilder[Int => Boolean](x => x > 10)
+  class Predicate extends SporeClassBuilder[Int => Boolean] {
+    override def body = x => x > 10
+  }
 
-  class FilterWithTypeParam[T] extends SporeClassBuilder[Spore[T => Boolean] => T => Option[T]]({ env => x => if env.unwrap().apply(x) then Some(x) else None })
+  class FilterWithTypeParam[T] extends SporeClassBuilder[Spore[T => Boolean] => T => Option[T]] {
+    override def body = { env => x => if env.get().apply(x) then Some(x) else None }
+  }
 
-  class Flatten[T] extends SporeClassBuilder[List[List[T]] => List[T]](x => x.flatten)
+  class Flatten[T] extends SporeClassBuilder[List[List[T]] => List[T]] {
+    override def body = x => x.flatten
+  }
 
   object NestedBuilder:
-    class Predicate extends SporeClassBuilder[Int => Boolean](x => x > 10)
+    class Predicate extends SporeClassBuilder[Int => Boolean] {
+      override def body = x => x > 10
+    }
 }
 
 object SporeClassBuilderTests extends TestSuite {
@@ -27,21 +39,21 @@ object SporeClassBuilderTests extends TestSuite {
       val predicate = new Predicate().build()
       assert(predicate(11))
       assert(!predicate(9))
-      assert(predicate.unwrap()(11))
-      assert(!predicate.unwrap()(9))
+      assert(predicate.get()(11))
+      assert(!predicate.get()(9))
     }
 
     test("testSporeClassBuilderWithEnv") {
       val thunk = new Thunk[Int].build().withEnv(10)
       assert(10 == thunk())
-      assert(10 == thunk.unwrap()())
+      assert(10 == thunk.get()())
     }
 
     test("testSporeClassBuilderWithTypeParam") {
       val flatten = new Flatten[Int].build()
       val nestedList = List(List(1), List(2), List(3))
       assert(nestedList.flatten == flatten(nestedList))
-      assert(nestedList.flatten == flatten.unwrap()(nestedList))
+      assert(nestedList.flatten == flatten.get()(nestedList))
     }
 
     test("testHigherLevelSporeClassBuilder") {
@@ -49,8 +61,8 @@ object SporeClassBuilderTests extends TestSuite {
       val predicate = new Predicate().build()
       assert(Some(11) == filter(predicate)(11))
       assert(None == filter(predicate)(9))
-      assert(Some(11) == filter.unwrap()(predicate)(11))
-      assert(None == filter.unwrap()(predicate)(9))
+      assert(Some(11) == filter.get()(predicate)(11))
+      assert(None == filter.get()(predicate)(9))
     }
 
     test("testSporeClassBuilderReadWriter") {
@@ -62,8 +74,8 @@ object SporeClassBuilderTests extends TestSuite {
       val loaded = upickle.default.read[Spore[Int => Boolean]](json)
       assert(loaded(11))
       assert(!loaded(9))
-      assert(loaded.unwrap()(11))
-      assert(!loaded.unwrap()(9))
+      assert(loaded.get()(11))
+      assert(!loaded.get()(9))
     }
 
     test("testSporeClassBuilderWithTypeParamReadWriter") {
@@ -75,7 +87,7 @@ object SporeClassBuilderTests extends TestSuite {
       val loaded = upickle.default.read[Spore[List[List[Int]] => List[Int]]](json)
       val nestedList = List(List(1), List(2), List(3))
       assert(loaded(nestedList) == nestedList.flatten)
-      assert(loaded.unwrap()(nestedList) == nestedList.flatten)
+      assert(loaded.get()(nestedList) == nestedList.flatten)
     }
 
     test("testSporeClassBuilderWithEnvReadWriter") {
@@ -89,8 +101,8 @@ object SporeClassBuilderTests extends TestSuite {
       val loaded = upickle.default.read[Spore[Int => Option[Int]]](json)
       assert(Some(11) == loaded(11))
       assert(None == loaded(9))
-      assert(Some(11) == loaded.unwrap()(11))
-      assert(None == loaded.unwrap()(9))
+      assert(Some(11) == loaded.get()(11))
+      assert(None == loaded.get()(9))
     }
   }
 }

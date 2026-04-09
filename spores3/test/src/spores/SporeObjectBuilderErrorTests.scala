@@ -7,13 +7,19 @@ import spores.default.*
 import spores.TestUtils.*
 
 object SporeBuilderErrorTestsDefs {
-  class NotObjObj extends SporeBuilder[Int => Int](x => x)
+  class NotObjObj extends SporeBuilder[Int => Int] {
+    override def body = x => x
+  }
 
   class SomeClass:
-    object NotTopLevel extends SporeBuilder[Int => Int](x => x)
+    object NotTopLevel extends SporeBuilder[Int => Int] {
+      override def body = x => x
+    }
 
   def someMethod: SporeBuilder[Int => Int] = {
-    object NotTopLevel extends SporeBuilder[Int => Int](x => x)
+    object NotTopLevel extends SporeBuilder[Int => Int] {
+      override def body = x => x
+    }
     NotTopLevel
   }
 }

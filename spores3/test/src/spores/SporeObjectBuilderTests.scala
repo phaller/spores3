@@ -4,39 +4,70 @@ import utest._
 
 import spores.default.given
 import spores.default.*
+import spores.conversions.given
 import spores.TestUtils.*
 
 object SporeBuilderTestsDefs {
-  object Thunk extends SporeBuilder[() => Int](() => 10)
+  object Thunk extends SporeBuilder[() => Int] {
+    override def body = () => 10
+  }
 
-  object Predicate extends SporeBuilder[Int => Boolean](x => x > 10)
+  object Predicate extends SporeBuilder[Int => Boolean] {
+    override def body = x => x > 10
+  }
 
-  object HigherLevelFilter extends SporeBuilder[Spore[Int => Boolean] => Int => Option[Int]]({ env => x => if env.unwrap().apply(x) then Some(x) else None })
+  object HigherLevelFilter extends SporeBuilder[Spore[Int => Boolean] => Int => Option[Int]] {
+    override def body = { env => x => if env.get().apply(x) then Some(x) else None }
+  }
 
-  object PredicateCtx extends SporeBuilder[Int ?=> Boolean](summon[Int] > 10)
+  object PredicateCtx extends SporeBuilder[Int ?=> Boolean] {
+    override def body = summon[Int] > 10
+  }
 
-  object OptionMapper extends SporeBuilder[Option[Int] => Int](x => x.getOrElse(0))
+  object OptionMapper extends SporeBuilder[Option[Int] => Int] {
+    override def body = x => x.getOrElse(0)
+  }
 
-  object ListReducer extends SporeBuilder[List[Int] => Int](x => x.sum)
+  object ListReducer extends SporeBuilder[List[Int] => Int] {
+    override def body = x => x.sum
+  }
 
   object NestedBuilder:
-    object Predicate extends SporeBuilder[Int => Boolean](x => x > 10)
+    object Predicate extends SporeBuilder[Int => Boolean] {
+      override def body = x => x > 10
+    }
 
-  object Funct0 extends SporeBuilder[() => Int](() => 1)
+  object Funct0 extends SporeBuilder[() => Int] {
+    override def body = () => 1
+  }
 
-  object Funct1 extends SporeBuilder[(Int) => Int](x1 => x1 + 1)
+  object Funct1 extends SporeBuilder[(Int) => Int] {
+    override def body = x1 => x1 + 1
+  }
 
-  object Funct2 extends SporeBuilder[(Int, Int) => Int]((x1, x2) => x1 + x2 + 1)
+  object Funct2 extends SporeBuilder[(Int, Int) => Int] {
+    override def body = (x1, x2) => x1 + x2 + 1
+  }
 
-  object Funct3 extends SporeBuilder[(Int, Int, Int) => Int]((x1, x2, x3) => x1 + x2 + x3 + 1)
+  object Funct3 extends SporeBuilder[(Int, Int, Int) => Int] {
+    override def body = (x1, x2, x3) => x1 + x2 + x3 + 1
+  }
 
-  object Funct4 extends SporeBuilder[(Int, Int, Int, Int) => Int]((x1, x2, x3, x4) => x1 + x2 + x3 + x4 + 1)
+  object Funct4 extends SporeBuilder[(Int, Int, Int, Int) => Int] {
+    override def body = (x1, x2, x3, x4) => x1 + x2 + x3 + x4 + 1
+  }
 
-  object Funct5 extends SporeBuilder[(Int, Int, Int, Int, Int) => Int]((x1, x2, x3, x4, x5) => x1 + x2 + x3 + x4 + x5 + 1)
+  object Funct5 extends SporeBuilder[(Int, Int, Int, Int, Int) => Int] {
+    override def body = (x1, x2, x3, x4, x5) => x1 + x2 + x3 + x4 + x5 + 1
+  }
 
-  object Funct6 extends SporeBuilder[(Int, Int, Int, Int, Int, Int) => Int]((x1, x2, x3, x4, x5, x6) => x1 + x2 + x3 + x4 + x5 + x6 + 1)
+  object Funct6 extends SporeBuilder[(Int, Int, Int, Int, Int, Int) => Int] {
+    override def body = (x1, x2, x3, x4, x5, x6) => x1 + x2 + x3 + x4 + x5 + x6 + 1
+  }
 
-  object Funct7 extends SporeBuilder[(Int, Int, Int, Int, Int, Int, Int) => Int]((x1, x2, x3, x4, x5, x6, x7) => x1 + x2 + x3 + x4 + x5 + x6 + x7 + 1)
+  object Funct7 extends SporeBuilder[(Int, Int, Int, Int, Int, Int, Int) => Int] {
+    override def body = (x1, x2, x3, x4, x5, x6, x7) => x1 + x2 + x3 + x4 + x5 + x6 + x7 + 1
+  }
 }
 
 object SporeBuilderTests extends TestSuite {
@@ -47,7 +78,7 @@ object SporeBuilderTests extends TestSuite {
       val predicate = Predicate.build()
       assert(predicate(11))
       assert(!predicate(9))
-      val unwrapped = predicate.unwrap()
+      val unwrapped = predicate.get()
       assert(unwrapped(11))
       assert(!unwrapped(9))
     }
@@ -56,7 +87,7 @@ object SporeBuilderTests extends TestSuite {
       val predicate = NestedBuilder.Predicate.build()
       assert(predicate(11))
       assert(!predicate(9))
-      val unwrapped = predicate.unwrap()
+      val unwrapped = predicate.get()
       assert(unwrapped(11))
       assert(!unwrapped(9))
     }
@@ -64,40 +95,40 @@ object SporeBuilderTests extends TestSuite {
     test("testSporeBuilderThunk") {
       val thunk = Thunk.build()
       assert(10 == thunk.apply())
-      val unwrapped = thunk.unwrap()
+      val unwrapped = thunk.get()
       assert(10 == unwrapped.apply())
     }
 
     test("testWithEnv") {
       val predicate9 = Predicate.build().withEnv(9)
       val predicate11 = Predicate.build().withEnv(11)
-      assert(!predicate9.unwrap())
-      assert(predicate11.unwrap())
+      assert(!predicate9.get())
+      assert(predicate11.get())
     }
 
     test("testWithEnv2") {
-      val env9 = Env.apply(9)
+      val env9 = Spore.value(9)
       val predicate9 = Predicate.build().withEnv2(env9)
-      val env11 = Env.apply(11)
+      val env11 = Spore.value(11)
       val predicate11 = Predicate.build().withEnv2(env11)
-      assert(!predicate9.unwrap())
-      assert(predicate11.unwrap())
+      assert(!predicate9.get())
+      assert(predicate11.get())
     }
 
     test("testWithCtx") {
       val predicate9 = PredicateCtx.build().withCtx(9)
       val packed11 = PredicateCtx.build().withCtx(11)
-      assert(!predicate9.unwrap())
-      assert(packed11.unwrap())
+      assert(!predicate9.get())
+      assert(packed11.get())
     }
 
     test("testWithCtx2") {
-      val env9 = Env.apply(9)
+      val env9 = Spore.value(9)
       val predicate9 = PredicateCtx.build().withCtx2(env9)
-      val env11 = Env.apply(11)
+      val env11 = Spore.value(11)
       val packed11 = PredicateCtx.build().withCtx2(env11)
-      assert(!predicate9.unwrap())
-      assert(packed11.unwrap())
+      assert(!predicate9.get())
+      assert(packed11.get())
     }
 
     test("testPackBuildHigherOrderSporeBuilder") {
@@ -105,7 +136,7 @@ object SporeBuilderTests extends TestSuite {
       val filter = HigherLevelFilter.build().withEnv(predicate)
       assert(Some(11) == filter(11))
       assert(None == filter(9))
-      val unwrapped = filter.unwrap()
+      val unwrapped = filter.get()
       assert(Some(11) == unwrapped(11))
       assert(None == unwrapped(9))
     }
@@ -119,8 +150,8 @@ object SporeBuilderTests extends TestSuite {
       val loaded = upickle.default.read[Spore[Int => Boolean]](json)
       assert(loaded(11))
       assert(!loaded(9))
-      assert(loaded.unwrap()(11))
-      assert(!loaded.unwrap()(9))
+      assert(loaded.get()(11))
+      assert(!loaded.get()(9))
     }
 
     test("testNestedSporeReadWriter") {
@@ -132,8 +163,8 @@ object SporeBuilderTests extends TestSuite {
       val loaded = upickle.default.read[Spore[Int => Boolean]](json)
       assert(loaded(11))
       assert(!loaded(9))
-      assert(loaded.unwrap()(11))
-      assert(!loaded.unwrap()(9))
+      assert(loaded.get()(11))
+      assert(!loaded.get()(9))
     }
 
     test("testSporeReadWriterWithEnv") {
@@ -147,27 +178,27 @@ object SporeBuilderTests extends TestSuite {
       val loaded = upickle.default.read[Spore[Int => Option[Int]]](json)
       assert(Some(11) == loaded(11))
       assert(None == loaded(9))
-      assert(Some(11) == loaded.unwrap()(11))
-      assert(None == loaded.unwrap()(9))
+      assert(Some(11) == loaded.get()(11))
+      assert(None == loaded.get()(9))
     }
 
     test("testOptionEnvironment") {
       val packed = OptionMapper.build().withEnv(Some(11))
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(11 == fun)
 
       val packed2 = OptionMapper.build().withEnv(Some(11))
-      val fun2 = packed2.unwrap()
+      val fun2 = packed2.get()
       assert(11 == fun2)
     }
 
     test("testListEnvironment") {
       val packed = ListReducer.build().withEnv(List(1, 2, 3))
-      val fun = packed.unwrap()
+      val fun = packed.get()
       assert(6 == fun)
 
       val packed2 = ListReducer.build().withEnv(List(1, 2, 3))
-      val fun2 = packed2.unwrap()
+      val fun2 = packed2.get()
       assert(6 == fun2)
     }
 

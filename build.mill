@@ -92,16 +92,19 @@ object sample extends Module {
 
   object jvm extends Shared {
     def moduleDeps = Seq(spores3.jvm)
+    object test extends ScalaTests with CommonTestModule
   }
 
   object js extends Shared with ScalaJSModule {
     def scalaJSVersion = scalaJS
     def moduleDeps = Seq(spores3.js)
     def scalaJSUseMainModuleInitializer = true
+    object test extends ScalaJSTests with CommonTestModule
   }
 
   object native extends Shared with ScalaNativeModule {
     def scalaNativeVersion = scalaNative
     def moduleDeps = Seq(spores3.native)
+    object test extends ScalaNativeTests with CommonTestModule
   }
 }

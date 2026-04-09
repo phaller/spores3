@@ -220,4 +220,67 @@ private[spores] object Macros {
 
     '{ () }
   }
+
+
+  private[spores] def findEvidence[F[_]](using Quotes)(captures: List[quotes.reflect.Tree])(using Type[F]): List[(quotes.reflect.Tree, quotes.reflect.Tree)] = {
+    import quotes.reflect.*
+
+    captures.flatMap { captured =>
+      val capturedTpe = captured.symbol.termRef.widen
+      val evidenceTpe = TypeRepr.of[[T] =>> Spore0[F, F[T]]].appliedTo(capturedTpe)
+
+      Implicits.search(evidenceTpe) match {
+        case succ: ImplicitSearchSuccess => {
+          List((captured, succ.tree))
+        }
+
+        case fail: ImplicitSearchFailure => {
+          // Do not use `evidenceTpe.show` here as it throws a MatchError on Scala 3.4.3 for some cases
+          val msg = s"Missing implicit for captured variable `${captured.symbol.name}`.\n\n" + fail.explanation
+          report.error(msg, captured.pos)
+          List()
+        }
+      }
+    }
+  }
+
+
+  private[spores] def liftAllSymbolGroups(using Quotes)(owner: quotes.reflect.Symbol, syms: List[List[quotes.reflect.Tree]], body: quotes.reflect.Term): quotes.reflect.Term = {
+    import quotes.reflect.*
+
+    def liftSymbolGroup(owner: Symbol, sym: List[Symbol], body: Term): Term = {
+      val mtpe = MethodType(List(sym.head.name))(_ => List(sym.head.termRef), _ => body.tpe)
+      Lambda(
+        owner,
+        mtpe,
+        { 
+          case (methSym, List(arg1: Term)) => {
+            val subst = sym.map(s => (s -> arg1)).toMap
+            val treeMap = new TreeMap {
+              override def transformTerm(t: Term)(o: Symbol): Term = t match {
+                case id: Ident => {
+                  subst.getOrElse(id.symbol, super.transformTerm(t)(o))
+                }
+                case _ => {
+                  super.transformTerm(t)(o)
+                }
+              }
+            }
+            treeMap.transformTerm(body)(methSym).changeOwner(methSym)
+          }
+          case _ => {
+            ??? // TODO: throw sensible error
+          }
+        }
+      )
+    }
+
+    var newBody = body
+    var newOwner = owner
+    for (sym <- syms) do {
+      newBody = liftSymbolGroup(newOwner, sym.map(_.symbol), newBody)
+      newOwner = newBody.symbol
+    }
+    newBody
+  }
 }
