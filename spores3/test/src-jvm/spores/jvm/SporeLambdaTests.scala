@@ -67,7 +67,7 @@ object SporeLambdaTests extends TestSuite {
     }
   
     test("testPackedLambdaReadWriter") {
-      val json = """{"$type":"spores.Packed.PackedLambda","className":"spores.jvm.SporeLambdaTestsDefs$Lambda$1"}"""
+      val json = """{"tag":"Body","kind":2,"className":"spores.jvm.SporeLambdaTestsDefs$Lambda$1"}"""
   
       val packed = upickle.default.write(lambda)
       assert(json == packed)
@@ -80,7 +80,7 @@ object SporeLambdaTests extends TestSuite {
     }
   
     test("testNestedLambdaReadWriter") {
-      val json = """{"$type":"spores.Packed.PackedLambda","className":"spores.jvm.SporeLambdaTestsDefs$NestedLambda$Lambda$3"}"""
+      val json = """{"tag":"Body","kind":2,"className":"spores.jvm.SporeLambdaTestsDefs$NestedLambda$Lambda$3"}"""
   
       val packed = upickle.default.write(NestedLambda.lambda)
       assert(json == packed)
@@ -93,8 +93,8 @@ object SporeLambdaTests extends TestSuite {
     }
   
     test("testPackedLambdaWithEnvReadWriter") {
-      val json9 = """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","className":"spores.jvm.SporeLambdaTestsDefs$Lambda$1"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"9","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}}"""
-      val json11 = """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","className":"spores.jvm.SporeLambdaTestsDefs$Lambda$1"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"11","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}}"""
+      val json9 = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeLambdaTestsDefs$Lambda$1"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":9}}"""
+      val json11 = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeLambdaTestsDefs$Lambda$1"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":11}}"""
   
       val packed9 = upickle.default.write(lambda.withEnv(9))
       val packed11 = upickle.default.write(lambda.withEnv(11))
@@ -108,7 +108,7 @@ object SporeLambdaTests extends TestSuite {
     }
   
     test("testLambdaWithEnvConstructorReadWriter") {
-      val json = """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","className":"spores.jvm.SporeLambdaTestsDefs$Lambda$2"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"11","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}}"""
+      val json = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeLambdaTestsDefs$Lambda$2"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":11}}"""
   
       val packed = upickle.default.write(lambdaWithEnv)
       assert(json == packed)

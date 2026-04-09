@@ -3,7 +3,6 @@ package spores.jvm
 import upickle.default.*
 
 import spores.*
-import spores.Packed.*
 
 
 /** Internal API. Used by the [[spores.SporeObjectCompanionJVM]] factories.

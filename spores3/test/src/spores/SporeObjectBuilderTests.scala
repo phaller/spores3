@@ -111,7 +111,7 @@ object SporeBuilderTests extends TestSuite {
     }
 
     test("testSporeReadWriter") {
-      val json = """{"$type":"spores.Packed.PackedObject","className":"spores.SporeBuilderTestsDefs$Predicate$"}"""
+      val json = """{"tag":"Body","kind":0,"className":"spores.SporeBuilderTestsDefs$Predicate$"}"""
 
       val packed = upickle.default.write(Predicate.build())
       assert(packed == json)
@@ -124,7 +124,7 @@ object SporeBuilderTests extends TestSuite {
     }
 
     test("testNestedSporeReadWriter") {
-      val json = """{"$type":"spores.Packed.PackedObject","className":"spores.SporeBuilderTestsDefs$NestedBuilder$Predicate$"}"""
+      val json = """{"tag":"Body","kind":0,"className":"spores.SporeBuilderTestsDefs$NestedBuilder$Predicate$"}"""
 
       val packed = upickle.default.write(NestedBuilder.Predicate.build())
       assert(packed == json)
@@ -137,7 +137,7 @@ object SporeBuilderTests extends TestSuite {
     }
 
     test("testSporeReadWriterWithEnv") {
-      val json = """{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedObject","className":"spores.SporeBuilderTestsDefs$HigherLevelFilter$"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"{\"$type\":\"spores.Packed.PackedObject\",\"className\":\"spores.SporeBuilderTestsDefs$Predicate$\"}","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$SporeRW$"}}}"""
+      val json = """{"tag":"WithEnv","fun":{"tag":"Body","kind":0,"className":"spores.SporeBuilderTestsDefs$HigherLevelFilter$"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$SporeRW$"},"value":{"tag":"Body","kind":0,"className":"spores.SporeBuilderTestsDefs$Predicate$"}}}"""
 
       val predicate = Predicate.build()
       val filter = HigherLevelFilter.build().withEnv(predicate)
