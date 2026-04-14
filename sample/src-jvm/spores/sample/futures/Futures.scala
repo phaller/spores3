@@ -6,6 +6,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import spores.default.*
 import spores.default.given
+import spores.conversions.given
 
 
 object Futures:
@@ -27,8 +28,8 @@ object Futures:
 
       // captured variables are passed explicitly to
       // `applyWithEnv` method of `Spore` object
-      fut1.flatMap(Duplicate.applyWithEnv(fut2) { fut2 => (res1: Int) =>
-        fut2.map(Duplicate.applyWithEnv(res1) {
+      fut1.flatMap(Duplicable.applyWithEnv(fut2) { fut2 => (res1: Int) =>
+        fut2.map(Duplicable.applyWithEnv(res1) {
           res1 => (res2: Int) => res1 + res2
         })
       })

@@ -12,19 +12,20 @@ import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import spores.default.*
 import spores.default.given
+import spores.conversions.given
 
 
-object AppendThree extends SporeBuilder[List[String] => List[String]](
-  strings => strings ::: List("three")
-)
+object AppendThree extends SporeBuilder[List[String] => List[String]] {
+  override def body = strings => strings ::: List("three")
+}
 
-object AppendString extends SporeBuilder[String => List[String] => List[String]](
-  env => strings => strings ::: List(env)
-)
+object AppendString extends SporeBuilder[String => List[String] => List[String]] {
+  override def body = env => strings => strings ::: List(env)
+}
 
-object AppendInt extends SporeBuilder[Int => List[String] => List[String]](
-  env => strings => strings ::: List("" + env)
-)
+object AppendInt extends SporeBuilder[Int => List[String] => List[String]] {
+  override def body = env => strings => strings ::: List("" + env)
+}
 
 object AgentMain {
 

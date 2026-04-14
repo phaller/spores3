@@ -13,14 +13,14 @@ object ForComprehension {
     }
 
     inline def flatMap[B](inline f: A => Container[B]): Container[B] = {
-      this.sporeOpt.map(x => Spore.auto(f).withEnv2(x).unwrap()).getOrElse(Container.empty)
+      this.sporeOpt.map(x => Spore.auto(f).withEnv2(x).get()).getOrElse(Container.empty)
     }
 
     def withFilter(f: A => Boolean): Container[A] = {
-      Container.create(this.sporeOpt.filter(x => f.apply(x.unwrap())))
+      Container.create(this.sporeOpt.filter(x => f.apply(x.get())))
     }
 
-    def toOption: Option[A] = this.sporeOpt.map(_.unwrap())
+    def toOption: Option[A] = this.sporeOpt.map(_.get())
   }
 
   object Container {

@@ -13,10 +13,10 @@ object SporeSerializationJvmTestsDefs {
   val lambdaWithCtx = Spore.applyWithCtx(12) { summon[Int].toString }
   val curriedLambda = Spore.apply[Int => Int => String] { x => y => (x + y).toString() }
   val higherOrderLambda = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]] { env => x =>
-    if env.unwrap().apply(x) then Some(x) else None
+    if env.get().apply(x) then Some(x) else None
   }
   val intPredicate = Spore.apply[Int => Boolean] { x => x > 10 }
-  val lambdaReturningSpore = Spore.apply[Int => Spore[String]] { x => Env(x.toString()) }
+  val lambdaReturningSpore = Spore.apply[Int => Spore[String]] { x => Spore.value(x.toString()) }
 }
 
 object SporeSerializationJvmTestsDeadCode {
@@ -25,10 +25,10 @@ object SporeSerializationJvmTestsDeadCode {
   val lambdaWithCtx = Spore.applyWithCtx(12) { summon[Int].toString }
   val curriedLambda = Spore.apply[Int => Int => String] { x => y => (x + y).toString() }
   val higherOrderLambda = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]] { env => x =>
-    if env.unwrap().apply(x) then Some(x) else None
+    if env.get().apply(x) then Some(x) else None
   }
   val intPredicate = Spore.apply[Int => Boolean] { x => x > 10 }
-  val lambdaReturningSpore = Spore.apply[Int => Spore[String]] { x => Env(x.toString()) }
+  val lambdaReturningSpore = Spore.apply[Int => Spore[String]] { x => Spore.value(x.toString()) }
 }
 
 object SporeSerializationJvmTests extends TestSuite {
@@ -41,7 +41,7 @@ object SporeSerializationJvmTests extends TestSuite {
       val json = write(lambda)
       assert(expected == json)
       val spore2 = read[Spore[Int => String]](json)
-      assert("12" == spore2.unwrap()(12))
+      assert("12" == spore2.get()(12))
     }
 
     test("testSerializeSporeApplyWithEnv") {
@@ -49,15 +49,15 @@ object SporeSerializationJvmTests extends TestSuite {
       val json = write(lambdaWithEnv)
       assert(expected == json)
       val spore2 = read[Spore[Int => String]](json)
-      assert("20" == spore2.unwrap()(8))
+      assert("20" == spore2.get()(8))
     }
 
     test("testSerializeSporeApplyWithCtx") {
-      val expected = """{"tag":"WithCtx","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDefs$Lambda$3"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":12}}"""
+      val expected = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDefs$Lambda$3"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":12}}"""
       val json = write(lambdaWithCtx)
       assert(expected == json)
       val spore2 = read[Spore[String]](json)
-      assert("12" == spore2.unwrap())
+      assert("12" == spore2.get())
     }
 
     test("testSerializeCurriedLambda") {
@@ -65,7 +65,7 @@ object SporeSerializationJvmTests extends TestSuite {
       val json = write(curriedLambda)
       assert(expected == json)
       val spore2 = read[Spore[Int => Int => String]](json)
-      assert("7" == spore2.unwrap()(3)(4))
+      assert("7" == spore2.get()(3)(4))
     }
 
     test("testSerializeCurriedLambdaWithEnv") {
@@ -74,7 +74,7 @@ object SporeSerializationJvmTests extends TestSuite {
       val json = write(spore)
       assert(expected == json)
       val spore2 = read[Spore[Int => String]](json)
-      assert("7" == spore2.unwrap()(4))
+      assert("7" == spore2.get()(4))
     }
 
     test("testSerializeHigherOrderWithSporeEnv") {
@@ -83,8 +83,8 @@ object SporeSerializationJvmTests extends TestSuite {
       val json = write(spore)
       assert(expected == json)
       val spore2 = read[Spore[Int => Option[Int]]](json)
-      assert(Some(11) == spore2.unwrap()(11))
-      assert(None == spore2.unwrap()(9))
+      assert(Some(11) == spore2.get()(11))
+      assert(None == spore2.get()(9))
     }
 
     test("testSerializeLambdaReturningSpore") {
@@ -92,50 +92,50 @@ object SporeSerializationJvmTests extends TestSuite {
       val json = write(lambdaReturningSpore)
       assert(expected == json)
       val spore2 = read[Spore[Int => Spore[String]]](json)
-      assert("12" == spore2.unwrap()(12).unwrap())
+      assert("12" == spore2.get()(12).get())
     }
 
     test("testSerializeDeadCodeLambda") {
       val json = """{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$8"}"""
       val spore2 = read[Spore[Int => String]](json)
-      assert("12" == spore2.unwrap()(12))
+      assert("12" == spore2.get()(12))
     }
 
     test("testSerializeDeadCodeLambdaWithEnv") {
       val json = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$9"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":12}}"""
       val spore2 = read[Spore[Int => String]](json)
-      assert("20" == spore2.unwrap()(8))
+      assert("20" == spore2.get()(8))
     }
 
     test("testSerializeDeadCodeLambdaWithCtx") {
-      val json = """{"tag":"WithCtx","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$10"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":12}}"""
+      val json = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$10"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":12}}"""
       val spore2 = read[Spore[String]](json)
-      assert("12" == spore2.unwrap())
+      assert("12" == spore2.get())
     }
 
     test("testSerializeDeadCodeCurriedLambda") {
       val json = """{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$11"}"""
       val spore2 = read[Spore[Int => Int => String]](json)
-      assert("7" == spore2.unwrap()(3)(4))
+      assert("7" == spore2.get()(3)(4))
     }
 
     test("testSerializeDeadCodeCurriedLambdaWithEnv") {
       val json = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$11"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$IntRW$"},"value":3}}"""
       val spore2 = read[Spore[Int => String]](json)
-      assert("7" == spore2.unwrap()(4))
+      assert("7" == spore2.get()(4))
     }
 
     test("testSerializeDeadCodeHigherOrderWithSporeEnv") {
       val json = """{"tag":"WithEnv","fun":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$12"},"env":{"tag":"Val","ev":{"tag":"Body","kind":0,"className":"spores.ReadWriters$SporeRW$"},"value":{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$13"}}}"""
       val spore2 = read[Spore[Int => Option[Int]]](json)
-      assert(Some(11) == spore2.unwrap()(11))
-      assert(None == spore2.unwrap()(9))
+      assert(Some(11) == spore2.get()(11))
+      assert(None == spore2.get()(9))
     }
 
     test("testSerializeDeadCodeLambdaReturningSpore") {
       val json = """{"tag":"Body","kind":2,"className":"spores.jvm.SporeSerializationJvmTestsDeadCode$Lambda$14"}"""
       val spore2 = read[Spore[Int => Spore[String]]](json)
-      assert("12" == spore2.unwrap()(12).unwrap())
+      assert("12" == spore2.get()(12).get())
     }
   }
 }

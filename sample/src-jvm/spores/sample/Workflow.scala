@@ -143,11 +143,11 @@ object Workflow {
         Value(v)
       // Apply the spore to the previous value and return the result as a Value.
       case Map(prev @ Value(value), spore, rw) =>
-        value.unwrap() match
+        value.get() match
           case Right(v) =>
-            spore.unwrap()(v) match
-              case right @ Right(out) => Value(Env(right)(using rw))
-              case left @ Left(err)   => Value(Env(left)(using rw))
+            spore.get()(v) match
+              case right @ Right(out) => Value(Spore.value(right)(using rw))
+              case left @ Left(err)   => Value(Spore.value(left)(using rw))
           // Propagate the error
           case Left(_) => prev.asInstanceOf[Workflow[Inp, Out, Err]]
       // Recursive application
@@ -173,7 +173,7 @@ object Workflow {
         maybeWrite(inter, fileSuffix, stepIndex)
         step(inter) match {
           case Value(value) => if !inter.isInstanceOf[Value[_, _]] then maybeWrite(Value(value), fileSuffix, stepIndex + 1) // avoid writing twice in case inter is a Value
-                               value.unwrap()
+                               value.get()
           case x            => rec(x, fileSuffix, stepIndex + 1)
         }
       }

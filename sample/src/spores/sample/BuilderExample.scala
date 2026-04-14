@@ -7,37 +7,51 @@ import spores.sample.platform.*
 
 object BuilderExample {
 
-  object Spore1 extends SporeBuilder[Int => String](x => x.toString.reverse)
+  object Spore1 extends SporeBuilder[Int => String] {
+    override def body = (x => x.toString.reverse)
+  }
 
-  object Spore2 extends SporeBuilder[Int => Int => String](env => x => (env + x).toString.reverse)
+  object Spore2 extends SporeBuilder[Int => Int => String] {
+    override def body = (env => x => (env + x).toString.reverse)
+  }
 
-  object Predicate extends SporeBuilder[Int => Boolean](x => x > 10)
+  object Predicate extends SporeBuilder[Int => Boolean] {
+    override def body = (x => x > 10)
+  }
 
-  object HigherLevelFilter extends SporeBuilder[(Int => Boolean) => Int => Boolean](env => x => env.apply(x))
+  object HigherLevelFilter extends SporeBuilder[(Int => Boolean) => Int => Boolean] {
+    override def body = (env => x => env.apply(x))
+  }
 
-  object SporeOption extends SporeBuilder[Option[Int] => Int => String](env => x => env.map(_ + x).map(_.toString.reverse).getOrElse(""))
+  object SporeOption extends SporeBuilder[Option[Int] => Int => String] {
+    override def body = (env => x => env.map(_ + x).map(_.toString.reverse).getOrElse(""))
+  }
 
-  object SporeWithCtx extends SporeBuilder[Int ?=> String](summon[Int].toString().reverse)
+  object SporeWithCtx extends SporeBuilder[Int ?=> String] {
+    override def body = summon[Int].toString().reverse
+  }
 
-  class Constant[T] extends SporeClassBuilder[T => T](x => x)
+  class Constant[T] extends SporeClassBuilder[T => T] {
+    override def body = (x => x)
+  }
 
 
   def main(args: Array[String]): Unit = {
     // `build` the `SporeBuilder` to get a `Spore` and `unwrap` it to
     // reveal the packed function.
     assert(
-      Spore1.build().unwrap()(10) == "01"
+      Spore1.build().get()(10) == "01"
     )
     println(
-      Spore1.build().unwrap()(10)
+      Spore1.build().get()(10)
     )
 
     // `withEnv` to pack an environment into the `Spore`.
     assert(
-      Spore2.build().withEnv(11).unwrap()(10) == "12"
+      Spore2.build().withEnv(11).get()(10) == "12"
     )
     println(
-      Spore2.build().withEnv(11).unwrap()(10)
+      Spore2.build().withEnv(11).get()(10)
     )
 
     // The resulting `Spore` is a simple data structure.
@@ -47,41 +61,41 @@ object BuilderExample {
 
     // Higher order spores can pack other spores in their environment.
     assert(
-      HigherLevelFilter.build().withEnv2(Predicate.build()).unwrap()(11) == true
+      HigherLevelFilter.build().withEnv2(Predicate.build()).get()(11) == true
     )
     assert(
-      HigherLevelFilter.build().withEnv2(Predicate.build()).unwrap()(9) == false
+      HigherLevelFilter.build().withEnv2(Predicate.build()).get()(9) == false
     )
     println(
-      HigherLevelFilter.build().withEnv2(Predicate.build()).unwrap()(11)
+      HigherLevelFilter.build().withEnv2(Predicate.build()).get()(11)
     )
 
     // Besides primitive types, standard library types like `Option` can also be
     // packed in the environment.
     assert(
-      SporeOption.build().withEnv(Some(10)).unwrap()(13) == "32"
+      SporeOption.build().withEnv(Some(10)).get()(13) == "32"
     )
     println(
-      SporeOption.build().withEnv(Some(10)).unwrap()(13)
+      SporeOption.build().withEnv(Some(10)).get()(13)
     )
 
     // The environment paramter can also be a context parameter. A context
     // parameter can be packed using the `withCtx` method.
     assert(
-      SporeWithCtx.build().withCtx(99).unwrap() == "99"
+      SporeWithCtx.build().withCtx(99).get() == "99"
     )
     println(
-      SporeWithCtx.build().withCtx(99).unwrap()
+      SporeWithCtx.build().withCtx(99).get()
     )
 
     // The `SporeClassBuilder` can be used to create spores with type
     // parameters.
     val constant10 = new Constant[Int]().build().withEnv(10)
     assert(
-      constant10.unwrap() == 10
+      constant10.get() == 10
     )
     println({
-      constant10.unwrap()
+      constant10.get()
     })
 
     // ... Although, try to stick to the `SporeBuilder` for performance
@@ -97,7 +111,7 @@ object BuilderExample {
     // A `Spore` can be serialized/pickled to JSON by using `upickle`.
     writeToFile(Spore1.build(), "Spore1.json")
     assert(
-      readFromFile[Spore[Int => String]]("Spore1.json").unwrap()(10) == "01"
+      readFromFile[Spore[Int => String]]("Spore1.json").get()(10) == "01"
     )
     println(
       readFromFile[Spore[Int => String]]("Spore1.json")
@@ -105,7 +119,7 @@ object BuilderExample {
 
     writeToFile(Spore2.build().withEnv(11), "Spore2.json")
     assert(
-      readFromFile[Spore[Int => String]]("Spore2.json").unwrap()(10) == "12"
+      readFromFile[Spore[Int => String]]("Spore2.json").get()(10) == "12"
     )
     println(
       readFromFile[Spore[Int => String]]("Spore2.json")
@@ -113,13 +127,13 @@ object BuilderExample {
 
     writeToFile(HigherLevelFilter.build().withEnv2(Predicate.build()), "Filter.json")
     assert(
-      readFromFile[Spore[Int => Boolean]]("Filter.json").unwrap().apply(11) == true
+      readFromFile[Spore[Int => Boolean]]("Filter.json").get().apply(11) == true
     )
     assert(
-      readFromFile[Spore[Int => Boolean]]("Filter.json").unwrap().apply(9) == false
+      readFromFile[Spore[Int => Boolean]]("Filter.json").get().apply(9) == false
     )
     println(
-      readFromFile[Spore[Int => Boolean]]("Filter.json").unwrap().apply(11)
+      readFromFile[Spore[Int => Boolean]]("Filter.json").get().apply(11)
     )
   }
 }

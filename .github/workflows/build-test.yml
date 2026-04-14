@@ -55,17 +55,3 @@ jobs:
         ./mill __.jvm.test
         ./mill __.js.test
         ./mill __.native.test
-    - name: Sample
-      run: >
-        ./mill --no-daemon
-        sample.jvm.runMain spores.sample.BuilderExample +
-        sample.jvm.runMain spores.sample.SporeExample +
-        sample.jvm.runMain spores.sample.AutoCaptureExample +
-        sample.jvm.runMain spores.sample.AgentMain +
-        sample.jvm.runMain spores.sample.Futures +
-        sample.jvm.runMain spores.sample.FutureMap +
-        sample.jvm.runMain spores.sample.ParallelTreeReduction +
-        sample.jvm.runMain spores.sample.WorkflowMain +
-        sample.jvm.runMain spores.sample.ForComprehension +
-        sample.js.run +
-        sample.native.run

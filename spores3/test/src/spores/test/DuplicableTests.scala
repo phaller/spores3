@@ -5,6 +5,7 @@ import utest._
 
 import spores.default.*
 import spores.default.given
+import spores.conversions.given
 
 
 class C {
@@ -32,7 +33,7 @@ object DuplicableTests extends TestSuite {
 
     test("testDuplicateThunk") {
       val x = 5
-      val b = Duplicate.applyWithEnv(x) { env => () =>
+      val b = Duplicable.applyWithEnv(x) { env => () =>
         env + 1
       }
 
@@ -46,7 +47,7 @@ object DuplicableTests extends TestSuite {
       val x = new C
       x.f = 4
 
-      val b = Duplicate.applyWithEnv(x) { env => () =>
+      val b = Duplicable.applyWithEnv(x) { env => () =>
         env.f + 1
       }
 
@@ -55,16 +56,16 @@ object DuplicableTests extends TestSuite {
       val res = b2()
       assert(5 == res)
 
-      val dup = b.asInstanceOf[DuplicateWithEnv[C, Int]]
-      val dup2 = b2.asInstanceOf[DuplicateWithEnv[C, Int]]
-      assert(dup.env.unwrap() ne dup2.env.unwrap())
-      assert(dup.env.unwrap().f == dup2.env.unwrap().f)
+      val dup = b.asInstanceOf[Spore0.AST.WithEnv[Duplicable, C, Int]]
+      val dup2 = b2.asInstanceOf[Spore0.AST.WithEnv[Duplicable, C, Int]]
+      assert(dup.env.get() ne dup2.env.get())
+      assert(dup.env.get().f == dup2.env.get().f)
     }
 
     test("testDuplicatedThunkAccessesNewEnv") {
       val x = new C
 
-      val b = Duplicate.applyWithEnv(x) { env => () =>
+      val b = Duplicable.applyWithEnv(x) { env => () =>
         env
       }
 
@@ -79,7 +80,7 @@ object DuplicableTests extends TestSuite {
       val x = new C
       x.f = 7
 
-      val b = Duplicate.applyWithEnv(x) { env => () =>
+      val b = Duplicable.applyWithEnv(x) { env => () =>
         env
       }
 
@@ -95,7 +96,7 @@ object DuplicableTests extends TestSuite {
       val x = new C
       x.f = 7
 
-      val b: Duplicate[() => C] = Duplicate.applyWithEnv(x) { env => () =>
+      val b: Spore0[Duplicable, () => C] = Duplicable.applyWithEnv(x) { env => () =>
         env
       }
 
@@ -109,7 +110,7 @@ object DuplicableTests extends TestSuite {
 
     test("testDuplicatedSporeNoCapture") {
       // spore does not capture anything
-      val s = Duplicate {
+      val s = Duplicable {
         (x: Int) => x + 2
       }
       val s2 = duplicate(s)
@@ -121,7 +122,7 @@ object DuplicableTests extends TestSuite {
       val x = new C
       x.f = 4
 
-      val b = Duplicate.applyWithEnv(x) {
+      val b = Duplicable.applyWithEnv(x) {
         env => (y: Int) => env.f + y
       }
 
@@ -131,7 +132,7 @@ object DuplicableTests extends TestSuite {
     }
 
     test("testDuplicateSporeWithEnvGeneric") {
-      def duplicateThenApply[T, R, B <: Duplicate[T => R] : Duplicable](spore: B, arg: T): R = {
+      def duplicateThenApply[T, R, B <: Spore0[Duplicable, T => R] : Duplicable](spore: B, arg: T): R = {
         val dup = summon[Duplicable[B]]
         val duplicated = dup.duplicate(spore)
         duplicated(arg)
@@ -140,7 +141,7 @@ object DuplicableTests extends TestSuite {
       val x = new C
       x.f = 4
 
-      val b = Duplicate.applyWithEnv(x) {
+      val b = Duplicable.applyWithEnv(x) {
         env => (y: Int) => env.f + y
       }
 
@@ -149,18 +150,18 @@ object DuplicableTests extends TestSuite {
     }
 
     test("testPassingSpore") {
-      def m2(s: Duplicate[Int => Int], arg: Int): Int = {
+      def m2(s: Spore0[Duplicable, Int => Int], arg: Int): Int = {
         s(arg)
       }
 
-      def m1(s: Duplicate[Int => Int]): Int = {
+      def m1(s: Spore0[Duplicable, Int => Int]): Int = {
         m2(s, 10) + 20
       }
 
       val x = new C
       x.f = 4
 
-      val s = Duplicate.applyWithEnv(x) {
+      val s = Duplicable.applyWithEnv(x) {
         env => (y: Int) => env.f + y
       }
 
@@ -169,20 +170,20 @@ object DuplicableTests extends TestSuite {
     }
 
     test("testPassingSporeAndDuplicate") {
-      def m2[B <: Duplicate[Int => Int] : Duplicable](spore: B, arg: Int): Int = {
+      def m2[B <: Spore0[Duplicable, Int => Int] : Duplicable](spore: B, arg: Int): Int = {
         val dup = summon[Duplicable[B]]
         val duplicated = dup.duplicate(spore)
         duplicated(arg)
       }
 
-      def m1[B <: Duplicate[Int => Int] : Duplicable](spore: B): Int = {
+      def m1[B <: Spore0[Duplicable, Int => Int] : Duplicable](spore: B): Int = {
         m2(spore, 10) + 20
       }
 
       val x = new C
       x.f = 4
 
-      val b = Duplicate.applyWithEnv(x) {
+      val b = Duplicable.applyWithEnv(x) {
         env => (y: Int) => env.f + y
       }
 
@@ -191,7 +192,7 @@ object DuplicableTests extends TestSuite {
     }
 
     test("testDuplicateThenApply") {
-      def duplicateThenApply[S <: Duplicate[Unit => C] : Duplicable](s: S): C = {
+      def duplicateThenApply[S <: Spore0[Duplicable, Unit => C] : Duplicable](s: S): C = {
         val dup = summon[Duplicable[S]]
         val duplicated = dup.duplicate(s)
         duplicated(())
@@ -202,7 +203,7 @@ object DuplicableTests extends TestSuite {
       x.f = 7
 
       // create thunk:
-      val b = Duplicate.applyWithEnv(x) { env => (_: Unit) =>
+      val b = Duplicable.applyWithEnv(x) { env => (_: Unit) =>
         env
       }
 

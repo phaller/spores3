@@ -4,6 +4,6 @@ import spores.Reflection.EnableReflectiveInstantiation
 import spores.SporeBuilder
 
 
-object SporeWithoutEnv extends SporeBuilder[Int => Int](
-  (x: Int) => x + 1
-)
+object SporeWithoutEnv extends SporeBuilder[Int => Int] {
+  override def body = x => x + 1
+}

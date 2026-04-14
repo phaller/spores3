@@ -21,7 +21,7 @@ object SporeExample {
   //     Spore.apply[Int => Int] { y =>
   //       // Invalid capture of variable `x`. Use the first parameter of a spore's body to refer to the spore's environment.
   //       x + y
-  //     }.unwrap().apply(x)
+  //     }.get().apply(x)
   //   }
 
   // // Should cause compile error
@@ -31,43 +31,43 @@ object SporeExample {
 
   def main(args: Array[String]): Unit = {
     assert(
-      Lambda1.unwrap().apply(10) == "01"
+      Lambda1.get().apply(10) == "01"
     )
     println(
-      Lambda1.unwrap().apply(10)
+      Lambda1.get().apply(10)
     )
 
     assert(
-      Lambda1.withEnv(100).unwrap() == "001"
+      Lambda1.withEnv(100).get() == "001"
     )
     println(
-      Lambda1.withEnv(100).unwrap()
+      Lambda1.withEnv(100).get()
     )
 
     assert(
-      Lambda2.withEnv(10).unwrap() == "22"
+      Lambda2.withEnv(10).get() == "22"
     )
     println(
-      Lambda2.withEnv(10).unwrap()
+      Lambda2.withEnv(10).get()
     )
 
     assert(
-      Lambda3.unwrap().apply(Some(10)) == 11
+      Lambda3.get().apply(Some(10)) == 11
     )
     println(
-      Lambda3.unwrap().apply(Some(10))
+      Lambda3.get().apply(Some(10))
     )
 
     assert(
-      Lambda4.unwrap() == 14
+      Lambda4.get() == 14
     )
     println(
-      Lambda4.unwrap()
+      Lambda4.get()
     )
 
     writeToFile(Lambda1, "Lambda1.json")
     assert(
-      readFromFile[Spore[Int => String]]("Lambda1.json").unwrap().apply(10) == "01"
+      readFromFile[Spore[Int => String]]("Lambda1.json").get().apply(10) == "01"
     )
     println(
       readFromFile[Spore[Int => String]]("Lambda1.json")
@@ -75,7 +75,7 @@ object SporeExample {
 
     writeToFile(Lambda2, "Lambda2.json")
     assert(
-      readFromFile[Spore[Int => String]]("Lambda2.json").withEnv(10).unwrap() == "22"
+      readFromFile[Spore[Int => String]]("Lambda2.json").withEnv(10).get() == "22"
     )
     println(
       readFromFile[Spore[Int => String]]("Lambda2.json")
@@ -83,7 +83,7 @@ object SporeExample {
 
     writeToFile(Lambda3, "Lambda3.json")
     assert(
-      readFromFile[Spore[Option[Int] => Int]]("Lambda3.json").unwrap().apply(Some(10)) == 11
+      readFromFile[Spore[Option[Int] => Int]]("Lambda3.json").get().apply(Some(10)) == 11
     )
     println(
       readFromFile[Spore[Option[Int] => Int]]("Lambda3.json")
@@ -91,7 +91,7 @@ object SporeExample {
 
     writeToFile(Lambda3.withEnv(Some(42)), "Lambda3WithEnv.json")
     assert(
-      readFromFile[Spore[Int]]("Lambda3WithEnv.json").unwrap() == 43
+      readFromFile[Spore[Int]]("Lambda3WithEnv.json").get() == 43
     )
     println(
       readFromFile[Spore[Int]]("Lambda3WithEnv.json")

@@ -46,7 +46,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -58,7 +58,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -70,7 +70,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -84,7 +84,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `A`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `A`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -96,7 +96,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `A`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `A`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -110,7 +110,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `captureMeIfYouCan`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `captureMeIfYouCan`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -125,7 +125,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -139,7 +139,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -153,7 +153,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -168,7 +168,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `given_ReadWriter_Bar`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `given_ReadWriter_Bar`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -182,7 +182,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `opaqueInt`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `opaqueInt`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -200,7 +200,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Inner`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Inner`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -216,7 +216,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -232,7 +232,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Outer`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -245,12 +245,12 @@ object AutoCaptureErrorTests extends TestSuite {
             class Bar {
               def bar = foo.x + 12
             }
-          }.unwrap()
+          }.get()
           """
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `foo`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -266,7 +266,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -280,7 +280,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -291,12 +291,12 @@ object AutoCaptureErrorTests extends TestSuite {
             class Bar0
             Spore.auto {
               class FooBar extends Bar0
-            }.unwrap()
+            }.get()
             """
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar0`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar0`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -310,7 +310,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar1`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar1`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -319,12 +319,12 @@ object AutoCaptureErrorTests extends TestSuite {
             class Bar2[T](x: T, y: T)
             Spore.auto {
               class FooBar extends Bar2[Int](12, 13)
-            }.unwrap()
+            }.get()
             """
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar2`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar2`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -339,7 +339,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar3`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar3`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
 
       assert:
@@ -348,12 +348,12 @@ object AutoCaptureErrorTests extends TestSuite {
             trait Bar4[T] { def bar: Int = x }
             Spore.auto {
               class FooBar extends Foo(12, 13) with Bar4[Int]
-            }.unwrap()
+            }.get()
             """
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar4`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar4`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -364,12 +364,12 @@ object AutoCaptureErrorTests extends TestSuite {
           trait Bar
           Spore.auto {
             trait FooBar extends Bar
-          }.unwrap()
+          }.get()
           """
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -380,12 +380,12 @@ object AutoCaptureErrorTests extends TestSuite {
           trait Bar
           Spore.auto {
             object FooBar extends Bar
-          }.unwrap()
+          }.get()
           """
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -399,7 +399,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -417,7 +417,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Baz`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Baz`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
 
@@ -432,7 +432,7 @@ object AutoCaptureErrorTests extends TestSuite {
         .exists:
           _.matches:
             raw"""
-            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore\[\s*upickle.default.ReadWriter\[.*\]\]\s*
+            (?s)Missing implicit for captured variable `Bar`\.\R\Rno implicit values were found that match type spores.Spore0?\[.*upickle\.default\.ReadWriter\[.*\].*\]\s*
             """.trim()
     }
   }

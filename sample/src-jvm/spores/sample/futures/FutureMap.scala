@@ -8,6 +8,7 @@ import scala.collection.concurrent.TrieMap
 
 import spores.default.*
 import spores.default.given
+import spores.conversions.given
 
 
 case class Customer(name: String, customerNo: Int)
@@ -34,7 +35,7 @@ object FutureMap {
     }
 
   def averageAge(customers: List[Customer]): Future[Float] = {
-    val spore = Duplicate.applyWithEnv[CustomerMap, List[Customer] => Float](customerData) { data => cs =>
+    val spore = Duplicable.applyWithEnv[CustomerMap, List[Customer] => Float](customerData) { data => cs =>
       val infos = cs.flatMap { c =>
         data.get(c.customerNo) match
           case Some(info) => List(info)

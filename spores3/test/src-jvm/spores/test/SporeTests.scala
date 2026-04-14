@@ -3,6 +3,7 @@ package spores.test
 import utest._
 
 import spores.Spore
+import spores.default.*
 import spores.default.given
 
 
@@ -12,7 +13,7 @@ object SporeTests extends TestSuite {
 
     test("testWithoutEnv") {
       val b = Spore { (x: Int) => x + 2 }
-      val res = b.unwrap()(3)
+      val res = b.get()(3)
       assert(res == 5)
     }
 
@@ -23,7 +24,7 @@ object SporeTests extends TestSuite {
 
       fun(s)
 
-      val res = s.unwrap()(3)
+      val res = s.get()(3)
       assert(res == 5)
     }
 
@@ -31,7 +32,7 @@ object SporeTests extends TestSuite {
       val s: Spore[Int => Int] = Spore {
         (x: Int) => x + 2
       }
-      val res = s.unwrap()(3)
+      val res = s.get()(3)
       assert(res == 5)
     }
 
@@ -39,7 +40,7 @@ object SporeTests extends TestSuite {
       val s: Spore[Int => Int] = Spore {
         x => x + 2
       }
-      val res = s.unwrap()(3)
+      val res = s.get()(3)
       assert(res == 5)
     }
 
@@ -66,7 +67,7 @@ object SporeTests extends TestSuite {
       val s = Spore.applyWithEnv(y) {
         env => (x: Int) => x + env
       }
-      val res = s.unwrap()(10)
+      val res = s.get()(10)
       assert(res == 15)
     }
 
@@ -91,7 +92,7 @@ object SporeTests extends TestSuite {
       val s: Spore[Int => Int] = Spore.applyWithEnv(str) {
         env => (x: Int) => x + env.length
       }
-      val res = s.unwrap()(10)
+      val res = s.get()(10)
       assert(res == 28)
     }
 
@@ -103,7 +104,7 @@ object SporeTests extends TestSuite {
         case (l, r) => (x: Int) => x + l.length - r
       }
 
-      val res = s.unwrap()(10)
+      val res = s.get()(10)
       assert(res == 23)
     }
 
@@ -115,7 +116,7 @@ object SporeTests extends TestSuite {
         (l, r) => (x: Int) => x + l.length - r
       }
 
-      val res = s.unwrap()(10)
+      val res = s.get()(10)
       assert(res == 23)
     }
 
@@ -124,7 +125,7 @@ object SporeTests extends TestSuite {
       val s: Spore[Int => Int] = Spore.applyWithEnv(y) {
         env => (x: Int) => x + env
       }
-      val res = s.unwrap()(11)
+      val res = s.get()(11)
       assert(res == 16)
     }
 
@@ -133,7 +134,7 @@ object SporeTests extends TestSuite {
       val t = Spore.applyWithEnv(x) { env => () =>
         env + 7
       }
-      val res = t.unwrap()()
+      val res = t.get()()
       assert(res == 12)
     }
 
@@ -141,9 +142,9 @@ object SporeTests extends TestSuite {
       val s = Spore {
         (x: Int) =>
           val s2 = Spore { (y: Int) => y - 1 }
-          s2.unwrap()(x) + 2
+          s2.get()(x) + 2
       }
-      val res = s.unwrap()(3)
+      val res = s.get()(3)
       assert(res == 4)
     }
 
@@ -153,9 +154,9 @@ object SporeTests extends TestSuite {
       val s = Spore.applyWithEnv(z) {
         env => (x: Int) =>
           val s2 = Spore.applyWithEnv(env) { env => (y: Int) => env + y - 1 }
-          s2.unwrap()(x) + 2
+          s2.get()(x) + 2
       }
-      val res = s.unwrap()(3)
+      val res = s.get()(3)
       assert(res == 9)
     }
 
@@ -166,10 +167,10 @@ object SporeTests extends TestSuite {
       val s = Spore.applyWithEnv((w, z)) {
         case (l, r) => (x: Int) =>
           val s2 = Spore.applyWithEnv(r) { env => (y: Int) => env + y - 1 }
-          s2.unwrap()(x) + 2 - l
+          s2.get()(x) + 2 - l
       }
 
-      val res = s.unwrap()(3)
+      val res = s.get()(3)
       assert(res == 3)
     }
 
@@ -187,7 +188,7 @@ object SporeTests extends TestSuite {
         l.fld
       }
 
-      val res = s.unwrap()(3)
+      val res = s.get()(3)
       assert(res == 9)
     }
   }
