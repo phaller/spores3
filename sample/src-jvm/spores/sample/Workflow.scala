@@ -14,7 +14,7 @@ object WorkflowMain {
   // Custom error type for our workflow
   case class Error(message: String) derives ReadWriter
   // Custom Spore[ReadWriter[Error]] for our error type
-  given Spore[ReadWriter[Error]] = Spore.auto(summon)
+  given Spore[ReadWriter[Error]] = Spore(*)(summon)
 
 
   def main(args: Array[String]): Unit = {
@@ -89,7 +89,7 @@ sealed trait Workflow[-Inp, +Out, Err] {
   import Workflow.*
 
   inline def map[OutB](inline f: Out => Either[Err, OutB])(using rw: Spore[ReadWriter[Either[Err, OutB]]]): Workflow[Inp, OutB, Err] = {
-    val spore = Spore.auto(f)
+    val spore = Spore(*)(f)
     Map(this, spore, rw)
   }
 }
@@ -125,7 +125,7 @@ object Workflow {
 
   /** Create a workflow starting from the initial `value`. */
   def apply[Out, Err](value: Either[Err, Out])(using Spore[ReadWriter[Out]], Spore[ReadWriter[Err]]): Workflow[Nothing, Out, Err] = {
-    val spore = Spore.auto(value)
+    val spore = Spore(*)(value)
     Value(spore)
   }
 

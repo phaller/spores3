@@ -9,7 +9,7 @@ import spores.conversions.given
 
 object AutoCaptureExample {
 
-  // The `Spore.auto` method does the following:
+  // The `Spore(*)` method does the following:
   //
   // 1. Lifts all captured symbols to parameters
   // 2. Find the implicit readwriters for each captured symbol
@@ -20,7 +20,7 @@ object AutoCaptureExample {
   //
   // {{{
   //   def foo(x: Int, y: Int) = {
-  //     Spore.auto{ (i: Int) => x + y + i }
+  //     Spore(*){ (i: Int) => x + y + i }
   //   }
   // }}}
   //
@@ -43,7 +43,7 @@ object AutoCaptureExample {
   // A factory for a serialized function that checks if a number is between the
   // numbers `x` and `y`.
   def isBetween(x: Int, y: Int): Spore[Int => Boolean] = {
-    Spore.auto { (i: Int) => x <= i && i < y }
+    Spore(*) { (i: Int) => x <= i && i < y }
   }
 
 
@@ -58,9 +58,9 @@ object AutoCaptureExample {
 
   // Now we can create a similar factory but by capturing a `Range` object.
   def isInRange(range: Range): Spore[Int => Boolean] = {
-    // The `Spore.auto` method will automatically pack the `Range` object and
+    // The `Spore(*)` method will automatically pack the `Range` object and
     // its readwriter.
-    Spore.auto{ (i: Int) => range.x <= i && i < range.y }
+    Spore(*){ (i: Int) => range.x <= i && i < range.y }
   }
 
 
@@ -69,7 +69,7 @@ object AutoCaptureExample {
   // // no implicit values were found that match type spores.Spore[upickle.default.ReadWriter[spores.experimental.example.AutoCaptureExample.Range2]]
   // case class Range2(x: Int, y: Int)
   // def isInRange2(range: Range2): Spore[Int => Boolean] = {
-  //   Spore.auto{ (i: Int) => range.x <= i && i < range.y }
+  //   Spore(*){ (i: Int) => range.x <= i && i < range.y }
   // }
 
 
@@ -88,7 +88,7 @@ object AutoCaptureExample {
     assert(btwn1020.get().apply(25) == false)
     println(btwn1020.apply(25))
 
-    val filter = Spore.auto { (l: List[Int]) => l.filter(btwn1020.get()) }
+    val filter = Spore(*) { (l: List[Int]) => l.filter(btwn1020.get()) }
 
     println(filter)
     // result: PackedWithEnv(PackedLambda(spores.experimental.example.AutoCaptureExample$Lambda$3),PackedEnv({"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedWithEnv","packed":{"$type":"spores.Packed.PackedLambda","className":"spores.experimental.example.AutoCaptureExample$Lambda$1"},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"10","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}},"packedEnv":{"$type":"spores.Packed.PackedEnv","env":"20","rw":{"$type":"spores.Packed.PackedObject","className":"spores.ReadWriters$IntRW$"}}},PackedObject(spores.ReadWriters$SporeRW$)))
