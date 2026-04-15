@@ -9,11 +9,11 @@ object ForComprehension {
     private[Container] val sporeOpt: Option[Spore[A]]
 
     inline def map[B](inline f: A => B): Container[B] = {
-      Container.create(this.sporeOpt.map(x => Spore.auto(f).withEnv2(x)))
+      Container.create(this.sporeOpt.map(x => Spore(*)(f).withEnv2(x)))
     }
 
     inline def flatMap[B](inline f: A => Container[B]): Container[B] = {
-      this.sporeOpt.map(x => Spore.auto(f).withEnv2(x).get()).getOrElse(Container.empty)
+      this.sporeOpt.map(x => Spore(*)(f).withEnv2(x).get()).getOrElse(Container.empty)
     }
 
     def withFilter(f: A => Boolean): Container[A] = {
@@ -29,7 +29,7 @@ object ForComprehension {
         private[Container] override val sporeOpt: Option[Spore[A]] = so
       }
 
-    inline def apply[A](inline a: A): Container[A] = create(Some(Spore.auto(a)))
+    inline def apply[A](inline a: A): Container[A] = create(Some(Spore(*)(a)))
     def empty[A]: Container[A] = create(None)
   }
 

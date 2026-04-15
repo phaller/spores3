@@ -26,7 +26,7 @@ object AutoCaptureErrorTestsDefs {
   // class Outer { outer =>
   //   val y = 12
   //   class Inner {
-  //     def foo = Spore.auto { (x: Int) => x + outer.y }
+  //     def foo = Spore(*) { (x: Int) => x + outer.y }
   //   }
   // }
 }
@@ -41,7 +41,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           val foo = Foo(12, 13)
-          Spore.auto { foo }
+          Spore(*) { foo }
           """
         .exists:
           _.matches:
@@ -53,7 +53,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           val foo = Foo(12, 13)
-          Spore.auto { (x: Int) => x + foo.x + foo.y }
+          Spore(*) { (x: Int) => x + foo.x + foo.y }
           """
         .exists:
           _.matches:
@@ -65,7 +65,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           val foo = Foo(12, 13)
-          Spore.auto { def bar(x: Int): Int = { x + foo.x } }
+          Spore(*) { def bar(x: Int): Int = { x + foo.x } }
           """
         .exists:
           _.matches:
@@ -79,7 +79,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           class A(val a: Int)
-          Spore.auto { new A(12) }
+          Spore(*) { new A(12) }
           """
         .exists:
           _.matches:
@@ -91,7 +91,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           class A(val a: Int)
-          Spore.auto { (x: Int) => x + new A(12).a }
+          Spore(*) { (x: Int) => x + new A(12).a }
           """
         .exists:
           _.matches:
@@ -105,7 +105,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           def captureMeIfYouCan(): Int = 12
-          Spore.auto { (x: Int) => x + captureMeIfYouCan() }
+          Spore(*) { (x: Int) => x + captureMeIfYouCan() }
           """
         .exists:
           _.matches:
@@ -119,7 +119,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           class Outer {
-            Spore.auto { this }
+            Spore(*) { this }
           }
           """
         .exists:
@@ -133,7 +133,7 @@ object AutoCaptureErrorTests extends TestSuite {
           """
           class Outer {
             val captureThisXIfYouCan = 99
-            Spore.auto { this.captureThisXIfYouCan }
+            Spore(*) { this.captureThisXIfYouCan }
           }
           """
         .exists:
@@ -147,7 +147,7 @@ object AutoCaptureErrorTests extends TestSuite {
           """
           class Outer {
             val captureThisXIfYouCan = 99
-            Spore.auto { (x: Int) => x + captureThisXIfYouCan }
+            Spore(*) { (x: Int) => x + captureThisXIfYouCan }
           }
           """
         .exists:
@@ -163,7 +163,7 @@ object AutoCaptureErrorTests extends TestSuite {
           """
           case class Bar(x: Int, y: Int)
           given ReadWriter[Bar] = macroRW[Bar]
-          given Spore[ReadWriter[Bar]] = Spore.auto { summon[ReadWriter[Bar]] }
+          given Spore[ReadWriter[Bar]] = Spore(*) { summon[ReadWriter[Bar]] }
           """
         .exists:
           _.matches:
@@ -177,7 +177,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           val opaqueInt = OpaqueInt(12)
-          Spore.auto { (x: Int) => x + OpaqueInt.unwrap(opaqueInt) }
+          Spore(*) { (x: Int) => x + OpaqueInt.unwrap(opaqueInt) }
           """
         .exists:
           _.matches:
@@ -193,7 +193,7 @@ object AutoCaptureErrorTests extends TestSuite {
           class Outer {
             class Inner {
               val y = 12
-              def foo = Spore.auto { (x: Int) => x + y }
+              def foo = Spore(*) { (x: Int) => x + y }
             }
           }
           """
@@ -209,7 +209,7 @@ object AutoCaptureErrorTests extends TestSuite {
           class Outer {
             val y = 12
             class Inner {
-              def foo = Spore.auto { (x: Int) => x + y }
+              def foo = Spore(*) { (x: Int) => x + y }
             }
           }
           """
@@ -225,7 +225,7 @@ object AutoCaptureErrorTests extends TestSuite {
           class Outer {
             val y = 12
             class Inner {
-              def foo = Spore.auto { (x: Int) => x + Outer.this.y }
+              def foo = Spore(*) { (x: Int) => x + Outer.this.y }
             }
           }
           """
@@ -241,7 +241,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           val foo = Foo(12, 13)
-          Spore.auto {
+          Spore(*) {
             class Bar {
               def bar = foo.x + 12
             }
@@ -259,7 +259,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           class Bar(x: Int, y: Int)
-          Spore.auto { (x: Int) =>
+          Spore(*) { (x: Int) =>
             new Bar(12, 14)
           }
           """
@@ -273,7 +273,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           class Bar[T](x: T, y: T)
-          Spore.auto { (x: Int) =>
+          Spore(*) { (x: Int) =>
             new Bar[Int](12, 14)
           }
           """
@@ -289,7 +289,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
             class Bar0
-            Spore.auto {
+            Spore(*) {
               class FooBar extends Bar0
             }.get()
             """
@@ -303,7 +303,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
             class Bar1(x: Int, y: Int)
-            Spore.auto {
+            Spore(*) {
               class FooBar extends Bar1(12, 13)
             }
             """
@@ -317,7 +317,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
             class Bar2[T](x: T, y: T)
-            Spore.auto {
+            Spore(*) {
               class FooBar extends Bar2[Int](12, 13)
             }.get()
             """
@@ -332,7 +332,7 @@ object AutoCaptureErrorTests extends TestSuite {
           """
             val x = 12
             trait Bar3 { def bar: Int = x }
-            Spore.auto {
+            Spore(*) {
               class FooBar extends Foo(12, 13) with Bar3
             }
             """
@@ -346,7 +346,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
             trait Bar4[T] { def bar: Int = x }
-            Spore.auto {
+            Spore(*) {
               class FooBar extends Foo(12, 13) with Bar4[Int]
             }.get()
             """
@@ -362,7 +362,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           trait Bar
-          Spore.auto {
+          Spore(*) {
             trait FooBar extends Bar
           }.get()
           """
@@ -378,7 +378,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           trait Bar
-          Spore.auto {
+          Spore(*) {
             object FooBar extends Bar
           }.get()
           """
@@ -394,7 +394,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           enum Bar { case Baz }
-          Spore.auto { Bar.Baz }
+          Spore(*) { Bar.Baz }
           """
         .exists:
           _.matches:
@@ -409,7 +409,7 @@ object AutoCaptureErrorTests extends TestSuite {
           """
           sealed trait Bar
           case class Baz(x: Int, y: Int) extends Bar
-          Spore.auto { (x: Bar) => x match {
+          Spore(*) { (x: Bar) => x match {
               case Baz(a, b) => a + b
             }
           }
@@ -426,7 +426,7 @@ object AutoCaptureErrorTests extends TestSuite {
         typeCheckErrorMessages:
           """
           class Bar extends Foo(12, 13) {
-            def bar = Spore.auto { (x: Int) => x.toString() + super.toString() }
+            def bar = Spore(*) { (x: Int) => x.toString() + super.toString() }
           }
           """
         .exists:

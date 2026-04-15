@@ -6,49 +6,52 @@ import spores.jvm.*
 
 /** Internal API. Extended from by the [[spores.Spore0]] companion object. */
 private[spores] trait SporeObjectCompanion0 {
+
   // This is a hack for having platform-specific operations in the companion
   // object.
 
-  inline def apply[F[_], T](inline body: T): Spore0[F, T] = {
-    SporeJVM0.apply(body)
-  }
 
-  inline def applyWithEnv[F[_], E, T](inline env: E)(inline body: E => T)(using ev: Spore0[F, F[E]]): Spore0[F, T] = {
-    apply[F, E => T](body).withEnv(env)(using ev)
-  }
-
-  inline def applyWithCtx[F[_], E, T](inline env: E)(inline body: E ?=> T)(using ev: Spore0[F, F[E]]): Spore0[F, T] = {
-    apply[F, E ?=> T](body).withCtx(env)(using ev)
-  }
-
-  /** Create a Spore0 from `body`. Automatically captures variables and checks
-    * captured variables. Captured variables in `body` must have an implicit
-    * `Spore[F[E]]` in scope, where `E` is the type of the captured environment
-    * variable and `F[_]` is the type of the captured evidence.
+  /** Create a Spore0 from the provided closure `body` and parameter list of
+    * captured variables `captures` with evidence type `F[_]`.
     *
-    * If a captured
-    * variable does not have an implicit `Spore[F[E]]` in scope then it
-    * will cause a compile error.
+    * Captured variables in `body` must either be added to the `captures`
+    * parameter list, or the "capture all" mode `*` must be used. Mentioned
+    * variables in the `captures` list must be used in the `body`. For each
+    * capture of type `E` an implicit/given `Spore0[F, F[E]]` must be in
+    * contextual scope. Deviations will cause a compiler error.
     *
-    * @example
+    * @example A Spore with no captures
     *   {{{
-    * def isBetween(x: Int , y: Int): Spore0[F, Int => Boolean] = {
-    *   // `x` and `y` are captured variables of type `Int`, so we need to
-    *   // provide an implicit `Spore[F[Int]]` in scope.
-    *   Spore0.auto { (i: Int) => x <= i && i < y }
-    * }
+    * Spore0.apply[F, Int => Int]() { (x: Int) => x + 1 }
+    *   }}}
+    * @example A Spore with explicit captures
+    *   {{{
+    * val y = 12
+    * val z = 13
+    * Spore0.apply[F, Int => Int](y, z) { (x: Int) => x + y + z + 1 }
+    *   }}}
+    * @example A Spore with `*` capture all mode
+    *   {{{
+    * val y = 12
+    * val z = 13
+    * Spore0.apply[F, Int => Int](*) { (x: Int) => x + y + z + 1 }
     *   }}}
     *
+    * @param captures
+    *   The captured variables used in the `body`, or `*` to capture all by
+    *   default.
     * @param body
     *   The closure.
+    * @tparam F
+    *  The evidence type for the captures. Each capture of type `E` requires an
+    *  implicit/given `Spore0[F, F[E]]` in contextual scope.
     * @tparam T
     *   The type of the closure.
-    * @tparam F
-    *   The type of the captured evidence.
     * @return
-    *   A new `Spore[F]` with the packed closure `f`.
+    *   A new `Spore0[F, T]`.
     */
-  inline def auto[F[_], T](inline body: T): Spore0[F, T] = {
-    SporeJVM0.auto(body)
+  inline def apply[F[_], T](inline captures: Any*)(inline body: T): Spore0[F, T] = {
+    SporeJVM0.apply[F, T](captures*)(body)
   }
+
 }
