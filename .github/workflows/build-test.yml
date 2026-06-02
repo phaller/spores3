@@ -16,6 +16,8 @@ jobs:
             java: 17
           - os: ubuntu-latest
             java: 21
+          - os: ubuntu-latest
+            java: 25
           - os: macos-latest
             java: 17
           - os: windows-latest
@@ -46,12 +48,6 @@ jobs:
         curl.exe -L https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/1.1.5/mill-dist-1.1.5-mill.bat -o mill.bat
         ./mill version
     - name: Build
-      run: |
-        ./mill __.jvm.compile
-        ./mill __.js.compile
-        ./mill __.native.compile
+      run: ./mill __.compile
     - name: Test
-      run: |
-        ./mill __.jvm.test
-        ./mill __.js.test
-        ./mill __.native.test
+      run: ./mill __.test
