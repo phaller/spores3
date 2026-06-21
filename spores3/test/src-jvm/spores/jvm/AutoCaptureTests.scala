@@ -32,10 +32,10 @@ object AutoCaptureTestsDefs {
   }
 
   object FunctionsToReadFromJSON {
-    def fun0() = Spore.auto { (x: String) => x }
-    def fun1(y1: String) = Spore.auto { (x: String) => x + y1 }
-    def fun2(y1: String, y2: String) = Spore.auto { (x: String) => x + y1 + y2 }
-    def fun3(y1: String, y2: String, y3: List[String]) = Spore.auto { (x: String) => x + y1 + y2 + y3.mkString(",") }
+    def fun0() = Spore(*) { (x: String) => x }
+    def fun1(y1: String) = Spore(*) { (x: String) => x + y1 }
+    def fun2(y1: String, y2: String) = Spore(*) { (x: String) => x + y1 + y2 }
+    def fun3(y1: String, y2: String, y3: List[String]) = Spore(*) { (x: String) => x + y1 + y2 + y3.mkString(",") }
   }
 
   sealed trait Tree[T] derives ReadWriter
@@ -73,7 +73,7 @@ object AutoCaptureTests extends TestSuite {
 
   val tests = Tests {
     test("testCaptureNothing") {
-      val fun = Spore.auto {}
+      val fun = Spore(*) {}
       val unwrapped = writeReadUnwrap(fun)
       assert(() == unwrapped)
     }
@@ -84,11 +84,11 @@ object AutoCaptureTests extends TestSuite {
       val a3 = "0123456789-3"
       val a4 = "0123456789-4"
 
-      val fun0 = Spore.auto { (x: String) => x }
-      val fun1 = Spore.auto { (x: String) => x + a1 }
-      val fun2 = Spore.auto { (x: String) => x + a1 + a2 }
-      val fun3 = Spore.auto { (x: String) => x + a1 + a2 + a3 }
-      val fun4 = Spore.auto { (x: String) => x + a1 + a2 + a3 + a4 }
+      val fun0 = Spore(*) { (x: String) => x }
+      val fun1 = Spore(*) { (x: String) => x + a1 }
+      val fun2 = Spore(*) { (x: String) => x + a1 + a2 }
+      val fun3 = Spore(*) { (x: String) => x + a1 + a2 + a3 }
+      val fun4 = Spore(*) { (x: String) => x + a1 + a2 + a3 + a4 }
 
       val unwrapped0 = writeReadUnwrap(fun0)
       val unwrapped1 = writeReadUnwrap(fun1)
@@ -116,7 +116,7 @@ object AutoCaptureTests extends TestSuite {
 
     test("testCapturedIdentExactlyOnce") {
       val c = "0123456789"
-      val fun = Spore.auto { (x: String) =>
+      val fun = Spore(*) { (x: String) =>
         val y = {
           val z = {
             x + c
@@ -153,13 +153,13 @@ object AutoCaptureTests extends TestSuite {
 
     test("testCaptureTree") {
       val tree = Node(Leaf(1), Node(Leaf(2), Leaf(3)))
-      val fun = Spore.auto { reduce(tree, (x, y) => x + y) }
+      val fun = Spore(*) { reduce(tree, (x, y) => x + y) }
       val unwrapped = writeReadUnwrap(fun)
       assert(6 == unwrapped)
     }
 
     test("testValDefNoCapture") {
-      val fun = Spore.auto { (x: Int) =>
+      val fun = Spore(*) { (x: Int) =>
         val y = 12
         x + y
       }
@@ -168,7 +168,7 @@ object AutoCaptureTests extends TestSuite {
     }
 
     test("testTypeDefNoCapture") {
-      val fun = Spore.auto { (y: Int) =>
+      val fun = Spore(*) { (y: Int) =>
         type T = TopLevel
         new T { override def x = y }
       }
@@ -178,7 +178,7 @@ object AutoCaptureTests extends TestSuite {
 
     test("testAsInstanceOfNoCapture") {
       class Bar(val value: Int)
-      val fun = Spore.auto { (x: List[Any]) =>
+      val fun = Spore(*) { (x: List[Any]) =>
         x.asInstanceOf[List[Bar]].tail.head.value + x.head.asInstanceOf[Bar].value
       }
       val unwrapped = writeReadUnwrap(fun)
@@ -187,7 +187,7 @@ object AutoCaptureTests extends TestSuite {
 
     test("testMethodTypeParamNoCapture") {
       class Bar(val value: Int)
-      val fun = Spore.auto { (x: Any) =>
+      val fun = Spore(*) { (x: Any) =>
         from[Bar](x.asInstanceOf[Bar]).head.value
       }
       val unwrapped = writeReadUnwrap(fun)
@@ -196,7 +196,7 @@ object AutoCaptureTests extends TestSuite {
 
     test("testParameterTypeNoCapture") {
       class Bar(val value: Int)
-      val fun = Spore.auto {
+      val fun = Spore(*) {
         (l: List[Bar])
           => (x: Bar) =>
             val foo: Bar = null
@@ -207,7 +207,7 @@ object AutoCaptureTests extends TestSuite {
     }
 
     test("testClassExtendsTopLevelNoCapture") {
-      val fun = Spore.auto {
+      val fun = Spore(*) {
         class FooBar extends Foo(12, 13) {
           def foo: Foo = this
         }
@@ -225,7 +225,7 @@ object AutoCaptureTests extends TestSuite {
       val C30 = 0; val C31 = 1; val C32 = 2; val C33 = 3; val C34 = 4; val C35 = 5; val C36 = 6; val C37 = 7; val C38 = 8; val C39 = 9;
       val C40 = 0; val C41 = 1; val C42 = 2; val C43 = 3; val C44 = 4; val C45 = 5; val C46 = 6; val C47 = 7; val C48 = 8; val C49 = 9;
 
-      val fun = Spore.auto {
+      val fun = Spore(*) {
         (x00: Int) => (x01: Int) => (x02: Int) => (x03: Int) => (x04: Int) => (x05: Int) => (x06: Int) => (x07: Int) => (x08: Int) => (x09: Int) =>
         (x10: Int) => (x11: Int) => (x12: Int) => (x13: Int) => (x14: Int) => (x15: Int) => (x16: Int) => (x17: Int) => (x18: Int) => (x19: Int) =>
         (x20: Int) => (x21: Int) => (x22: Int) => (x23: Int) => (x24: Int) => (x25: Int) => (x26: Int) => (x27: Int) => (x28: Int) => (x29: Int) =>

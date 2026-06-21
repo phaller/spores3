@@ -7,26 +7,26 @@ import spores.sample.platform.*
 
 object SporeExample {
 
-  val Lambda1 = Spore.apply[Int => String] { x => x.toString.reverse }
+  val Lambda1 = Spore.apply[Int => String]() { x => x.toString.reverse }
 
-  val Lambda2 = Spore.applyWithEnv[Int, Int => String](12) { env => x => (env + x).toString.reverse }
+  val Lambda2 = Spore.apply[Int => Int => String]() { env => x => (env + x).toString.reverse }.withEnv(12)
 
-  val Lambda3 = Spore.apply[Option[Int] => Int] { x => x.map { _ + 1 }.getOrElse(0) }
+  val Lambda3 = Spore.apply[Option[Int] => Int]() { x => x.map { _ + 1 }.getOrElse(0) }
 
-  val Lambda4 = Spore.applyWithCtx[Int, Int](14) { summon[Int] }
+  val Lambda4 = Spore.apply[Int ?=> Int]() { summon[Int] }.withCtx(14)
 
   // // Should cause compile error
   // object ShouldFail:
-  //   Spore.apply[Int => Int] { x =>
-  //     Spore.apply[Int => Int] { y =>
-  //       // Invalid capture of variable `x`. Use the first parameter of a spore's body to refer to the spore's environment.
+  //   Spore.apply[Int => Int]() { x =>
+  //     Spore.apply[Int => Int]() { y =>
+  //       // Invalid capture of variable `x`. Add it to the capture list or use `*` to capture all by default.
   //       x + y
   //     }.get().apply(x)
   //   }
 
   // // Should cause compile error
   // import upickle.default.*
-  // def SporeFactoryFail[T: ReadWriter] = Spore.apply { summon[ReadWriter[T]] } // Invalid capture of variable `evidence$1`. Use the first parameter of a spore's body to refer to the spore's environment.
+  // def SporeFactoryFail[T: ReadWriter] = Spore.apply() { summon[ReadWriter[T]] } // Invalid capture of variable `evidence$1`. Add it to the capture list or use `*` to capture all by default.
 
 
   def main(args: Array[String]): Unit = {

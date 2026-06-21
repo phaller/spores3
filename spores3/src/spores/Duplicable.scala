@@ -11,7 +11,7 @@ object Duplicable {
     duplicable.duplicate(value)
 
   inline def apply[T](inline body: T): Spore0[Duplicable, T] = {
-    spores.jvm.SporeJVM0.apply(body)
+    spores.jvm.SporeJVM0.apply()(body)
   }
 
   inline def applyWithEnv[E, T](env: E)(inline body: E => T)(using ev: Spore0[Duplicable, Duplicable[E]]): Spore0[Duplicable, T] = {

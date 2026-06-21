@@ -22,7 +22,7 @@ object ReadWriters {
   // ReadWriter[Spore[T]]
   //////////////////////////////////////////////////////////////////////////////
 
-  given [T]: ReadWriter[Spore[T]] = {
+  given sporeRW[T]: ReadWriter[Spore[T]] = {
     summon[ReadWriter[ujson.Value]].bimap[Spore[T]](
       sp => {
         sp match {
@@ -35,14 +35,14 @@ object ReadWriters {
           case Spore0.AST.Value(ev, value) =>
             ujson.Obj(
               "tag"   -> ujson.Str("Val"),
-              "ev"    -> writeJs(ev),
+              "ev"    -> writeJs(ev)(using sporeRW),
               "value" -> writeJs(value)(using ev.get()),
             )
           case Spore0.AST.WithEnv(fun, env) =>
             ujson.Obj(
               "tag" -> ujson.Str("WithEnv"),
-              "fun" -> writeJs(fun),
-              "env" -> writeJs(env),
+              "fun" -> writeJs(fun)(using sporeRW),
+              "env" -> writeJs(env)(using sporeRW),
             )
         }
       },
@@ -58,12 +58,12 @@ object ReadWriters {
             }
             Spore0.AST.Body(className, kind, body)
           case "Val" =>
-            val ev = read[Spore[ReadWriter[T]]](js("ev"))
+            val ev = read[Spore[ReadWriter[T]]](js("ev"))(using sporeRW)
             val value = read[T](js("value"))(using ev.get())
             Spore0.AST.Value(ev, value)
           case "WithEnv" =>
-            val fun = read[Spore[Any => T]](js("fun"))
-            val env = read[Spore[Any]](js("env"))
+            val fun = read[Spore[Any => T]](js("fun"))(using sporeRW)
+            val env = read[Spore[Any]](js("env"))(using sporeRW)
             Spore0.AST.WithEnv(fun, env)
         }
       },

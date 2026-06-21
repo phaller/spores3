@@ -12,7 +12,7 @@ object SporeTests extends TestSuite {
   val tests = Tests {
 
     test("testWithoutEnv") {
-      val b = Spore { (x: Int) => x + 2 }
+      val b = Spore() { (x: Int) => x + 2 }
       val res = b.get()(3)
       assert(res == 5)
     }
@@ -20,7 +20,7 @@ object SporeTests extends TestSuite {
     test("testWithoutEnv2") {
       def fun(s: Spore[Int => Int]): Unit = {}
 
-      val s = Spore((x: Int) => x + 2)
+      val s = Spore()((x: Int) => x + 2)
 
       fun(s)
 
@@ -29,7 +29,7 @@ object SporeTests extends TestSuite {
     }
 
     test("testWithoutEnvWithType") {
-      val s: Spore[Int => Int] = Spore {
+      val s: Spore[Int => Int] = Spore() {
         (x: Int) => x + 2
       }
       val res = s.get()(3)
@@ -37,7 +37,7 @@ object SporeTests extends TestSuite {
     }
 
     test("testWithoutEnvWithType1") {
-      val s: Spore[Int => Int] = Spore {
+      val s: Spore[Int => Int] = Spore() {
         x => x + 2
       }
       val res = s.get()(3)
@@ -50,13 +50,13 @@ object SporeTests extends TestSuite {
   [error]    |                                                    ^
   [error]    |             Found:    com.phaller.blocks.Spore[Int, Int]{Env = Int}
   [error]    |             Required: com.phaller.blocks.Spore[Int, Int]{Env = Nothing}
-  [error] 38 |      (x: Int) => x + 2 + env
+  [error] 38 |      (x: Int) => x + 2 + y
   [error] 39 |    }
     */
     /*test("testWithoutEnvWithType1") {
       val y = 5
       val s: Spore[Int, Int] { type Env = Nothing } = Spore(y) {
-        (x: Int) => x + 2 + env
+        (x: Int) => x + 2 + y
       }
       val res = s(3)
       assert(res == 5)
@@ -64,8 +64,8 @@ object SporeTests extends TestSuite {
 
     test("testWithEnv") {
       val y = 5
-      val s = Spore.applyWithEnv(y) {
-        env => (x: Int) => x + env
+      val s = Spore.apply(y) {
+        (x: Int) => x + y
       }
       val res = s.get()(10)
       assert(res == 15)
@@ -73,15 +73,15 @@ object SporeTests extends TestSuite {
 
     /*
   [error] -- Error: [...]/BlockTests.scala:83:35
-  [error] 83 |      env => (x: Int) => x + env + z
-  [error]    |                                   ^
-  [error]    |Invalid capture of variable `z`. Use first parameter of spore's body to refer to the spore's environment.
+  [error] 83 |      (x: Int) => x + y + z
+  [error]    |                           ^
+  [error]    |Invalid capture of variable `z`. Add it to the capture list or use `*` to capture all by default.
     */
     /*test("testWithEnvInvalidCapture") {
       val y = 5
       val z = 6
       val s = Spore(y) {
-        env => (x: Int) => x + env + z
+        (x: Int) => x + y + z
       }
       val res = s(10)
       assert(res == 21)
@@ -89,8 +89,8 @@ object SporeTests extends TestSuite {
 
     test("testWithEnv2") {
       val str = "anonymous function"
-      val s: Spore[Int => Int] = Spore.applyWithEnv(str) {
-        env => (x: Int) => x + env.length
+      val s: Spore[Int => Int] = Spore.apply(str) {
+        (x: Int) => x + str.length
       }
       val res = s.get()(10)
       assert(res == 28)
@@ -100,8 +100,8 @@ object SporeTests extends TestSuite {
       val str = "anonymous function"
       val i = 5
 
-      val s: Spore[Int => Int] = Spore.applyWithEnv((str, i)) {
-        case (l, r) => (x: Int) => x + l.length - r
+      val s: Spore[Int => Int] = Spore.apply(str, i) {
+        (x: Int) => x + str.length - i
       }
 
       val res = s.get()(10)
@@ -112,8 +112,8 @@ object SporeTests extends TestSuite {
       val str = "anonymous function"
       val i = 5
 
-      val s = Spore.applyWithEnv((str, i)) {
-        (l, r) => (x: Int) => x + l.length - r
+      val s = Spore.apply(str, i) {
+        (x: Int) => x + str.length - i
       }
 
       val res = s.get()(10)
@@ -122,8 +122,8 @@ object SporeTests extends TestSuite {
 
     test("testWithEnvWithType") {
       val y = 5
-      val s: Spore[Int => Int] = Spore.applyWithEnv(y) {
-        env => (x: Int) => x + env
+      val s: Spore[Int => Int] = Spore.apply(y) {
+        (x: Int) => x + y
       }
       val res = s.get()(11)
       assert(res == 16)
@@ -131,17 +131,17 @@ object SporeTests extends TestSuite {
 
     test("testThunk") {
       val x = 5
-      val t = Spore.applyWithEnv(x) { env => () =>
-        env + 7
+      val t = Spore.apply(x) { () =>
+        x + 7
       }
       val res = t.get()()
       assert(res == 12)
     }
 
     test("testNestedWithoutEnv") {
-      val s = Spore {
+      val s = Spore() {
         (x: Int) =>
-          val s2 = Spore { (y: Int) => y - 1 }
+          val s2 = Spore() { (y: Int) => y - 1 }
           s2.get()(x) + 2
       }
       val res = s.get()(3)
@@ -151,9 +151,9 @@ object SporeTests extends TestSuite {
     test("testNestedWithEnv1") {
       val z = 5
 
-      val s = Spore.applyWithEnv(z) {
-        env => (x: Int) =>
-          val s2 = Spore.applyWithEnv(env) { env => (y: Int) => env + y - 1 }
+      val s = Spore.apply(z) {
+        (x: Int) =>
+          val s2 = Spore.apply(z) { (y: Int) => z + y - 1 }
           s2.get()(x) + 2
       }
       val res = s.get()(3)
@@ -164,10 +164,10 @@ object SporeTests extends TestSuite {
       val z = 5
       val w = 6
 
-      val s = Spore.applyWithEnv((w, z)) {
-        case (l, r) => (x: Int) =>
-          val s2 = Spore.applyWithEnv(r) { env => (y: Int) => env + y - 1 }
-          s2.get()(x) + 2 - l
+      val s = Spore.apply(w, z) {
+        (x: Int) =>
+          val s2 = Spore.apply(z) { (y: Int) => z + y - 1 }
+          s2.get()(x) + 2 - w
       }
 
       val res = s.get()(3)
@@ -177,10 +177,10 @@ object SporeTests extends TestSuite {
     test("testLocalClasses") {
       val x = 5
 
-      val s = Spore.applyWithEnv(x) { env => (y: Int) =>
+      val s = Spore.apply(x) { (y: Int) =>
         class Local2 { def m() = y }
         class Local(p: Int)(using loc: Local2) {
-          val fld = env + p
+          val fld = x + p
         }
 
         given l2: Local2 = new Local2

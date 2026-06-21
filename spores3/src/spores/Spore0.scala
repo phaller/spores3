@@ -150,6 +150,9 @@ sealed trait Spore0[F[_], +T] { self: Spore0[F, T] =>
   */
 object Spore0 extends SporeObjectCompanion0 {
 
+  opaque type CaptureAllMode = Unit
+  final val `*`: CaptureAllMode = ()
+
   /** Pack a value of type `T` as a `Spore0[F, T]` using an implicit
     * `Spore0[F, F[T]]` instance.
     *

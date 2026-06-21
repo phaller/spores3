@@ -8,27 +8,27 @@ import spores.default.given
 
 
 object SporeSerializationJvmTestsDefs {
-  val lambda = Spore.apply[Int => String] { x => x.toString }
-  val lambdaWithEnv = Spore.applyWithEnv(12) { (env: Int) => (x: Int) => (env + x).toString }
-  val lambdaWithCtx = Spore.applyWithCtx(12) { summon[Int].toString }
-  val curriedLambda = Spore.apply[Int => Int => String] { x => y => (x + y).toString() }
-  val higherOrderLambda = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]] { env => x =>
+  val lambda = Spore.apply[Int => String]() { x => x.toString }
+  val lambdaWithEnv = Spore.apply() { (env: Int) => (x: Int) => (env + x).toString }.withEnv(12)
+  val lambdaWithCtx = Spore.apply[Int ?=> String]() { summon[Int].toString }.withCtx(12)
+  val curriedLambda = Spore.apply[Int => Int => String]() { x => y => (x + y).toString() }
+  val higherOrderLambda = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]]() { env => x =>
     if env.get().apply(x) then Some(x) else None
   }
-  val intPredicate = Spore.apply[Int => Boolean] { x => x > 10 }
-  val lambdaReturningSpore = Spore.apply[Int => Spore[String]] { x => Spore.value(x.toString()) }
+  val intPredicate = Spore.apply[Int => Boolean]() { x => x > 10 }
+  val lambdaReturningSpore = Spore.apply[Int => Spore[String]]() { x => Spore.value(x.toString()) }
 }
 
 object SporeSerializationJvmTestsDeadCode {
-  val lambda = Spore.apply[Int => String] { x => x.toString }
-  val lambdaWithEnv = Spore.applyWithEnv(12) { (env: Int) => (x: Int) => (env + x).toString }
-  val lambdaWithCtx = Spore.applyWithCtx(12) { summon[Int].toString }
-  val curriedLambda = Spore.apply[Int => Int => String] { x => y => (x + y).toString() }
-  val higherOrderLambda = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]] { env => x =>
+  val lambda = Spore.apply[Int => String]() { x => x.toString }
+  val lambdaWithEnv = Spore.apply() { (env: Int) => (x: Int) => (env + x).toString }.withEnv(12)
+  val lambdaWithCtx = Spore.apply[Int ?=> String]() { summon[Int].toString }.withCtx(12)
+  val curriedLambda = Spore.apply[Int => Int => String]() { x => y => (x + y).toString() }
+  val higherOrderLambda = Spore.apply[Spore[Int => Boolean] => Int => Option[Int]]() { env => x =>
     if env.get().apply(x) then Some(x) else None
   }
-  val intPredicate = Spore.apply[Int => Boolean] { x => x > 10 }
-  val lambdaReturningSpore = Spore.apply[Int => Spore[String]] { x => Spore.value(x.toString()) }
+  val intPredicate = Spore.apply[Int => Boolean]() { x => x > 10 }
+  val lambdaReturningSpore = Spore.apply[Int => Spore[String]]() { x => Spore.value(x.toString()) }
 }
 
 object SporeSerializationJvmTests extends TestSuite {
